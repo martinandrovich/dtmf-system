@@ -18,6 +18,6 @@ project
 ├── lib             : for included libraries
 ├── include         : for external/API header files
 ├── src             : for source files
-|   ├── namespace1
+|   ├── namespace/class
 └── doc             : for documentation
 ```
