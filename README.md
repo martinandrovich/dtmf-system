@@ -2,10 +2,10 @@
 A gaming platform using DTMF communication between nodes.
 
 ## Directory Structure
-The following directory structure is used within the project:
+There are two projects in this solution, the [console-app](console-app/README.md) and the [dtmf-lib](console-app/README.md). The following directory structure is used within a project folder:
 
 ```cpp
-trunk
+project
 ├── bin             : for all executables (applications)
 ├── obj             : build intermediates
 ├── lib             : for included libraries
