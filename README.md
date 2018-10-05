@@ -1,7 +1,7 @@
 # DTMF Gaming Console System
 A gaming platform using DTMF communication between nodes.
 
-![Illustration of system](https://lh4.googleusercontent.com/T42bLWP0Zer2pIfCw6EZ2AUAoKaoOZ6chzRUTjnk1uVtADhnwEuVULBaKnLsmWJheY-vfOqQLRFrX8TbgpUS=w1919-h947-rw)
+![Illustration of system](assets/project_description.png)
 
 ## Solution Architecture
 There are two projects in this solution:
