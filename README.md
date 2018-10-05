@@ -5,8 +5,11 @@ A gaming platform using DTMF communication between nodes.
 
 ## Solution Architecture
 There are two projects in this solution:
-- [dtmf-lib](console-app/README.md); a library for DTMF-based node communication.
+- [dtmf-lib](dtmf-lib/README.md); a library for DTMF-based node communication.
 - [console-app](console-app/README.md); an implementation of the library for user and device interaction.
+
+## UML Diagram
+![UML of system](assets/dtmf-system.png)
 
 ## Directory Structure
 The following directory structure is used within a project folder:
