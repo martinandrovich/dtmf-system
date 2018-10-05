@@ -1,5 +1,5 @@
 # DTMF Gaming Console System
-A gaming platform using DTMF communication for node communication.
+A gaming platform using DTMF communication between nodes.
 
 ## Directory Structure
 The following directory structure is used within the project:
