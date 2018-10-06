@@ -9,7 +9,7 @@ There are two projects in this solution:
 - [console-app](console-app/README.md); an implementation of the library for user and device interaction.
 
 ## UML Diagram
-![UML of system](assets/dtmf-system.png)
+![UML of system](assets/dtmf-system.svg)
 
 ## Directory Structure
 The following directory structure is used within a project folder:
