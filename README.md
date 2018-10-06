@@ -16,24 +16,24 @@ The following directory structure is used within a project folder:
 
 ```
 project
-├── bin             : for all executables (applications)
-├── obj             : build intermediates
-├── lib             : for included libraries
-├── include         : for external/API header files
-├── src             : for source files
+├── bin			: for all executables (applications)
+├── obj			: build intermediates
+├── lib			: for included libraries
+├── include		: for external/API header files
+├── src			: for source files
 |   ├── namespace/class
-└── doc             : for documentation
+└── doc			: for documentation
 ```
 
 ## Naming Conventions
 The following conventions are used within the solution's code:
 
 ```
-Constants					= SOME_CONSTANT
-Classes						= SomeClass
-Structures (i.e. Enum)				= SomeStructure
-Methods						= someMethod()
-Member Methods					= this->someMethod()
-Variables					= someVariable
-Member Variables				= this->someVariable
+Constants		: SOME_CONSTANT
+Classes / Namepspace	: someClass
+Structures		: someStructure
+Methods			: someMethod()
+Member Methods		: this->someMethod()
+Variables		: someVariable
+Member Variables	: this->someVariable
 ```
