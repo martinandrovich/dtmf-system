@@ -14,7 +14,7 @@ There are two projects in this solution:
 ## Directory Structure
 The following directory structure is used within a project folder:
 
-```cpp
+```
 project
 ├── bin             : for all executables (applications)
 ├── obj             : build intermediates
@@ -23,4 +23,17 @@ project
 ├── src             : for source files
 |   ├── namespace/class
 └── doc             : for documentation
+```
+
+## Naming Conventions
+The following conventions are used within the solution's code:
+
+```
+Constants                     = SOME_CONSTANT
+Classes				                = SomeClass
+Structures (i.e. Enum)		    = SomeStructure
+Methods				                = someMethod()
+Member Methods			          = this->someMethod()
+Variables			                = someVariable
+Member Variables		          = this->someVariable
 ```
