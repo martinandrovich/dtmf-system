@@ -29,11 +29,11 @@ project
 The following conventions are used within the solution's code:
 
 ```
-Constants                     = SOME_CONSTANT
-Classes				                = SomeClass
-Structures (i.e. Enum)		    = SomeStructure
-Methods				                = someMethod()
-Member Methods			          = this->someMethod()
-Variables			                = someVariable
-Member Variables		          = this->someVariable
+Constants							= SOME_CONSTANT
+Classes								= SomeClass
+Structures (i.e. Enum)				= SomeStructure
+Methods								= someMethod()
+Member Methods						= this->someMethod()
+Variables							= someVariable
+Member Variables					= this->someVariable
 ```
