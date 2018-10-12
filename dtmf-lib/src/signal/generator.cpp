@@ -69,7 +69,7 @@ sf::SoundBuffer* generator::generateDTMF(uint tone, uint duration, uint amplitud
 void generator::playback(uint tone, uint duration)
 {
 	// Create buffer
-	auto buffer = generator::generateDTMF(tone, duration);
+	auto buffer = generateDTMF(tone, duration);
 
 	// Set buffer and play
 	player->setBuffer(*buffer);
