@@ -1,12 +1,12 @@
 #include <iostream>
+#include <vector>
+#include <Windows.h>
+
 #include "dtmf.h"
 #include "signal/generator.h"
-#include "Windows.h"
 
 void dtmf::testFunction()
 {
-	std::cout << "Get ready for ear rape!" << std::endl;
-
 	sf::Sound* testSound = new sf::Sound; // NEEDS GARBAGE CLEANING !!!!!!
 
 	for (int i = 0; i <= 16; i++)
@@ -31,4 +31,10 @@ void dtmf::testFunction2()
 		i = i % 16;
 		generator::playback(i, 200);
 	}	
+}
+
+void dtmf::testFunction3()
+{
+	std::vector<int> test = { 2, 0, 13, 7, 4 };
+	generator::playbackSequence(test, 50);
 }

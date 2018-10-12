@@ -1,7 +1,8 @@
 #pragma once
-#include <vector>
-#include <cmath>
 #include <iostream>
+#include <cmath>
+#include <vector>
+#include <Windows.h>
 
 #include "generator.h"
 
@@ -67,13 +68,27 @@ sf::SoundBuffer* generator::generateDTMF(uint tone, uint duration, uint amplitud
 // Playback a tone for a duration; spinlock if allready playing
 void generator::playback(uint tone, uint duration)
 {
+	// Create buffer
+	auto buffer = generator::generateDTMF(tone, duration);
 
-	// Wait if playing
+	// Set buffer and play
+	player->setBuffer(*buffer);
+	player->play();
+	
+	// Wait while playing
 	while (player->getStatus() == player->Playing)
 		;
 
-	// Set buffer and play
-	player->setBuffer(*generator::generateDTMF(tone, duration));
-	player->play();
+	// Cleanup
+	delete buffer;
+}
 
+void generator::playbackSequence(std::vector<int> &sequence, int duration, int pause)
+{
+	for (auto i : sequence)
+	{
+		playback(i, duration);
+		Sleep(pause); // BAD IMPLEMENTATION !!!!
+	}
+		
 }

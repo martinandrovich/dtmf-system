@@ -4,7 +4,9 @@
 int main()
 {	
 	
-	dtmf::testFunction2();
+	std::cout << "Ear Rape Simulator 1.0\n";
+
+	dtmf::testFunction3();
 	
 	std::cin.get();
 	return 0;
