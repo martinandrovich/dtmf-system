@@ -103,9 +103,15 @@
       <AdditionalIncludeDirectories>$(ProjectDir)lib/SFML-2.5.0/include;$(ProjectDir)lib;$(ProjectDir)include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Lib>
-      <AdditionalLibraryDirectories>$(ProjectDir)lib\SFML-2.5.0\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>sfml-audio-d.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(ProjectDir)lib\SFML-2.5.0\bin;$(ProjectDir)lib\SFML-2.5.0\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>sfml-audio-d.lib;</AdditionalDependencies>
+      <UseUnicodeResponseFiles>
+      </UseUnicodeResponseFiles>
     </Lib>
+    <ProjectReference>
+      <LinkLibraryDependencies>
+      </LinkLibraryDependencies>
+    </ProjectReference>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -137,18 +143,27 @@
       <OptimizeReferences>true</OptimizeReferences>
     </Link>
     <Lib>
-      <AdditionalLibraryDirectories>$(ProjectDir)lib\SFML-2.5.0\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>sfml-audio-d.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(ProjectDir)lib\SFML-2.5.0\bin;$(ProjectDir)lib\SFML-2.5.0\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>sfml-audio-d.lib;</AdditionalDependencies>
+      <UseUnicodeResponseFiles>
+      </UseUnicodeResponseFiles>
     </Lib>
+    <ProjectReference>
+      <LinkLibraryDependencies>
+      </LinkLibraryDependencies>
+    </ProjectReference>
   </ItemDefinitionGroup>
   <ItemGroup>
     <None Include="doc\CHANGELOG.md" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\dtmf.h" />
+    <ClInclude Include="src\signal\generator.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\dtmf.cpp" />
+    <ClCompile Include="src\signal\constants.h" />
+    <ClCompile Include="src\signal\generator.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

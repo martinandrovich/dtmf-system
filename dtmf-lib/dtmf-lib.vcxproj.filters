@@ -21,9 +21,18 @@
     <ClInclude Include="include\dtmf.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\signal\generator.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\dtmf.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\signal\generator.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\signal\constants.h">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
