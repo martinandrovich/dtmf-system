@@ -4,7 +4,7 @@
 int main()
 {	
 	
-	dtmf::testFunction();
+	dtmf::testFunction2();
 	
 	std::cin.get();
 	return 0;

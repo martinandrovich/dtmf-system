@@ -3,4 +3,5 @@
 namespace dtmf
 {
 	void testFunction();
+	void testFunction2();
 }
