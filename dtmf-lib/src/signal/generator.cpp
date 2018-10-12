@@ -57,7 +57,7 @@ sf::SoundBuffer* generator::generateDTMF(uint tone, uint duration, uint amplitud
 		return nullptr;
 
 	// Lists of frequencies
-	int freqLow[4] = { 697,  770,  852,  941 };
+	int freqLow[4]	= {  697,  770,  852,  941 };
 	int freqHigh[4] = { 1209, 1336, 1477, 1633 };
 
 	// Return buffer generated from an appropriate set of frequencies
