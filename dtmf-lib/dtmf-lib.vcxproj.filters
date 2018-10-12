@@ -29,10 +29,10 @@
     <ClCompile Include="src\dtmf.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\signal\generator.cpp">
+    <ClCompile Include="src\signal\constants.h">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\signal\constants.h">
+    <ClCompile Include="src\signal\generator.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

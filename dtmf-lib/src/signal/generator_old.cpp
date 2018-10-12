@@ -3,10 +3,11 @@
 #include <cmath>
 #include <iostream>
 
-#include "generator.h"
+#include "generator_old.h"
 
 // ## Global Definitions & Initializations ########################################################################################
 
+sf::Sound* generator::player = new sf::Sound;
 
 // ## Methods #####################################################################################################################
 
@@ -14,7 +15,7 @@
 sf::SoundBuffer* generator::generateSamples(uint f1, uint f2, uint duration, uint amplitude, float fadePercentage, uint sampleRate)
 {
 	// Variables
-	float					sampleSize = sampleRate * (duration / 1000.f);
+	float					sampleSize = sampleRate * (duration/1000.f);
 	float					fadeSize = fadePercentage * sampleSize;
 	std::vector<sf::Int16>	temp(sampleSize);
 	uint					amplitudeFinal;
@@ -38,7 +39,7 @@ sf::SoundBuffer* generator::generateSamples(uint f1, uint f2, uint duration, uin
 		{
 			amplitudeFinal = amplitude;
 		}
-
+		
 		// Array entry
 		temp[i] = amplitudeFinal * (sin(f1 * 2 * PI*(i * 1.f / sampleRate)) + sin(f2 * 2 * PI*(i * 1.f / sampleRate)));
 	}
@@ -56,22 +57,22 @@ sf::SoundBuffer* generator::generateDTMF(uint tone, uint duration, uint amplitud
 		return nullptr;
 
 	// Lists of frequencies
-	int freqLow[4] = { 697,  770,  852,  941 };
-	int freqHigh[4] = { 1209, 1336, 1477, 1633 };
+	int freqLow[4]		= {  697,  770,  852,  941 };
+	int freqHigh[4]		= { 1209, 1336, 1477, 1633 };
 
 	// Return buffer generated from an appropriate set of frequencies
-	return generator::generateSamples(freqLow[tone / 4], freqHigh[tone % 4], duration, amplitude);
+	return generator::generateSamples(freqLow[tone/4], freqHigh[tone % 4], duration, amplitude);
 
 }
 
 // Playback a tone for a duration; spinlock if allready playing
 void generator::playback(uint tone, uint duration)
 {
-
+	
 	// Wait if playing
 	while (player->getStatus() == player->Playing)
 		;
-
+	
 	// Set buffer and play
 	player->setBuffer(*generator::generateDTMF(tone, duration));
 	player->play();
