@@ -8,13 +8,11 @@ public:
 	generator();
 	virtual ~generator();
 
-	static sf::SoundBuffer*		generateSamples(int f1, int f2, int fs, int amplitude = 15000, double fade = 5000.f);
-	static sf::SoundBuffer*		generateDTMF(char tone, int amplitude = 15000, double fade = 5000.f);
-
-	// duration
+	static sf::SoundBuffer*		generateSamples(int f1, int f2, int duration, int amplitude = AMPLITUDE_MAX, double fade = 0.2);
+	static sf::SoundBuffer*		generateDTMF(int tone, int duration = 1000, int amplitude = AMPLITUDE_MAX, double fade = 0.2);
 
 	// play(buffer)
-	// play(char)
+	// play(int)
 
 	// playSequence(char[])
 

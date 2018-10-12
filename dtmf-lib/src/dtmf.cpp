@@ -5,7 +5,7 @@
 
 void dtmf::testFunction()
 {
-	std::cout << "Hello World!" << std::endl;
+	std::cout << "Get ready for ear rape!" << std::endl;
 
 	if (!sf::SoundBufferRecorder::isAvailable())
 	{
@@ -15,7 +15,17 @@ void dtmf::testFunction()
 
 	sf::Sound* testSound = new sf::Sound; // NEEDS GARBAGE CLEANING !!!!!!
 
-	testSound->setBuffer(*generator::generateDTMF('0'));
-	testSound->play();
+	for (int i = 0; i <= 16; i++)
+	{
+
+		i = i % 16;
+
+		int dir = 100;
+		int brk = 20;
+
+		testSound->setBuffer(*generator::generateDTMF(i, dir));
+		testSound->play();
+		Sleep(dir+brk);
+	}	
 
 }
