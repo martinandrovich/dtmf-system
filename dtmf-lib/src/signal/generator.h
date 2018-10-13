@@ -19,5 +19,4 @@ namespace generator
 	void						playbackSequence(std::vector<int> &sequence, int duration = DURATION, int pause = PAUSE);
 
 	static sf::Sound*			player = new sf::Sound;
-	
 };
