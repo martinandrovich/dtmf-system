@@ -88,10 +88,7 @@ void generator::playbackSequence(std::vector<int> &sequence, int duration, int p
 	for (auto i : sequence)
 	{
 		playback(i, duration);
-
-		while (player->getStatus() == sf::SoundSource::Status::Playing) {   
-			//do nothing
-		}
+		Sleep(pause); // BAD IMPLEMENTATION !!!!
 	}
 		
 }
