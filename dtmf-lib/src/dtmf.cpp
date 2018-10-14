@@ -4,6 +4,7 @@
 
 #include "dtmf.h"
 #include "signal/generator.h"
+#include "signal/sampler.h"
 
 void dtmf::testGenerator()
 {	
