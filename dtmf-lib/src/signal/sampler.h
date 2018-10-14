@@ -2,8 +2,7 @@
 namespace sampler
 {
 	// Public Members
-
-	enum class state {
+		enum class state {
 		unitialized,
 		idle,
 		running,

@@ -9,7 +9,7 @@
 namespace sampler
 {
 
-	// Private Variables
+	// Private Members
 	int					rate		= 44100;
 	int					interval	= 50;
 	state				status		= state::unitialized;
