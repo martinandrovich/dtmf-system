@@ -1,17 +1,17 @@
+//// Public Declarations [Interface] //////////////////////////////////////////////////////////////////////////////////////////////
 namespace decoder
 {
-	void init();
+	
+	// Public Members
+	enum class state {
+		unitialized,
+		idle,
+		running,
+	};
+
+	// Public Methods
 	void run();
+	void run(void(*callback)());
 	void end();
-
-	void decode();
-		
-	namespace {
-		int status;
-		int buffer[200];
-		int queue[5];
-
-		void thread();
-	}
 
 }
