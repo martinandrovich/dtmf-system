@@ -1,4 +1,6 @@
 #pragma once
+// ################################################################################################################################
+
 constexpr auto PI				= 3.141592653589732;
 constexpr auto DURATION			= 500;							// Default signal duration in ms
 constexpr auto PAUSE			= 20;							// Default signal pause in ms
