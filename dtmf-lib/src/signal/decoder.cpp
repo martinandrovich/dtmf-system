@@ -3,23 +3,23 @@
 #include <queue>
 
 #include "decoder.h"
+#include "sampler.h"
 
 //// Private Declarations /////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 namespace decoder
 {
-	
 	// Private Members
 	state							status = state::unitialized;
-	std::queue<std::vector<int>>	queue;
+	std::queue<std::vector<float>>	queue;
 	std::thread						performer;
 
 	void(*callback)() = nullptr;
 
 	// Private Methods
-	void init(void(*callback)());
 	void perform();
-	void decode(std::vector<int> &samples);
+	void add(std::vector<float> &samples);
+	void decode(std::vector<float> &samples);
 }
 
 //// Method Definitions ///////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -32,7 +32,6 @@ void decoder::init(void(*callback)())
 
 void decoder::run(void(*callback)())
 {
-	
 	if (status == state::unitialized)
 		init(callback);
 
@@ -42,6 +41,8 @@ void decoder::run(void(*callback)())
 void decoder::end()
 {
 	// end
+
+	performer.join();
 }
 
 void decoder::perform()
@@ -54,15 +55,22 @@ void decoder::perform()
 			continue;
 		
 		if (!queue.empty())
-			decode(queue.front());
+			decode(queue.front());	// needs mutex management
 	}
 }
 
-void decoder::decode(std::vector<int> &samples)
+void decoder::add(std::vector<float> &samples)
+{
+	queue.push(samples);	// needs mutex management
+}
+
+void decoder::decode(std::vector<float> &samples)
 {
 	status == state::running;
+	std::bitset<3> payload("010");
 
 	// decode
 
+	queue.pop();	// needs mutex management
 	callback();
 }
