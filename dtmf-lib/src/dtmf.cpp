@@ -4,6 +4,7 @@
 
 #include "dtmf.h"
 #include "signal/generator.h"
+#include "signal/decoder.h"
 #include "signal/sampler.h"
 #include "signal/sampler2.h"
 
@@ -31,4 +32,9 @@ void dtmf::testSampler()
 	//// Static Class (Singleton)
 	//sampler2::init(&testGeneratorSequence);
 	//sampler2::run();
+}
+
+void dtmf::testDecoder()
+{
+	decoder::run(&testGeneratorSequence);
 }
