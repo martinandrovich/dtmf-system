@@ -6,7 +6,7 @@ class sampler2
 {
 public:
 
-	// Public Variables
+	// Public Members
 	static enum class state {
 		unitialized,
 		idle,
@@ -21,7 +21,7 @@ public:
 
 private:
 
-	// Private Variables
+	// Private Members
 	static int					rate;
 	static int					interval;
 	static state				status;
