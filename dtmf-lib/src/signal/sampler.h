@@ -1,9 +1,11 @@
+#pragma once
+
 //// Public Declarations [Interface] //////////////////////////////////////////////////////////////////////////////////////////////
 
 namespace sampler
 {
 	// Public Members
-		enum class state {
+	enum class state {
 		unitialized,
 		idle,
 		running,

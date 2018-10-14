@@ -9,7 +9,6 @@
 
 namespace sampler
 {
-
 	// Private Members
 	int					rate		= 44100;
 	int					interval	= 50;
@@ -21,7 +20,6 @@ namespace sampler
 
 	// Private Methods
 	void perform();
-	
 }
 
 //// Method Definitions ///////////////////////////////////////////////////////////////////////////////////////////////////////////
