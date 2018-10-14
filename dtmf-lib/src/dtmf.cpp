@@ -22,7 +22,7 @@ void dtmf::testGeneratorSequence()
 	generator::playbackSequence(test, 50);
 }
 
-void dtmf::testSamplerDecoder()
+void dtmf::testSampler()
 {
 	// Namespace Method
 	sampler::init(&testGeneratorSequence);

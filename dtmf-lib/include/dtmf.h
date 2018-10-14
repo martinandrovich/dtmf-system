@@ -4,5 +4,5 @@ namespace dtmf
 {
 	void testGenerator();
 	void testGeneratorSequence();
-	void testSamplerDecoder();
+	void testSampler();
 }
