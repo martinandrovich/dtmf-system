@@ -25,7 +25,7 @@ namespace sampler
 		int					interval	= 50;
 		state				status		= state::unitialized;
 		std::vector<int>	buffer;
-		std::thread*		performer;
+		std::thread			performer;
 
 		void(*callback)()				= nullptr;
 	}
@@ -37,7 +37,7 @@ void sampler::init(void(*callback)())
 	std::cout << "Setting up thread...\n";
 
 	sampler::callback = callback;
-	performer = new std::thread(&sampler::perform);
+	performer = std::thread(&sampler::perform);
 
 	status = state::idle;
 }
@@ -52,14 +52,11 @@ void sampler::run()
 
 void sampler::end()
 {
+	if (status == state::unitialized)
+		return;
 
 	status = state::unitialized;
-
-	if (performer != nullptr)
-	{
-		performer->join();
-		delete performer;
-	}
+	performer.join();
 }
 
 void sampler::perform()

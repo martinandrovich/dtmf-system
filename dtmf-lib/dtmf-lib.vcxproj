@@ -162,6 +162,7 @@
     <ClInclude Include="src\signal\decoder.h" />
     <ClInclude Include="src\signal\generator.h" />
     <ClInclude Include="src\signal\sampler.h" />
+    <ClInclude Include="src\signal\sampler2.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\dtmf.cpp" />
@@ -170,6 +171,7 @@
     <ClCompile Include="src\signal\decoder.cpp" />
     <ClCompile Include="src\signal\generator.cpp" />
     <ClCompile Include="src\signal\sampler.cpp" />
+    <ClCompile Include="src\signal\sampler2.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

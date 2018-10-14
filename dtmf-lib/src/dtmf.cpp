@@ -5,6 +5,7 @@
 #include "dtmf.h"
 #include "signal/generator.h"
 #include "signal/sampler.h"
+#include "signal/sampler2.h"
 
 void dtmf::testGenerator()
 {	
@@ -23,6 +24,11 @@ void dtmf::testGeneratorSequence()
 
 void dtmf::testSamplerDecoder()
 {
+	// Namespace Method
 	sampler::init(&testGeneratorSequence);
 	sampler::run();
+
+	// Static Class (Singleton)
+	sampler2::init(&testGeneratorSequence);
+	sampler2::run();
 }
