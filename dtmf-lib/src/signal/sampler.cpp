@@ -9,26 +9,18 @@
 namespace sampler
 {
 
+	// Private Variables
+	int					rate		= 44100;
+	int					interval	= 50;
+	state				status		= state::unitialized;
+	std::vector<int>	buffer;
+	std::thread			performer;
+
+	void(*callback)()				= nullptr;
+
 	// Private Methods
 	void perform();
 	
-	// Private Variables
-	namespace
-	{
-		enum class state {
-			unitialized,
-			idle,
-			running,
-		};
-
-		int					rate		= 44100;
-		int					interval	= 50;
-		state				status		= state::unitialized;
-		std::vector<int>	buffer;
-		std::thread			performer;
-
-		void(*callback)()				= nullptr;
-	}
 }
 
 //// Private Method Definitions ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -73,4 +65,9 @@ void sampler::perform()
 
 		std::this_thread::sleep_for(1000ms);
 	}
+}
+
+sampler::state sampler::getState()
+{
+	return sampler::status;
 }

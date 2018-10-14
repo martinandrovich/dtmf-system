@@ -27,8 +27,8 @@ void dtmf::testSamplerDecoder()
 	// Namespace Method
 	sampler::init(&testGeneratorSequence);
 	sampler::run();
-
-	// Static Class (Singleton)
-	sampler2::init(&testGeneratorSequence);
-	sampler2::run();
+	
+	//// Static Class (Singleton)
+	//sampler2::init(&testGeneratorSequence);
+	//sampler2::run();
 }
