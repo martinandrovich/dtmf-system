@@ -20,3 +20,9 @@ void dtmf::testGeneratorSequence()
 	std::vector<int> test = { 2, 0, 13, 7, 4 };
 	generator::playbackSequence(test, 50);
 }
+
+void dtmf::testSamplerDecoder()
+{
+	sampler::init(&testGeneratorSequence);
+	sampler::run();
+}
