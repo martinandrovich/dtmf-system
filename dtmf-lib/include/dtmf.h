@@ -2,7 +2,7 @@
 
 namespace dtmf
 {
-	void testFunction();
-	void testFunction2();
-	void testFunction3();
+	void testGenerator();
+	void testGeneratorSequence();
+	void testSamplerDecoder();
 }

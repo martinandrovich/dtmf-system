@@ -24,6 +24,12 @@
     <ClInclude Include="src\signal\generator.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\node\node.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\signal\sampler.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\dtmf.cpp">
@@ -33,6 +39,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\signal\generator.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\node\node.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\signal\sampler.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

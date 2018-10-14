@@ -158,12 +158,16 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\dtmf.h" />
+    <ClInclude Include="src\node\node.h" />
     <ClInclude Include="src\signal\generator.h" />
+    <ClInclude Include="src\signal\sampler.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\dtmf.cpp" />
+    <ClCompile Include="src\node\node.cpp" />
     <ClCompile Include="src\signal\constants.h" />
     <ClCompile Include="src\signal\generator.cpp" />
+    <ClCompile Include="src\signal\sampler.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
