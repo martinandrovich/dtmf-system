@@ -6,10 +6,15 @@
 
 #include "generator.h"
 
-// ## Global Definitions & Initializations ########################################################################################
+//// Private Declarations /////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+namespace generator
+{
+	// Private Members
+	sf::Sound*			player = new sf::Sound;
+}
 
-// ## Methods #####################################################################################################################
+//// Method Definitions ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 // Generate an array of samples from two given frequencies; return a pointer to a heap-allocated SFML SoundBuffer object
 sf::SoundBuffer* generator::generateSamples(uint f1, uint f2, uint duration, uint amplitude, float fadePercentage, uint sampleRate)
@@ -65,7 +70,7 @@ sf::SoundBuffer* generator::generateDTMF(uint tone, uint duration, uint amplitud
 
 }
 
-// Playback a tone for a duration; spinlock if allready playing
+// Playback a tone for a duration; spinlock while playing
 void generator::playback(uint tone, uint duration)
 {
 	// Create buffer
@@ -83,6 +88,7 @@ void generator::playback(uint tone, uint duration)
 	delete buffer;
 }
 
+// Playback a sequence of tones for a duration and pause between; spinlock while playing
 void generator::playbackSequence(std::vector<int> &sequence, int duration, int pause)
 {
 	for (auto i : sequence)
