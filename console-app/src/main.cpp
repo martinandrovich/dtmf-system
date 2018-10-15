@@ -6,8 +6,8 @@ int main()
 	
 	std::cout << "Ear Rape Simulator 1.0\n";
 
-	std::cout << "Testing Generator Sequence\n";
-	dtmf::testSampler();
+	std::cout << "Testing Decoder/Sampler\n";
+	dtmf::testDecodeSample();
 	//dtmf::testGeneratorSequence();
 	
 	std::cin.get();
