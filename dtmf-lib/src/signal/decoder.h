@@ -10,12 +10,11 @@ namespace decoder
 		unitialized,
 		idle,
 		running,
+		working
 	};
 
 	// Public Methods
-	void init(void(*callback)());
 	void init(void(*callback)(std::bitset<3> payload));
 	void run();
-	void run(void(*callback)());
 	void end();
 }

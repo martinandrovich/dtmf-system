@@ -1,6 +1,9 @@
+#include <iostream>
 #include <thread>
 #include <vector>
 #include <queue>
+#include <stdlib.h>
+#include <Windows.h>
 
 #include "decoder.h"
 #include "sampler.h"
@@ -12,65 +15,91 @@ namespace decoder
 	// Private Members
 	state							status = state::unitialized;
 	std::queue<std::vector<float>>	queue;
-	std::thread						performer;
+	std::thread						worker;
 
-	void(*callback)() = nullptr;
+	void(*callback)(std::bitset<3> payload);
 
 	// Private Methods
-	void perform();
-	void add(std::vector<float> &samples);
+	void thread();
+	void add(std::vector<float> samples);
 	void decode(std::vector<float> &samples);
 }
 
 //// Method Definitions ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-void decoder::init(void(*callback)())
+// Initialize the decoder
+void decoder::init(void(*callback)(std::bitset<3> payload))
 {
 	decoder::callback = callback;
-	performer = std::thread(&perform);
+	decoder::worker = std::thread(&decoder::thread);
+
+	sampler::init(&add);
+	
+	decoder::status = state::idle;
 }
 
-void decoder::run(void(*callback)())
+// Start the decoder
+void decoder::run()
 {
-	if (status == state::unitialized)
-		init(callback);
+	if (decoder::status == state::unitialized)
+		return;
 
-	status == state::idle;
+	sampler::run();
+	decoder::status = state::running;
 }
 
+// End the decoder
 void decoder::end()
 {
 	// end
 
-	performer.join();
+	decoder::status = state::unitialized;
+	decoder::worker.join();
 }
 
-void decoder::perform()
+// Thread function
+void decoder::thread()
 {
 	using namespace std::literals::chrono_literals;
 
 	while (true)
 	{
-		if (status != state::idle)
+		
+		if (decoder::status != state::running)
 			continue;
 		
-		if (!queue.empty())
-			decode(queue.front());	// needs mutex management
+		if (decoder::queue.empty())
+			continue;
+
+		decoder::decode(decoder::queue.front());	// needs mutex management
 	}
 }
 
-void decoder::add(std::vector<float> &samples)
-{
-	queue.push(samples);	// needs mutex management
+// Add a (copy of) vector of samples to decoding queue
+void decoder::add(std::vector<float> samples)
+{	
+	std::cout << "[QUEUE ADD] Adding to queue with [" << decoder::queue.size() << "] elements.\n";
+	decoder::queue.push(samples);	// needs mutex management
 }
 
+// Decode an element from the queue
 void decoder::decode(std::vector<float> &samples)
 {
-	status == state::running;
-	std::bitset<3> payload("010");
+	decoder::status == state::working;
+	std::bitset<3> fakePayload("010");
 
 	// decode
+	std::cout << "[DECODING] Decoding...\n";
+	
+	for (auto s : samples)
+	{
+		auto p = rand() % 5000 + 100;
+		std::cout << s << " " << std::endl;
+		Sleep(p);
+	}
 
-	queue.pop();	// needs mutex management
-	callback();
+	decoder::queue.pop();
+	decoder::callback(fakePayload);
+
+	decoder::status == state::running;
 }
