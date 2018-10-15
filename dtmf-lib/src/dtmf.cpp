@@ -1,12 +1,13 @@
 #include <iostream>
 #include <vector>
+#include <bitset>
 #include <Windows.h>
 
 #include "dtmf.h"
+
 #include "signal/generator.h"
 #include "signal/decoder.h"
 #include "signal/sampler.h"
-#include "signal/sampler2.h"
 
 void dtmf::testGenerator()
 {	
@@ -23,18 +24,13 @@ void dtmf::testGeneratorSequence()
 	generator::playbackSequence(test, 50);
 }
 
-void dtmf::testSampler()
+void logPayload(std::bitset<3> payload)
 {
-	// Namespace Method
-	sampler::init(&testGeneratorSequence);
-	sampler::run();
-	
-	//// Static Class (Singleton)
-	//sampler2::init(&testGeneratorSequence);
-	//sampler2::run();
+	std::cout << "[PAYLOAD] " << payload.to_string() << std::endl;
 }
 
-void dtmf::testDecoder()
+void dtmf::testDecodeSample()
 {
-	decoder::run(&testGeneratorSequence);
+	decoder::init(&logPayload);
+	decoder::run();
 }
