@@ -85,7 +85,7 @@ void decoder::add(std::vector<float> samples)
 // Decode an element from the queue
 void decoder::decode(std::vector<float> &samples)
 {
-	decoder::status == state::working;
+	decoder::status = state::working;
 	std::bitset<3> fakePayload("010");
 
 	// decode
@@ -101,5 +101,5 @@ void decoder::decode(std::vector<float> &samples)
 	decoder::queue.pop();
 	decoder::callback(fakePayload);
 
-	decoder::status == state::running;
+	decoder::status = state::running;
 }
