@@ -29,28 +29,28 @@ namespace sampler
 void sampler::init(void(*callback)(std::vector<float> data))
 {
 	sampler::callback = callback;
-	worker = std::thread(&sampler::thread);
+	sampler::worker = std::thread(&sampler::thread);
 
-	status = state::idle;
+	sampler::status = state::idle;
 }
 
 // Start the sampler
 void sampler::run()
 {
-	if (status == state::unitialized)
+	if (sampler::status == state::unitialized)
 		return;
 
-	status = state::running;
+	sampler::status = state::running;
 }
 
-// End the sampler (thread still active)
+// End the sampler
 void sampler::end()
 {
-	if (status == state::unitialized)
+	if (sampler::status == state::unitialized)
 		return;
 
-	status = state::unitialized;
-	worker.join();
+	sampler::status = state::unitialized;
+	sampler::worker.join();
 }
 
 // Thread function
@@ -60,15 +60,16 @@ void sampler::thread()
 
 	while (true)
 	{
-		if (status != state::idle)
+		if (sampler::status != state::running)
 			continue;
 
 		// Do some sampling
-		std::cout << "Sampling...\n";
-		std::this_thread::sleep_for(1000ms);
-		std::vector<float> fakeData = { 1.2, 20.f, 10.f, 420.0, 0.01 };
-		
-		callback(fakeData);
+		std::cout << "[SAMPLING] Generating samples...\n";
+		std::vector<float> fakeData = { 1, 2, 3 };
+
+		std::this_thread::sleep_for(5000ms);
+
+		sampler::callback(fakeData);		
 	}
 }
 
