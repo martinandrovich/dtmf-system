@@ -12,11 +12,10 @@ namespace sampler
 	};
 	
 	// Public Methods
-	void	init(void(*callback)());
+	void	init(void(*callback)(std::vector<float> data));
 	void	run();
 	void	end();
 	void	flush();
 
 	sampler::state	getState();
-	
 }
