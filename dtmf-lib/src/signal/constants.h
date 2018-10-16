@@ -2,6 +2,8 @@
 
 // _ //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+using uint = unsigned int;
+
 constexpr auto PI					= 3.141592653589732;
 constexpr auto DURATION				= 500;							// Default signal duration [ms]
 constexpr auto PAUSE				= 20;							// Default signal pause [ms]
