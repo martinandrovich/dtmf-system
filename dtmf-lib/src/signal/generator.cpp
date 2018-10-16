@@ -1,7 +1,4 @@
 #pragma once
-#include <iostream>
-#include <cmath>
-#include <vector>
 #include <Windows.h>
 
 #include "generator.h"
@@ -97,4 +94,16 @@ void generator::playbackSequence(std::vector<int> &sequence, int duration, int p
 		Sleep(pause); // BAD IMPLEMENTATION !!!!
 	}
 		
+}
+
+// Generate a buffer of samples to a vector (sf::SoundBuffer<Int16> -> std::vector<short>)
+std::vector<short> convertBuffer(sf::SoundBuffer& buffer)
+{
+	const short* data = &buffer.getSamples()[0]; // Int16*
+	const int size = buffer.getSampleCount();
+
+	std::vector<sf::Int16> samples(data, data + size);
+	//std::vector<sf::Int16> samples((const short*)&buffer.getSamples()[0], (const short*)&buffer.getSamples()[0] + (int)buffer.getSampleCount());
+
+	return samples;
 }
