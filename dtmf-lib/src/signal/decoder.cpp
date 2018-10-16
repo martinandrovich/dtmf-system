@@ -1,5 +1,6 @@
 #include <iostream>
 #include <thread>
+#include <mutex>
 #include <vector>
 #include <queue>
 #include <stdlib.h>
@@ -15,6 +16,7 @@ namespace decoder
 	// Private Members
 	state							status = state::unitialized;
 	std::queue<std::vector<float>>	queue;
+	std::mutex						queueMutex;
 	std::thread						worker;
 
 	void(*callback)(std::bitset<3> payload);
@@ -67,38 +69,51 @@ void decoder::thread()
 		
 		if (decoder::status != state::running)
 			continue;
-		
-		if (decoder::queue.empty())
-			continue;
 
-		decoder::decode(decoder::queue.front());	// needs mutex management
+		decoder::queueMutex.lock();
+
+		if (decoder::queue.empty())								// better done with a condition variable?
+		{
+			decoder::queueMutex.unlock();
+			continue;
+		}
+
+		auto samplesCopy = decoder::queue.front();				// make copy to faster unlock queue
+		decoder::queue.pop();
+		decoder::queueMutex.unlock();
+
+		decoder::decode(samplesCopy);
+		
 	}
 }
 
 // Add a (copy of) vector of samples to decoding queue
 void decoder::add(std::vector<float> samples)
 {	
-	std::cout << "[QUEUE ADD] Adding to queue with [" << decoder::queue.size() << "] elements.\n";
-	decoder::queue.push(samples);	// needs mutex management
+	decoder::queueMutex.lock();
+
+	std::cout << "[QUEUE] Adding to queue with [" << decoder::queue.size() << "] elements.\n";
+	decoder::queue.push(samples);
+
+	decoder::queueMutex.unlock();
 }
 
 // Decode an element from the queue
 void decoder::decode(std::vector<float> &samples)
 {
 	decoder::status = state::working;
-	std::bitset<3> fakePayload("010");
-
+	
 	// decode
-	std::cout << "[DECODING] Decoding...\n";
+	std::cout << "[DECODER] Decoding...\n";
+	std::bitset<3> fakePayload("010");
 	
 	for (auto s : samples)
 	{
 		auto p = rand() % 5000 + 100;
-		std::cout << s << " " << std::endl;
+		std::cout << s  << std::endl;
 		Sleep(p);
 	}
 
-	decoder::queue.pop();
 	decoder::callback(fakePayload);
 
 	decoder::status = state::running;
