@@ -11,8 +11,8 @@
 namespace sampler
 {
 	// Private Members
-	int					rate		= SAMPLE_RATE;
-	int					interval	= SAMPLE_INTERVAL;
+	int					rate;
+	int					interval;
 	state				status		= state::unitialized;
 	std::vector<float>	buffer;
 	std::thread			worker;
@@ -26,8 +26,10 @@ namespace sampler
 //// Method Definitions ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 // Initialize the sampler
-void sampler::init(void(*callback)(std::vector<float> data))
+void sampler::init(void(*callback)(std::vector<float> data), int interval, int rate)
 {
+	sampler::interval = interval;
+	sampler::rate = rate;
 	sampler::callback = callback;
 	sampler::worker = std::thread(&sampler::thread);
 
