@@ -4,8 +4,6 @@
 
 namespace generator
 {
-	using uint = unsigned int;
-
 	// Public Members
 	enum class state {
 		idle,
