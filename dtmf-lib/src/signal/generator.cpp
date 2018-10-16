@@ -1,6 +1,4 @@
 #pragma once
-#include <Windows.h>
-
 #include "generator.h"
 
 //// Private Declarations /////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -9,6 +7,10 @@ namespace generator
 {
 	// Private Members
 	sf::Sound*			player = new sf::Sound;
+
+	const int freqLow[4]	= {  697,  770,  852,  941 };
+	const int freqHigh[4]	= { 1209, 1336, 1477, 1633 };
+
 }
 
 //// Method Definitions ///////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -58,13 +60,8 @@ sf::SoundBuffer* generator::generateDTMF(uint tone, uint duration, uint amplitud
 	if (tone > 15)
 		return nullptr;
 
-	// Lists of frequencies
-	int freqLow[4]	= {  697,  770,  852,  941 };
-	int freqHigh[4] = { 1209, 1336, 1477, 1633 };
-
 	// Return buffer generated from an appropriate set of frequencies
-	return generator::generateSamples(freqLow[tone / 4], freqHigh[tone % 4], duration, amplitude);
-
+	return generator::generateSamples(generator::freqLow[tone / 4], generator::freqHigh[tone % 4], duration, amplitude);
 }
 
 // Playback a tone for a duration; spinlock while playing
@@ -74,11 +71,11 @@ void generator::playback(uint tone, uint duration)
 	auto buffer = generateDTMF(tone, duration);
 
 	// Set buffer and play
-	player->setBuffer(*buffer);
-	player->play();
+	generator::player->setBuffer(*buffer);
+	generator::player->play();
 	
 	// Wait while playing
-	while (player->getStatus() == player->Playing)
+	while (generator::player->getStatus() == generator::player->Playing)
 		;
 
 	// Cleanup
@@ -88,16 +85,15 @@ void generator::playback(uint tone, uint duration)
 // Playback a sequence of tones for a duration and pause between; spinlock while playing
 void generator::playbackSequence(std::vector<int> &sequence, int duration, int pause)
 {
-	for (auto i : sequence)
+	for (const auto &i : sequence)
 	{
-		playback(i, duration);
+		generator::playback(i, duration);
 		Sleep(pause); // BAD IMPLEMENTATION !!!!
 	}
-		
 }
 
 // Generate a buffer of samples to a vector (sf::SoundBuffer<Int16> -> std::vector<short>)
-std::vector<short> convertBuffer(sf::SoundBuffer& buffer)
+std::vector<short> generator::convertBuffer(sf::SoundBuffer& buffer)
 {
 	const short* data = &buffer.getSamples()[0]; // Int16*
 	const int size = buffer.getSampleCount();
@@ -106,4 +102,16 @@ std::vector<short> convertBuffer(sf::SoundBuffer& buffer)
 	//std::vector<sf::Int16> samples((const short*)&buffer.getSamples()[0], (const short*)&buffer.getSamples()[0] + (int)buffer.getSampleCount());
 
 	return samples;
+}
+
+void generator::exportBuffer(sf::SoundBuffer& buffer, std::string filename)
+{
+	auto samples = generator::convertBuffer(buffer);
+
+	std::ofstream outFile(filename + ".txt");
+
+	for (const auto &s : samples)
+		outFile << s << "\n";
+
+	outFile.close();
 }
