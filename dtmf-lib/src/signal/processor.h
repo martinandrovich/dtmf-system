@@ -1,0 +1,13 @@
+#pragma once
+
+//// Public Declarations [Interface] //////////////////////////////////////////////////////////////////////////////////////////////
+
+namespace processor
+{
+	// Public Members
+
+
+	// Public Methods
+	void equalize();
+	void fft();
+}
