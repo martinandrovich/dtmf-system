@@ -3,11 +3,13 @@
 #include <mutex>
 #include <vector>
 #include <queue>
+#include <array>
 #include <stdlib.h>
 #include <Windows.h>
 
 #include "decoder.h"
 #include "sampler.h"
+#include "processor.h"
 
 //// Private Declarations /////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -19,7 +21,7 @@ namespace decoder
 	std::mutex						queueMutex;
 	std::thread						worker;
 
-	void(*callback)(std::bitset<3> payload);
+	void(*callback)(uint tone);
 
 	// Private Methods
 	void thread();
@@ -30,7 +32,7 @@ namespace decoder
 //// Method Definitions ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 // Initialize the decoder
-void decoder::init(void(*callback)(std::bitset<3> payload))
+void decoder::init(void(*callback)(uint toneID))
 {
 	decoder::callback = callback;
 	decoder::worker = std::thread(&decoder::thread);
@@ -98,20 +100,35 @@ void decoder::add(std::vector<short> samples)
 	decoder::queueMutex.unlock();
 }
 
+// Convert DTMF frequencies to tone (id); return unsigned int
+int decoder::convertDTMF(std::array<int, 2> positions)
+{	
+	int indexLow = positions[0];
+	int indexHigh = positions[1];
+	
+	if (indexLow * indexHigh < 0)
+		return -1;
+	
+	return (indexLow * 4 + indexHigh);
+}
+
 // Decode an element from the queue
 void decoder::decode(std::vector<short> &samples)
-{
-	using namespace std::literals::chrono_literals;
-	
+{	
 	decoder::status = state::working;
 	
 	// decode
-	std::cout << "[DECODER] Decoding [" << samples.size() << "] samples...\n";
-	std::bitset<3> fakePayload("010");
+	//std::cout << "[DECODER] Decoding [" << samples.size() << "] samples...\n\n";
+	
+	auto data = processor::getDTMFPositions(samples);
+	
+	//auto data2 = processor::goertzelArray(samples);
+	//processor::printGoertzelArray(data2);
 
-	std::this_thread::sleep_for(1000ms);
+	auto toneID = convertDTMF(data);
 
-	decoder::callback(fakePayload);
+	if (toneID >= 0)
+		callback(toneID);
 
 	decoder::status = state::running;
 }

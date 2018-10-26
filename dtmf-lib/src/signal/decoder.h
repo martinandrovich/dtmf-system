@@ -1,4 +1,5 @@
 #pragma once
+#include "constants.h"
 #include <bitset>
 
 //// Public Declarations [Interface] //////////////////////////////////////////////////////////////////////////////////////////////
@@ -14,7 +15,9 @@ namespace decoder
 	};
 
 	// Public Methods
-	void init(void(*callback)(std::bitset<3> payload));
+	void init(void(*callback)(uint toneID));
 	void run();
 	void end();
+
+	int convertDTMF(std::array<int, 2> positions);
 }
