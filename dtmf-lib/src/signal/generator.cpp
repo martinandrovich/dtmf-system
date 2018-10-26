@@ -8,9 +8,6 @@ namespace generator
 	// Private Members
 	sf::Sound*			player = new sf::Sound;
 
-	const int freqLow[4]	= {  697,  770,  852,  941 };
-	const int freqHigh[4]	= { 1209, 1336, 1477, 1633 };
-
 }
 
 //// Method Definitions ///////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -54,21 +51,22 @@ sf::SoundBuffer* generator::generateSamples(uint f1, uint f2, uint duration, uin
 }
 
 // Generate an array of samples from a given tone (char 0-D); return a pointer to a heap-allocated SFML SoundBuffer object
-sf::SoundBuffer* generator::generateDTMF(uint tone, uint duration, uint amplitude, float fadePercentage, uint sampleRate)
+sf::SoundBuffer* generator::generateDTMF(uint toneID, uint duration, uint amplitude, float fadePercentage, uint sampleRate)
 {
 	// Check if valid tone input
-	if (tone > 15)
+	if (toneID > 15)
 		return nullptr;
 
 	// Return buffer generated from an appropriate set of frequencies
-	return generator::generateSamples(generator::freqLow[tone / 4], generator::freqHigh[tone % 4], duration, amplitude);
+	//return generator::generateSamples(freqLow[toneID / 4], freqHigh[toneID % 4], duration, amplitude);
+	return generator::generateSamples(freq[toneID / 4], freq[(toneID % 4) + 4], duration, amplitude);
 }
 
 // Playback a tone for a duration; spinlock while playing
-void generator::playback(uint tone, uint duration)
+void generator::playback(uint toneID, uint duration)
 {
 	// Create buffer
-	auto buffer = generateDTMF(tone, duration);
+	auto buffer = generateDTMF(toneID, duration);
 
 	// Set buffer and play
 	generator::player->setBuffer(*buffer);
