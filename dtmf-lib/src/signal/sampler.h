@@ -13,7 +13,7 @@ namespace sampler
 	};
 	
 	// Public Methods
-	void	init(void(*callback)(std::vector<float> data), int interval = SAMPLE_INTERVAL, int rate = SAMPLE_RATE);
+	void	init(void(*callback)(std::vector<short> data), int interval = SAMPLE_INTERVAL, int rate = SAMPLE_RATE);
 	void	run();
 	void	end();
 	void	flush();

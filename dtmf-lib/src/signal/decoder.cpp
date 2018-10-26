@@ -15,7 +15,7 @@ namespace decoder
 {
 	// Private Members
 	state							status = state::unitialized;
-	std::queue<std::vector<float>>	queue;
+	std::queue<std::vector<short>>	queue;
 	std::mutex						queueMutex;
 	std::thread						worker;
 
@@ -23,8 +23,8 @@ namespace decoder
 
 	// Private Methods
 	void thread();
-	void add(std::vector<float> samples);
-	void decode(std::vector<float> &samples);
+	void add(std::vector<short> samples);
+	void decode(std::vector<short> &samples);
 }
 
 //// Method Definitions ///////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -88,31 +88,28 @@ void decoder::thread()
 }
 
 // Add a (copy of) vector of samples to decoding queue
-void decoder::add(std::vector<float> samples)
+void decoder::add(std::vector<short> samples)
 {	
 	decoder::queueMutex.lock();
 
-	std::cout << "[QUEUE] Adding to queue with [" << decoder::queue.size() << "] elements.\n";
+	//std::cout << "[QUEUE] Adding to queue with [" << decoder::queue.size() << "] elements.\n";
 	decoder::queue.push(samples);
 
 	decoder::queueMutex.unlock();
 }
 
 // Decode an element from the queue
-void decoder::decode(std::vector<float> &samples)
+void decoder::decode(std::vector<short> &samples)
 {
+	using namespace std::literals::chrono_literals;
+	
 	decoder::status = state::working;
 	
 	// decode
-	std::cout << "[DECODER] Decoding...\n";
+	std::cout << "[DECODER] Decoding [" << samples.size() << "] samples...\n";
 	std::bitset<3> fakePayload("010");
-	
-	for (auto s : samples)
-	{
-		auto p = rand() % 5000 + 100;
-		std::cout << s  << std::endl;
-		Sleep(p);
-	}
+
+	std::this_thread::sleep_for(1000ms);
 
 	decoder::callback(fakePayload);
 

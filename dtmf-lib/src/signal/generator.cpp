@@ -98,7 +98,7 @@ std::vector<short> generator::convertBuffer(sf::SoundBuffer& buffer)
 	const short* data = &buffer.getSamples()[0]; // Int16*
 	const int size = buffer.getSampleCount();
 
-	std::vector<sf::Int16> samples(data, data + size);
+	std::vector<short> samples(data, data + size);
 	//std::vector<sf::Int16> samples((const short*)&buffer.getSamples()[0], (const short*)&buffer.getSamples()[0] + (int)buffer.getSampleCount());
 
 	return samples;
