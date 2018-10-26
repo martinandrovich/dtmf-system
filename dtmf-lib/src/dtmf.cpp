@@ -27,8 +27,9 @@ void dtmf::testGeneratorSequence()
 	generator::playbackSequence(test, 50);
 }
 
-void logPayload(uint toneID)
+void keyPress(int key, int pause)
 {
+
 	INPUT ip;
 
 	// Set up a generic keyboard event.
@@ -37,17 +38,62 @@ void logPayload(uint toneID)
 	ip.ki.time = 0;
 	ip.ki.dwExtraInfo = 0;
 
-	// Press the "A" key
-	ip.ki.wVk = 0x41; // virtual-key code for the "a" key
+	// Press the key
+	ip.ki.wVk = key; // virtual-key code for the "a" key
 	ip.ki.dwFlags = 0; // 0 for key press
 	SendInput(1, &ip, sizeof(INPUT));
 
-	// Release the "A" key
+	Sleep(pause);
+
+	// Release the key
 	ip.ki.dwFlags = KEYEVENTF_KEYUP; // KEYEVENTF_KEYUP for key release
 	SendInput(1, &ip, sizeof(INPUT));
-
-	std::cout << "[PAYLOAD]: " << toneID << std::endl;
 }
+
+void logPayload(uint toneID)
+{
+	
+	std::cout << "[PAYLOAD]: " << toneID << std::endl;
+
+	// LEFT		= 0x25
+	// UP		= 0x26
+	// RIGHT	= 0x27
+	// DOWN		= 0x28
+	// ;		= 0xBA
+	
+	int pause = 50;
+
+	switch (toneID)
+	{
+	
+	//Left
+	case 0:
+		keyPress(0x25, pause);
+		break;
+
+	// Right
+	case 1:
+		keyPress(0x27, pause);
+		break;
+	
+	// Up
+	case 2:
+		keyPress(0x26, pause);
+		break;
+	
+	// Down
+	case 4:
+		keyPress(0x28, pause);
+		break;
+
+	// Plant
+	case 14:
+		keyPress(0xBA, 25);
+		break;
+	}
+}
+
+
 
 void dtmf::testDecodeSample()
 {
