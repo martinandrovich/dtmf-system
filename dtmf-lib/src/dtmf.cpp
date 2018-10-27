@@ -9,8 +9,6 @@
 
 #include "signal/generator.h"
 #include "signal/decoder.h"
-#include "signal/sampler.h"
-#include "signal/sampler2.h"
 
 //// Private Declarations /////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -23,8 +21,6 @@ namespace dtmf
 	void logPayload(uint toneID);
 	void executePayload(uint toneID);
 	void keyPress(int key, int pause);
-
-	sampler inst_sampler;
 }
 
 //// Method Definitions ///////////////////////////////////////////////////////////////////////////////////////////////////////////

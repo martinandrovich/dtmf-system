@@ -21,14 +21,13 @@ public:
 		processing
 	};
 
-	void	run();
 	state	getStatus();
 
 //// Private Declarations /////////////////////////////////////////////////////////////////////////////////////////////////////////
 private:
 	int					rate;
 	int					interval;
-	state				status = state::unitialized;
+	state				status;
 	std::vector<short>	buffer;
 
 	void(*callback)(std::vector<short> samples);

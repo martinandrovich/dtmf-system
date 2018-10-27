@@ -20,15 +20,16 @@ namespace decoder
 	std::queue<std::vector<short>>	queue;
 	std::mutex						queueMutex;
 	std::thread						worker;
+	sampler*						rec;
 
 	void(*callback)(uint tone);
 
 	// Private Methods
-	void					thread();
-	void					decode(std::vector<short> &samples);
-	void					appendQueue(std::vector<short> samples);
-	std::array<int, 2>		extractIndexes(std::array<float, 8> &goertzelArray);
-	int						extractToneID(std::array<int, 2> &indexes);
+	void							thread();
+	void							decode(std::vector<short> &samples);
+	void							appendQueue(std::vector<short> samples);
+	std::array<int, 2>				extractIndexes(std::array<float, 8> &goertzelArray);
+	int								extractToneID(std::array<int, 2> &indexes);
 }
 
 //// Method Definitions ///////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -39,7 +40,9 @@ void decoder::init(void(*callback)(uint toneID))
 	decoder::callback = callback;
 	decoder::worker = std::thread(&decoder::thread);
 
-	sampler::init(&appendQueue);
+	// init sampler
+	if (sampler::isAvailable())
+		rec = new sampler(&decoder::appendQueue);
 	
 	decoder::status = state::idle;
 }
@@ -50,15 +53,17 @@ void decoder::run()
 	if (decoder::status == state::unitialized)
 		return;
 
-	sampler::run();
+	// start sampler & update status
+	decoder::rec->start();
 	decoder::status = state::running;
 }
 
 // End the decoder
 void decoder::end()
 {
-	// stop the sampler
-	sampler::end();
+	// stop and delete sampler
+	decoder::rec->stop();
+	delete decoder::rec;
 
 	// update state + join thread
 	decoder::status = state::unitialized;
