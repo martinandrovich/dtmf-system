@@ -38,23 +38,24 @@ void processor::printGoertzelArray(std::array<float, 8> &sampleArray)
 // Run Goertzel algorithm on chunk of samples for a specific frequency; return float
 float processor::goertzel(std::vector<short> &samples, int frequency)
 {
-	int     k, i;
-	float   floatnumSamples;
-	float   omega, sine, cosine, coeff, q0, q1, q2, magnitude, real, imag;
-	int		numSamples = samples.size();
+	//float   omega, sine, cosine, coeff, q0, q1, q2, magnitude, real, imag;
 
-	float   scalingFactor = numSamples / 2.f;
+	// variable definitions
+	int		numSamples			= samples.size();
+	float   numSamplesFloat		= (float)numSamples;
+	float   scalingFactor		= numSamples / 2.f;
+	int		k					= (int)(0.5 + ((numSamplesFloat * frequency) / SAMPLE_RATE));
 
-	floatnumSamples = (float)numSamples;
-	k = (int)(0.5 + ((floatnumSamples * frequency) / SAMPLE_RATE));
-	omega = (2.f * PI * k) / floatnumSamples;
-	sine = sin(omega);
-	cosine = cos(omega);
-	coeff = 2.0 * cosine;
-	q0 = 0;
-	q1 = 0;
-	q2 = 0;
+	float	omega				= (2.f * PI * k) / numSamplesFloat;
+	float	sine				= sin(omega);
+	float	cosine				= cos(omega);
 
+	float	coeff				= 2.f * cosine;
+	float	q0					= 0;
+	float	q1					= 0;
+	float	q2					= 0;
+
+	// explain this pls						!!!!####!!!!¤¤¤¤!!!!%%%%!!!!
 	for (const auto &s : samples)
 	{
 		q0 = coeff * q1 - q2 + s;
@@ -62,12 +63,14 @@ float processor::goertzel(std::vector<short> &samples, int frequency)
 		q1 = q0;
 	}
 
-	// calculate the real and imaginary results
+	// calculate the real and imaginary results + magnitude
 	// scaling appropriately
-	real = (q1 - q2 * cosine) / scalingFactor;
-	imag = (q2 * sine) / scalingFactor;
+	float	real				= (q1 - q2 * cosine) / scalingFactor;
+	float	imag				= (q2 * sine) / scalingFactor;
+	float	magnitude			= sqrtf(real*real + imag * imag);
 
-	return sqrtf(real*real + imag * imag);
+	// return the magnitude
+	return magnitude;
 }
 
 std::array<float, 8> processor::goertzelArray(std::vector<short> &samples)
