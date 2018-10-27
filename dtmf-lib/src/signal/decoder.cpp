@@ -24,9 +24,12 @@ namespace decoder
 	void(*callback)(uint tone);
 
 	// Private Methods
-	void thread();
-	void add(std::vector<short> samples);
-	void decode(std::vector<short> &samples);
+	void					thread();
+	void					decode(std::vector<short> &samples);
+	void					appendQueue(std::vector<short> samples);
+	std::array<int, 2>		extractIndexes(std::array<float, 8> &goertzelArray);
+	int						extractToneID(std::array<int, 2> indexes);
+	
 }
 
 //// Method Definitions ///////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -37,7 +40,7 @@ void decoder::init(void(*callback)(uint toneID))
 	decoder::callback = callback;
 	decoder::worker = std::thread(&decoder::thread);
 
-	sampler::init(&add);
+	sampler::init(&appendQueue);
 	
 	decoder::status = state::idle;
 }
@@ -55,8 +58,10 @@ void decoder::run()
 // End the decoder
 void decoder::end()
 {
-	// end
+	// stop the sampler
+	sampler::end();
 
+	// update state + join thread
 	decoder::status = state::unitialized;
 	decoder::worker.join();
 }
@@ -64,33 +69,31 @@ void decoder::end()
 // Thread function
 void decoder::thread()
 {
-	using namespace std::literals::chrono_literals;
-
 	while (true)
-	{
-		
+	{		
 		if (decoder::status != state::running)
 			continue;
 
 		decoder::queueMutex.lock();
 
-		if (decoder::queue.empty())								// better done with a condition variable?
-		{
-			decoder::queueMutex.unlock();
-			continue;
-		}
+			if (decoder::queue.empty())								// better done with a condition variable?
+			{
+				decoder::queueMutex.unlock();
+				continue;
+			}
 
-		auto samplesCopy = decoder::queue.front();				// make copy to faster unlock queue
-		decoder::queue.pop();
+			auto samplesCopy = decoder::queue.front();				// make copy so that queue isn't blocked while decoding
+			decoder::queue.pop();
+
 		decoder::queueMutex.unlock();
-
-		decoder::decode(samplesCopy);
 		
+		// decode the copied samples
+		decoder::decode(samplesCopy);
 	}
 }
 
 // Add a (copy of) vector of samples to decoding queue
-void decoder::add(std::vector<short> samples)
+void decoder::appendQueue(std::vector<short> samples)
 {	
 	decoder::queueMutex.lock();
 
@@ -100,33 +103,76 @@ void decoder::add(std::vector<short> samples)
 	decoder::queueMutex.unlock();
 }
 
-// Convert DTMF frequencies to tone (id); return unsigned int
-int decoder::convertDTMF(std::array<int, 2> positions)
-{	
-	int indexLow = positions[0];
-	int indexHigh = positions[1];
-	
-	if (indexLow * indexHigh < 0)
+// Convert goertzelArray to indexes (row & column) of two most prominent frequencies; return array[2]
+std::array<int, 2> decoder::extractIndexes(std::array<float, 8> &goertzelArray)
+{
+	float magnitudeLowMax		= 0;
+	float magnitudeHighMax		= 0;
+
+	std::array<int, 2> indexes	= { -1, -1 };
+
+	// Iterate through array of goertzel magnitudes
+	for (uint i = 0; i < goertzelArray.size(); i++)
+	{
+		// define magnitude & threshold for current frequency index (i)
+		auto magnitude = goertzelArray[i];
+		auto threshold = freqThresholds[i];
+
+		// low frequencies
+		if (i < 4 && magnitude > threshold && magnitude > magnitudeLowMax)
+		{
+			magnitudeLowMax = magnitude;
+			indexes[0] = i;
+		}
+
+		// high frequencies
+		if (i >= 4 && magnitude > threshold && magnitude > magnitudeHighMax)
+		{
+			magnitudeHighMax = magnitude;
+			indexes[1] = (i - 4);
+		}
+	}
+
+	// return array of indexes
+	return indexes;
+}
+
+// Convert DTMF indexes (row & column) to toneID (0-15); return int
+int decoder::extractToneID(std::array<int, 2> indexes)
+{
+	int indexLow	= indexes[0];
+	int indexHigh	= indexes[1];
+
+	if ((indexLow * indexHigh) < 0)
 		return -1;
-	
+
 	return (indexLow * 4 + indexHigh);
 }
 
-// Decode an element from the queue
+// Decode an chunk of samples from the queue
 void decoder::decode(std::vector<short> &samples)
 {	
 	decoder::status = state::working;
 	
 	// decode
 	//std::cout << "[DECODER] Decoding [" << samples.size() << "] samples...\n\n";
-	
-	auto data = processor::getDTMFPositions(samples);
-	
-	//auto data2 = processor::goertzelArray(samples);
-	//processor::printGoertzelArray(data2);
 
-	auto toneID = convertDTMF(data);
+	// combine 5 latest sample chunks
+	;
 
+	// compile goertzelArray for all DTMF frequencies
+	auto goertzelArray = processor::goertzelArray(samples);
+
+	// check if deltaAmplitude is falling
+	;
+
+	// extract indexes (row & column) of most prominent frequencies
+	auto indexes = decoder::extractIndexes(goertzelArray);
+
+	// convert indexes to DTMF toneID
+	auto toneID = decoder::extractToneID(indexes);
+
+	// callback
 	if (toneID >= 0)
 		callback(toneID);
 
