@@ -33,7 +33,7 @@ Constants		: SOME_CONSTANT
 Classes / Namepspace	: someClass
 Structures		: someStructure
 Methods			: someMethod()
-Member Methods		: this->someMethod()
+Member Methods		: this->someMethod() || namespace::someMethod()
 Variables		: someVariable
-Member Variables	: this->someVariable
+Member Variables	: this->someVariable || namespace::someVariable
 ```
