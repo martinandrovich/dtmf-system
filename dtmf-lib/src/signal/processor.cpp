@@ -15,7 +15,7 @@ namespace processor
 //// Method Definitions ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 // Get average magnitue of Goertzel array; return float
-float getAverageAmplitude(std::array<float, 8> &sampleArray)
+float processor::getAverageAmplitude(std::array<float, 8> &sampleArray)
 {
 	float sum = 0.f;
 
@@ -25,17 +25,7 @@ float getAverageAmplitude(std::array<float, 8> &sampleArray)
 	return sum/8.f;
 }
 
-void processor::printGoertzelArray(std::array<float, 8> &sampleArray)
-{
-	std::cout << "Goertzel array:\n";
-
-	for (int i = 0; i < 8; i++)
-		std::cout << freq[i] << " : " << sampleArray[i] << " | ";
-
-	std::cout << "\n\n";
-}
-
-// Run Goertzel algorithm on chunk of samples for a specific frequency; return float
+// Run goertzel algorithm on chunk of samples for a specific frequency; return float
 float processor::goertzel(std::vector<short> &samples, int frequency)
 {
 	//float   omega, sine, cosine, coeff, q0, q1, q2, magnitude, real, imag;
@@ -73,6 +63,7 @@ float processor::goertzel(std::vector<short> &samples, int frequency)
 	return magnitude;
 }
 
+// Run goertzel algorithm on chunk of samples for all DTMF frequncies; return array[8] of magnitudes (float)
 std::array<float, 8> processor::goertzelArray(std::vector<short> &samples)
 {
 	std::array<float, 8> tempArray;
@@ -85,37 +76,13 @@ std::array<float, 8> processor::goertzelArray(std::vector<short> &samples)
 	return tempArray;
 }
 
-// Run Goertzel for all DTMF frequncies ... !!!
-std::array<int, 2> processor::getDTMFPositions(std::vector<short> &samples)
+// Print magnitudes of goertzelArray
+void processor::printGoertzelArray(std::array<float, 8> &sampleArray)
 {
-	std::array<float, 8> tempArray;
+	std::cout << "Goertzel array:\n";
 
-	float freqLow = 0;
-	float freqHigh = 0;
-
-	int indexHigh = -1;
-	int indexLow = -1;
-
-	// Iterate all possible DTMF frequencies
 	for (int i = 0; i < 8; i++)
-	{
-		// get magnitude for freq[i]
-		tempArray[i] = goertzel(samples, freq[i]);
+		std::cout << freq[i] << " : " << sampleArray[i] << " | ";
 
-		if (i < 4 && tempArray[i] > freqThresholds[i] && tempArray[i] > freqLow)
-		{
-			freqLow = tempArray[i];
-			indexLow = i;
-		}
-		else if (i >= 4 && tempArray[i] > freqThresholds[i] && tempArray[i] > freqHigh)
-		{
-			freqHigh = tempArray[i];
-			indexHigh = (i - 4);
-		}
-			
-	}
-
-	std::array<int, 2> data = { indexLow, indexHigh };
-
-	return data;
+	std::cout << "\n\n";
 }

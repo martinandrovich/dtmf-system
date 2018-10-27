@@ -11,7 +11,7 @@
 namespace processor
 {
 	// Public Members
-
+	;
 
 	// Public Methods
 	void equalize();
@@ -19,8 +19,7 @@ namespace processor
 
 	float					goertzel(std::vector<short> &samples, int frequency);
 	std::array<float, 8>	goertzelArray(std::vector<short> &samples);
-	std::array<int, 2>		getDTMFPositions(std::vector<short> &samples);
 
 	void					printGoertzelArray(std::array<float, 8> &sampleArray);
-
+	float					getAverageAmplitude(std::array<float, 8> &sampleArray);
 }
