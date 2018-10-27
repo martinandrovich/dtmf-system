@@ -27,16 +27,13 @@
     <ClInclude Include="src\node\node.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\signal\sampler.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="src\signal\decoder.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\signal\processor.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\signal\sampler2.h">
+    <ClInclude Include="src\signal\sampler.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -53,16 +50,13 @@
     <ClCompile Include="src\node\node.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\signal\sampler.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="src\signal\decoder.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\signal\processor.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\signal\sampler2.cpp">
+    <ClCompile Include="src\signal\sampler.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

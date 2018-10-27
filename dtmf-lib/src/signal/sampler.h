@@ -1,22 +1,41 @@
 #pragma once
+#include <SFML/Audio.hpp>
+#include <SFML/System/Time.hpp>
+
 #include "constants.h"
 
-//// Public Declarations [Interface] //////////////////////////////////////////////////////////////////////////////////////////////
-
-namespace sampler
+class sampler : public sf::SoundRecorder
 {
-	// Public Members
+//// Public Declarations [Interface] //////////////////////////////////////////////////////////////////////////////////////////////
+public:
+
+	// Constructor & Destructor
+	sampler(void(*callback)(std::vector<short> samples));
+	virtual ~sampler();
+
+	// Status Enum
 	enum class state {
 		unitialized,
 		idle,
-		running,
+		sampling,
+		processing
 	};
-	
-	// Public Methods
-	void	init(void(*callback)(std::vector<short> data), int interval = SAMPLE_INTERVAL, int rate = SAMPLE_RATE);
-	void	run();
-	void	end();
-	void	flush();
 
-	sampler::state	getState();
-}
+	void	run();
+	state	getStatus();
+
+//// Private Declarations /////////////////////////////////////////////////////////////////////////////////////////////////////////
+private:
+	int					rate;
+	int					interval;
+	state				status = state::unitialized;
+	std::vector<short>	buffer;
+
+	void(*callback)(std::vector<short> samples);
+
+//// Protected Declarations ///////////////////////////////////////////////////////////////////////////////////////////////////////
+protected:
+	virtual bool onStart() override;
+	virtual void onStop() override;
+	virtual bool onProcessSamples(const sf::Int16* samples, std::size_t sampleCount) override;
+};

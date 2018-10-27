@@ -1,138 +1,67 @@
-#include <thread>
-#include <chrono>
+#pragma once
 #include <vector>
 #include <iostream>
-#include <SFML/Audio.hpp>
-#include <SFML/System/Time.hpp>
 
 #include "sampler.h"
 
-//// Private Declarations /////////////////////////////////////////////////////////////////////////////////////////////////////////
+//// Constructor & Destructor /////////////////////////////////////////////////////////////////////////////////////////////////////
 
-namespace sampler
+// Default Constructor
+sampler::sampler(void(*callback)(std::vector<short> samples))
+	: callback(callback), rate(SAMPLE_RATE), interval(SAMPLE_INTERVAL), status(state::idle)
 {
-	// Private Constructs
-	class recorder : public sf::SoundRecorder
-	{
-	public:
-		recorder();
-		~recorder();
+	// set processing interval
+	this->setProcessingInterval(sf::milliseconds(this->interval));
 
-	protected:
-		virtual bool onStart() override;
-		virtual void onStop() override;
-		virtual bool onProcessSamples(const sf::Int16* samples, std::size_t sampleCount) override;
-	};
-	
-	// Private Members
-	int					rate;
-	int					interval;
-	state				status		= state::unitialized;
-	std::vector<float>	buffer;
-	std::thread			worker;
-	recorder*			rec;
+	// log
+	std::cout << "Initialized sampler with:\n";
+	std::cout << "SAMPLE RATE:\t\t"			<< this->rate << "Hz \n";
+	std::cout << "SAMPLE INTERVAL:\t\t "	<< this->interval << "ms \n";	
+}
 
-	void(*callback)(std::vector<short> data);
-
-	// Private Methods
-	void thread();
+// Destructor
+sampler::~sampler()
+{
 }
 
 //// Method Definitions ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-// Initialize the sampler
-void sampler::init(void(*callback)(std::vector<short> data), int interval, int rate)
-{
-	sampler::interval = interval;
-	sampler::rate = rate;
-	sampler::callback = callback;
-
-	if (recorder::isAvailable())
-		rec = new recorder;
-
-	//sampler::worker = std::thread(&sampler::thread);
-
-	sampler::status = state::idle;
-}
-
-// Start the sampler
+// ...
 void sampler::run()
 {
-	if (sampler::status == state::unitialized)
-		return;
-
-	sampler::status = state::running;
-}
-
-// End the sampler
-void sampler::end()
-{
-	if (sampler::status == state::unitialized)
-		return;
-
-	sampler::status = state::unitialized;
-	sampler::worker.join();
-
-	rec->stop();
-	delete rec;
-}
-
-// Thread function
-void sampler::thread()
-{
-	using namespace std::literals::chrono_literals;
-
-	while (true)
-	{
-		if (sampler::status != state::running)
-			continue;
-
-		// Do some sampling
-		std::cout << "[SAMPLING] Generating samples...\n";
-		std::vector<short> fakeData = { 1, 2, 3 };
-
-		std::this_thread::sleep_for(5000ms);
-
-		sampler::callback(fakeData);	
-	}
-}
-
-// Return the status variable
-sampler::state sampler::getState()
-{
-	return sampler::status;
-}
-
-
-//// Constructs Definitions ///////////////////////////////////////////////////////////////////////////////////////////////////////
-
-// Custom Recorder Constructor
-sampler::recorder::recorder()
-{
-	std::cout << sampler::interval << std::endl;
-	this->setProcessingInterval(sf::milliseconds(sampler::interval));
+	this->status = state::sampling;
 	this->start();
 }
 
-// Custom Recorder Destructor
-sampler::recorder::~recorder()
+// ...
+sampler::state sampler::getStatus()
 {
-	this->stop();
+	return this->status;
 }
 
-bool sampler::recorder::onStart()
+// ...
+bool sampler::onStart()
 {
 	return true;
 }
 
-void sampler::recorder::onStop() {}
-
-bool sampler::recorder::onProcessSamples(const sf::Int16* samples, std::size_t sampleCount)
+// ...
+void sampler::onStop()
 {
+}
+
+// ...
+bool sampler::onProcessSamples(const sf::Int16* samples, std::size_t sampleCount)
+{
+	if (this->status == state::idle)
+		return true;
+	
+	this->status = state::processing;
 	const short* data = &samples[0]; // Int16*
 
 	std::vector<short> samplesCopy(data, data + sampleCount);
-	sampler::callback(samplesCopy);
+	this->callback(samplesCopy);
 
+	this->status = state::sampling;
 	return true;
 }
