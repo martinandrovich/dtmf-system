@@ -1,9 +1,9 @@
 #include <iostream>
 #include <vector>
 #include <bitset>
+#include <Windows.h>
 
 #define WINVER 0x0500
-#include <Windows.h>
 
 #include "dtmf.h"
 
@@ -11,6 +11,22 @@
 #include "signal/decoder.h"
 #include "signal/sampler.h"
 
+//// Private Declarations /////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+namespace dtmf
+{
+	// Private Members
+	;
+
+	// Private Methods
+	void logPayload(uint toneID);
+	void executePayload(uint toneID);
+	void keyPress(int key, int pause);
+}
+
+//// Method Definitions ///////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+// Playback all DTMF tones for 200ms
 void dtmf::testGenerator()
 {	
 	for (int i = 0; i <= 16; i++)
@@ -18,16 +34,84 @@ void dtmf::testGenerator()
 		i = i % 16;
 		generator::playback(i, 200);
 	}	
-
 }
 
+// Playback some DTMF tone sequence for 50ms each
 void dtmf::testGeneratorSequence()
 {
 	std::vector<int> test = { 2, 0, 13, 7, 4 };
 	generator::playbackSequence(test, 50);
 }
 
-void keyPress(int key, int pause)
+// ...
+void dtmf::testDecodeLog()
+{
+	decoder::init(&dtmf::logPayload);
+	decoder::run();
+}
+
+// ...
+void dtmf::testDecodeKeyboard()
+{
+	decoder::init(&dtmf::executePayload);
+	decoder::run();
+}
+
+// ...
+void dtmf::logPayload(uint toneID)
+{
+	std::cout << "[PAYLOAD]: " << toneID << std::endl;
+}
+
+// ...
+void dtmf::executePayload(uint toneID)
+{
+
+	int keyMoveDuration = 50;
+	int keyPlantDuration = 25;
+
+	logPayload(toneID);
+
+	// LEFT		= 0x25
+	// UP		= 0x26
+	// RIGHT	= 0x27
+	// DOWN		= 0x28
+	// ;		= 0xBA
+
+	// execute key press in accordance with toneID
+
+	switch (toneID)
+	{
+
+	//Left
+	case 0:
+		keyPress(0x25, keyMoveDuration);
+		break;
+
+	// Right
+	case 1:
+		keyPress(0x27, keyMoveDuration);
+		break;
+
+	// Up
+	case 2:
+		keyPress(0x26, keyMoveDuration);
+		break;
+
+	// Down
+	case 4:
+		keyPress(0x28, keyMoveDuration);
+		break;
+
+	// Plant
+	case 14:
+		keyPress(0xBA, keyPlantDuration);
+		break;
+	}
+}
+
+// ...
+void dtmf::keyPress(int key, int pause)
 {
 
 	INPUT ip;
@@ -48,55 +132,4 @@ void keyPress(int key, int pause)
 	// Release the key
 	ip.ki.dwFlags = KEYEVENTF_KEYUP; // KEYEVENTF_KEYUP for key release
 	SendInput(1, &ip, sizeof(INPUT));
-}
-
-void logPayload(uint toneID)
-{
-	
-	std::cout << "[PAYLOAD]: " << toneID << std::endl;
-
-	// LEFT		= 0x25
-	// UP		= 0x26
-	// RIGHT	= 0x27
-	// DOWN		= 0x28
-	// ;		= 0xBA
-	
-	int pause = 50;
-
-	switch (toneID)
-	{
-	
-	//Left
-	case 0:
-		keyPress(0x25, pause);
-		break;
-
-	// Right
-	case 1:
-		keyPress(0x27, pause);
-		break;
-	
-	// Up
-	case 2:
-		keyPress(0x26, pause);
-		break;
-	
-	// Down
-	case 4:
-		keyPress(0x28, pause);
-		break;
-
-	// Plant
-	case 14:
-		keyPress(0xBA, 25);
-		break;
-	}
-}
-
-
-
-void dtmf::testDecodeSample()
-{
-	decoder::init(&logPayload);
-	decoder::run();
 }

@@ -1,8 +1,15 @@
 #pragma once
 
+//// Public Declarations [Interface] //////////////////////////////////////////////////////////////////////////////////////////////
+
 namespace dtmf
 {
+	// Public Members
+	;	
+	
+	// Public Methods
 	void testGenerator();
 	void testGeneratorSequence();
-	void testDecodeSample();
+	void testDecodeLog();
+	void testDecodeKeyboard();
 }
