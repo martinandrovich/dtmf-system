@@ -28,8 +28,7 @@ namespace decoder
 	void					decode(std::vector<short> &samples);
 	void					appendQueue(std::vector<short> samples);
 	std::array<int, 2>		extractIndexes(std::array<float, 8> &goertzelArray);
-	int						extractToneID(std::array<int, 2> indexes);
-	
+	int						extractToneID(std::array<int, 2> &indexes);
 }
 
 //// Method Definitions ///////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -126,7 +125,7 @@ std::array<int, 2> decoder::extractIndexes(std::array<float, 8> &goertzelArray)
 		}
 
 		// high frequencies
-		if (i >= 4 && magnitude > threshold && magnitude > magnitudeHighMax)
+		else if (i >= 4 && magnitude > threshold && magnitude > magnitudeHighMax)
 		{
 			magnitudeHighMax = magnitude;
 			indexes[1] = (i - 4);
@@ -138,7 +137,7 @@ std::array<int, 2> decoder::extractIndexes(std::array<float, 8> &goertzelArray)
 }
 
 // Convert DTMF indexes (row & column) to toneID (0-15); return int
-int decoder::extractToneID(std::array<int, 2> indexes)
+int decoder::extractToneID(std::array<int, 2> &indexes)
 {
 	int indexLow	= indexes[0];
 	int indexHigh	= indexes[1];
