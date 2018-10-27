@@ -18,6 +18,7 @@ namespace sampler
 		recorder();
 		~recorder();
 
+	protected:
 		virtual bool onStart() override;
 		virtual void onStop() override;
 		virtual bool onProcessSamples(const sf::Int16* samples, std::size_t sampleCount) override;
@@ -73,6 +74,7 @@ void sampler::end()
 	sampler::worker.join();
 
 	rec->stop();
+	delete rec;
 }
 
 // Thread function
@@ -130,7 +132,7 @@ bool sampler::recorder::onProcessSamples(const sf::Int16* samples, std::size_t s
 	const short* data = &samples[0]; // Int16*
 
 	std::vector<short> samplesCopy(data, data + sampleCount);
-	callback(samplesCopy);
+	sampler::callback(samplesCopy);
 
 	return true;
 }
