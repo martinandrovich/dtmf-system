@@ -6,6 +6,8 @@ int main()
 	
 	std::cout << "Ear Rape Simulator 1.0\n";
 
+	// master got updated here (test)
+
 	std::cout << "Testing Decoder w/ keypresses\n";
 	dtmf::testDecodeKeyboard();
 	
