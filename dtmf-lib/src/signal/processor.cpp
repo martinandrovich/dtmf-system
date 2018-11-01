@@ -69,7 +69,7 @@ float processor::goertzel(std::vector<short> &samples, int frequency)
 	// scaling appropriately
 	float	real				= (q1 - q2 * cosine) / scalingFactor;
 	float	imag				= (q2 * sine) / scalingFactor;
-	float	magnitude			= sqrtf(real*real + imag * imag);
+	float	magnitude			= sqrtf(real * real + imag * imag);
 
 	// return the magnitude
 	return magnitude;
