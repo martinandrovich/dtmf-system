@@ -32,7 +32,7 @@ float processor::goertzel(std::vector<short> &samples, int frequency)
 
 	//Difference equation for Goertzel:
 		//N = numSamples
-		//k = targetFreq/(sampleFreq/N)
+		//k = (N*targetFreq)/sampleFreq
 	//w(n)=2cos(2*pi*k/N)*w(n-1)-w(n-2)+x(n)
 	
 
