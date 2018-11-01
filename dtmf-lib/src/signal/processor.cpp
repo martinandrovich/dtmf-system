@@ -31,10 +31,11 @@ float processor::goertzel(std::vector<short> &samples, int frequency)
 	//float   omega, sine, cosine, coeff, q0, q1, q2, magnitude, real, imag;
 
 	//Difference equation for Goertzel:
+		//N = numSamples
+		//k = targetFreq/(sampleFreq/N)
 	//w(n)=2cos(2*pi*k/N)*w(n-1)-w(n-2)+x(n)
 	
-	//N = numSamples
-	//k = targetFreq/(sampleFreq/N)
+
 
 	// variable definitions
 	int		numSamples			= samples.size();
