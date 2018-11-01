@@ -28,7 +28,7 @@ float processor::getAverageAmplitude(std::array<float, 8> &sampleArray)
 // Run goertzel algorithm on chunk of samples for a specific frequency; return float
 float processor::goertzel(std::vector<short> &samples, int frequency)
 {
-	//float   omega, sine, cosine, coeff, q0, q1, q2, magnitude, real, imag;
+	//float   omega, sine, cosine, coeff, w0, w1, w2, magnitude, real, imag;
 
 	//Difference equation for Goertzel:
 		//N = numSamples
@@ -50,26 +50,26 @@ float processor::goertzel(std::vector<short> &samples, int frequency)
 	//Difference equation with new omega:
 	//w(n)=2cos(omega)*w(n-1)-w(n-2)+x(n)
 
-	float	q0					= 0;
-	float	q1					= 0;
-	float	q2					= 0;
+	float	w0					= 0;
+	float	w1					= 0;
+	float	w2					= 0;
 
-	//q0 =w(n)
-	//q1 =w(n-1)
-	//q2 =w(n-2)
+	//w0 =w(n)
+	//w1 =w(n-1)
+	//w2 =w(n-2)
 
 	// explain this pls						!!!!####!!!!¤¤¤¤!!!!%%%%!!!!
 	for (const auto &s : samples)
 	{
-		q0 = (2.f * cosine ) * q1 - q2 + s;
-		q2 = q1;
-		q1 = q0;
+		w0 = (2.f * cosine ) * w1 - w2 + s;
+		w2 = w1;
+		w1 = w0;
 	}
 
 	// calculate the real and imaginary results + magnitude
 	// scaling appropriately
-	float	real				= (q1 - q2 * cosine) / scalingFactor;
-	float	imag				= (q2 * sine) / scalingFactor;
+	float	real				= (w1 - w2 * cosine) / scalingFactor;
+	float	imag				= (w2 * sine) / scalingFactor;
 	float	magnitude			= sqrtf(real * real + imag * imag);
 
 	// return the magnitude
