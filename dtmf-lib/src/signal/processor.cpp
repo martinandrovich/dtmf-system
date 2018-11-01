@@ -58,7 +58,6 @@ float processor::goertzel(std::vector<short> &samples, int frequency)
 	//w1 =w(n-1)
 	//w2 =w(n-2)
 
-	// explain this pls						!!!!####!!!!¤¤¤¤!!!!%%%%!!!!
 	for (const auto &s : samples)
 	{
 		w0 = (2.f * cosine ) * w1 - w2 + s;
