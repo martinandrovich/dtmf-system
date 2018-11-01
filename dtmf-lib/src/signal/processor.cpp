@@ -30,6 +30,12 @@ float processor::goertzel(std::vector<short> &samples, int frequency)
 {
 	//float   omega, sine, cosine, coeff, q0, q1, q2, magnitude, real, imag;
 
+	//Difference equation for Goertzel:
+	//w(n)=2cos(2*pi*k/N)*w(n-1)-w(n-2)+x(n)
+	
+	//N = numSamples
+	//k = targetFreq/(sampleFreq/N)
+
 	// variable definitions
 	int		numSamples			= samples.size();
 	float   numSamplesFloat		= (float)numSamples;
@@ -40,15 +46,21 @@ float processor::goertzel(std::vector<short> &samples, int frequency)
 	float	sine				= sin(omega);
 	float	cosine				= cos(omega);
 
-	float	coeff				= 2.f * cosine;
+	//Difference equation with new omega:
+	//w(n)=2cos(omega)*w(n-1)-w(n-2)+x(n)
+
 	float	q0					= 0;
 	float	q1					= 0;
 	float	q2					= 0;
 
+	//q0 =w(n)
+	//q1 =w(n-1)
+	//q2 =w(n-2)
+
 	// explain this pls						!!!!####!!!!¤¤¤¤!!!!%%%%!!!!
 	for (const auto &s : samples)
 	{
-		q0 = coeff * q1 - q2 + s;
+		q0 = (2.f * cosine ) * q1 - q2 + s;
 		q2 = q1;
 		q1 = q0;
 	}
