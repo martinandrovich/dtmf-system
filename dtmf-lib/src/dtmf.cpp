@@ -133,8 +133,3 @@ void dtmf::keyPress(int key, int pause)
 	ip.ki.dwFlags = KEYEVENTF_KEYUP; // KEYEVENTF_KEYUP for key release
 	SendInput(1, &ip, sizeof(INPUT));
 }
-
-void init()
-{
-	node::actionSend();
-}
