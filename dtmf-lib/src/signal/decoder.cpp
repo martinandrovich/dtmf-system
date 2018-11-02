@@ -17,7 +17,8 @@ namespace decoder
 {
 	// Private Members
 	state							status = state::unitialized;
-	std::queue<std::vector<short>>	queue;
+	std::deque<std::vector<short>>	queue;
+	std::vector<short>				buffer;
 	std::mutex						queueMutex;
 	std::thread						worker;
 	sampler*						rec;
@@ -80,19 +81,25 @@ void decoder::thread()
 
 		decoder::queueMutex.lock();
 
-			if (decoder::queue.empty())								// better done with a condition variable?
+			if (decoder::queue.size() < 5)								// better done with a condition variable?
 			{
 				decoder::queueMutex.unlock();
 				continue;
 			}
+			
+			buffer.clear();
 
-			auto samplesCopy = decoder::queue.front();				// make copy so that queue isn't blocked while decoding
-			decoder::queue.pop();
+			for (auto sampleChunks : queue)
+			{  
+				buffer.insert(buffer.end(), sampleChunks.begin(), sampleChunks.end());
+			}
+
+			decoder::queue.pop_front();
 
 		decoder::queueMutex.unlock();
 		
 		// decode the copied samples
-		decoder::decode(samplesCopy);
+		decoder::decode(buffer);
 	}
 }
 
@@ -102,7 +109,7 @@ void decoder::appendQueue(std::vector<short> samples)
 	decoder::queueMutex.lock();
 
 	//std::cout << "[QUEUE] Adding to queue with [" << decoder::queue.size() << "] elements.\n";
-	decoder::queue.push(samples);
+	decoder::queue.push_back(samples);
 
 	decoder::queueMutex.unlock();
 }
@@ -160,9 +167,6 @@ void decoder::decode(std::vector<short> &samples)
 	
 	// decode
 	//std::cout << "[DECODER] Decoding [" << samples.size() << "] samples...\n\n";
-
-	// combine 5 latest sample chunks
-	;
 
 	// compile goertzelArray for all DTMF frequencies
 	auto goertzelArray = processor::goertzelArray(samples);
