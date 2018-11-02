@@ -1,15 +1,12 @@
 #pragma once
-namespace dtmf {
-class node
+#include <vector>
+
+//// Public Declarations [Interface] //////////////////////////////////////////////////////////////////////////////////////////////
+
+namespace node
 {
-	//// Public Declarations [Interface] //////////////////////////////////////////////////////////////////////////////////////////////
-public:
 
-	// Constructor & Destructor
-	node();
-	virtual ~node();
-
-	// Constructs
+	// Public Constructs
 	struct Action
 	{
 		int clientID;
@@ -27,18 +24,6 @@ public:
 		int address;
 	};
 
-	// Methods
+	// Public Methods
 	void actionSend(Action::actions action);
-
-	//// Private Declarations /////////////////////////////////////////////////////////////////////////////////////////////////////////
-private:
-
-	// Methods
-	void send(int msg); // msg struct
-	void process(int toneID);
-	void recieved(Message msg);
-
-	// Members
-	void(*actionRecieved)(Action action);
 };
-}

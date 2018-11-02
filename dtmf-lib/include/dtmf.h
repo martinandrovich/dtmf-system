@@ -5,7 +5,7 @@ namespace dtmf
 {
 
 	// Public Members
-	class node;
+	;
 	
 	// Public Methods
 	void testGenerator();

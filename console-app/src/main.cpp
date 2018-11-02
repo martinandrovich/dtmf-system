@@ -9,7 +9,8 @@ int main()
 
 	std::cout << "Testing Decoder w/ keypresses\n";
 	dtmf::testDecodeKeyboard();
-	dtmf::node test2;
+
+	dtmf::nodez test;
 
 	std::cin.get();
 	return 0;

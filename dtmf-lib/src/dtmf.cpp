@@ -61,7 +61,6 @@ void dtmf::testDecodeKeyboard()
 void dtmf::logPayload(uint toneID)
 {
 	std::cout << "[PAYLOAD]: " << toneID << std::endl;
-	dtmf::node test1;
 }
 
 // ...
@@ -133,4 +132,9 @@ void dtmf::keyPress(int key, int pause)
 	// Release the key
 	ip.ki.dwFlags = KEYEVENTF_KEYUP; // KEYEVENTF_KEYUP for key release
 	SendInput(1, &ip, sizeof(INPUT));
+}
+
+void init()
+{
+	node::actionSend();
 }
