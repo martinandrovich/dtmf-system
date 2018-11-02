@@ -7,7 +7,7 @@ namespace generator
 {
 	// Private Members
 	sf::Sound*			player = new sf::Sound;
-
+	state				status;
 }
 
 //// Method Definitions ///////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -68,6 +68,8 @@ void generator::playback(uint toneID, uint duration)
 	// Create buffer
 	auto buffer = generateDTMF(toneID, duration);
 
+	generator::status = generator::state::playing;
+
 	// Set buffer and play
 	generator::player->setBuffer(*buffer);
 	generator::player->play();
@@ -75,6 +77,8 @@ void generator::playback(uint toneID, uint duration)
 	// Wait while playing
 	while (generator::player->getStatus() == generator::player->Playing)
 		;
+
+	generator::status = generator::state::idle;
 
 	// Cleanup
 	delete buffer;
@@ -112,4 +116,9 @@ void generator::exportBuffer(sf::SoundBuffer& buffer, std::string filename)
 		outFile << s << "\n";
 
 	outFile.close();
+}
+
+generator::state generator::getState()
+{
+	return generator::status;
 }

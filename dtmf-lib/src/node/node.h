@@ -28,10 +28,16 @@ public:
 	};
 
 	// Methods
-	void action(Action::actions action);
+	void actionSend(Action::actions action);
 
 //// Private Declarations /////////////////////////////////////////////////////////////////////////////////////////////////////////
 private:
+
+	// Methods
 	void send(int msg); // msg struct
-	void(*recieved)(int toneID);
+	void process(int toneID);
+	void recieved(Message msg);
+
+	// Members
+	void(*actionRecieved)(Action action);
 };

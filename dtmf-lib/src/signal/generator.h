@@ -26,4 +26,6 @@ namespace generator
 	
 	void					playback(uint tone, uint duration);
 	void					playbackSequence(std::vector<int> &sequence, int duration = DURATION, int pause = PAUSE);
+
+	state					getState();
 };
