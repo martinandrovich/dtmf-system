@@ -1,7 +1,7 @@
 #pragma once
 #include "node.h"
 
-class client : public node
+class client : public dtmf::node
 {
 	//// Public Declarations [Interface] //////////////////////////////////////////////////////////////////////////////////////////////
 public:

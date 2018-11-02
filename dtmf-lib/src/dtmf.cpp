@@ -61,6 +61,7 @@ void dtmf::testDecodeKeyboard()
 void dtmf::logPayload(uint toneID)
 {
 	std::cout << "[PAYLOAD]: " << toneID << std::endl;
+	dtmf::node test1;
 }
 
 // ...

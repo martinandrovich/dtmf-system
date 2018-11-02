@@ -1,3 +1,4 @@
+#pragma once
 #include <iostream>
 #include <dtmf.h>
 
@@ -8,8 +9,7 @@ int main()
 
 	std::cout << "Testing Decoder w/ keypresses\n";
 	dtmf::testDecodeKeyboard();
-
-	dtmf::node test;
+	dtmf::node test2;
 
 	std::cin.get();
 	return 0;
