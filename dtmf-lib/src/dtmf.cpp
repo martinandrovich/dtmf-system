@@ -33,7 +33,7 @@ void dtmf::testGenerator()
 	{
 		i = i % 16;
 		generator::playback(i, 200);
-	}	
+	}
 }
 
 // Playback some DTMF tone sequence for 50ms each

@@ -10,7 +10,8 @@ int main()
 	std::cout << "Testing Decoder w/ keypresses\n";
 	dtmf::testDecodeKeyboard();
 
+	dtmf::cake test(10);
+
 	std::cin.get();
 	return 0;
-
 }
