@@ -286,13 +286,19 @@ void dtmf::initializeServer(void(*actionRecieved)(Action action)) {
 			StateAction()
 		}, {
 			StateTransition("Base", {
-				StateCondition(1,1)
+				StateCondition(6,1)
+			}),
+			StateTransition("Base", {
+				StateCondition(8,1)
+			}),
+			StateTransition("Base", {
+				StateCondition(11,1)
 			})
 		}),
 
 	};
 
-
+	std::cout << states[0].transitions[2].conditions[0].subject<< "\n";
 
 
 	dtmf::actionRecieved = actionRecieved;
