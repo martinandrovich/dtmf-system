@@ -9,8 +9,6 @@
 #define WINVER 0x0500
 
 #include "dtmf.h"
-
-#include "node/node.h"
 #include "signal/generator.h"
 #include "signal/decoder.h"
 
@@ -24,9 +22,9 @@ namespace dtmf
 	void process(int toneID);
 	void recieved(Message msg);
 
-	int  testCurrentState();
-	bool testTransition(int transition);
-	bool testCondition(int condition);
+	int  testTransitions(const State &state);
+	bool testConditions(const StateTransition &transition);
+	void dtmf::testCurrentState();
 
 	// Private Members
 	State* currentState;
@@ -38,63 +36,84 @@ namespace dtmf
 
 	int dir = 2;
 
-	void nodeThread();
-
 }
 
 //// Method Definitions ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-void nodeThread() {
-	while (true) {
-
-	}
-}
-
-void dtmf::initializeServer() {
-
-
-
+void dtmf::initializeServer()
+{
 	states = {
+
 		State("Base", {
 			StateAction()
 		}, {
-			new StateTransition("Base", {
-				new StateCondition([] { return dir > 3; })
+			StateTransition("Next", {
+				StateCondition([] { return dir > 3; })
+			})
+		}),
+
+		State("Next", {
+			StateAction()
+		}, {
+			StateTransition("Base", {
+				StateCondition([] { return dir < 3; })
 			})
 		}),
 
 	};
 
 	currentState = &states[0];
-
-
-
-
-
-
-	//node::worker = std::thread(&nodeThread::thread);
-
-
-
-
 }
 
-
-void dtmf::test()
+// test transitions of a state; return targetId if match (otherwise -1)
+int dtmf::testTransitions(const State &state)
 {
-	
-	for (auto t : currentState->transitions)
+	for (const auto& transition : state.transitions)
 	{
-		for (auto c : t->conditions)
+		if (dtmf::testConditions(transition))
 		{
+			return transition.targetId;
+		}
+	}
 
-			dir = 4;
-			if (c->result()) // = true
-				; // change state if true
+	return -1;
+}
 
-			dir = 2;
-			if (*c) // = false
-				; // change state if true
+// test conditions of a transition; return true if match
+bool dtmf::testConditions(const StateTransition &transition)
+{
+	for (const auto& condition : transition.conditions)
+	{
+		if (condition.result())
+		{
+			return true;
+		}
+	}
+
+	return false;
+}
+
+// test current state (transitions & conditions) in one method; change state if match
+void dtmf::testCurrentState()
+{
+	for (const auto& transition : currentState->transitions)
+	{
+		for (const auto& condition : transition.conditions)
+		{
+			if (condition.result())
+			{
+				currentState = &states[transition.targetId];
+			}
 		}
 	}
 }
+
+// test
+void dtmf::test()
+{
+	dir = 2;
+	dtmf::testTransitions(*currentState); // no match
+
+	dir = 4;
+	dtmf::testTransitions(*currentState); // match
+}}

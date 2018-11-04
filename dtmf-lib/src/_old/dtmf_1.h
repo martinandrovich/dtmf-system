@@ -6,49 +6,50 @@ namespace dtmf
 {
 
 	// Public Constructs
+
+	struct Action;
+	struct State;
+	struct StateAction;
+	struct StateTransition;
+	struct StateCondition;
+
 	struct Action
 	{
 		int clientID;
 		enum actions { null, up, down, left, right, primary, secondary, menu };
 	};
 
-
-	struct State;
-	struct StateAction;
-	struct StateTransition;
-	struct StateCondition;
-	
 	struct State
 	{
 		State() {};
-		State(std::string name, std::vector<StateAction> actions, std::vector<StateTransition*> transitions) : name(name), id(-1), actions(actions), transitions(transitions) {};
+		State(std::string name, std::vector<StateAction> actions, std::vector<StateTransition> transitions) : name(name), id(-1), actions(actions), transitions(transitions) {};
 		std::string name;
 		int id;
 		std::vector<StateAction> actions;
-		std::vector<StateTransition*> transitions;
+		std::vector<StateTransition> transitions;
 	};
+
 	struct StateAction
 	{
 		int a;
 	};
-	
-	
+
 	struct StateTransition
 	{
-		StateTransition(std::string targetName, std::vector<StateCondition*> conditions) : targetName(targetName), conditions(conditions) {};
-		std::string targetName;
-		int targetId;
+		StateTransition(std::string targetName, std::vector<StateCondition> conditions) : targetName(targetName), conditions(conditions) {};
 
-		std::vector<StateCondition*> conditions;
+		unsigned int				targetId;
+		std::string					targetName;
+		std::vector<StateCondition> conditions;
 	};
-	
+
 	struct StateCondition
 	{
 		StateCondition(bool(*test)()) : result(test) {};
 		bool(*result)();
 		explicit operator bool() { return result(); }
 	};
-	
+
 	struct Message
 	{
 		Message(int address, int command) : direction(address / 8), id(address & 7), address(address), command(command) {};
