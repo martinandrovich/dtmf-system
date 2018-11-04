@@ -2,6 +2,12 @@
 #include <iostream>
 #include <dtmf.h>
 
+
+
+void actionRecieved(dtmf::Action action) {
+
+}
+
 int main()
 {	
 	
@@ -11,7 +17,7 @@ int main()
 
 
 
-
+	dtmf::initializeServer(&actionRecieved);
 
 
 
@@ -22,3 +28,6 @@ int main()
 	return 0;
 
 }
+
+
+
