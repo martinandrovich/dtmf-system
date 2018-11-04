@@ -29,9 +29,8 @@ namespace dtmf
 
 
 	void testCurrentState();
-	int getTransitionId(dtmf::StateTransition transition);
-	bool testTransition(dtmf::StateTransition transition);
-	bool testCondition(dtmf::StateCondition condition);
+	int getTransitionId(dtmf::StateTransition& transition);
+	bool testTransition(dtmf::StateTransition& transition);
 
 	void runStateActions();
 
@@ -121,7 +120,7 @@ void dtmf::actionSend(Action::actions action)
 
 void dtmf::testCurrentState()
 {
-	for (auto transition : states[currentState].transitions) {
+	for (auto& transition : states[currentState].transitions) {
 		if (testTransition(transition)) {
 			currentState=getTransitionId(transition);
 			runStateActions();
@@ -130,7 +129,7 @@ void dtmf::testCurrentState()
 	}
 }
 
-int dtmf::getTransitionId(dtmf::StateTransition transition)
+int dtmf::getTransitionId(dtmf::StateTransition& transition)
 {
 	std::cout << "changing state to "<<transition.targetName << "\n";
 	if (transition.targetId != -1) {
@@ -147,23 +146,17 @@ int dtmf::getTransitionId(dtmf::StateTransition transition)
 }
 
 
-bool dtmf::testTransition(dtmf::StateTransition transition)
+bool dtmf::testTransition(dtmf::StateTransition& transition)
 {
-	for (auto condition : transition.conditions) {
-		if (!testCondition(condition)) {
+	for (const auto& condition : transition.conditions) {
+		if (!condition) {
 			return false; //if any condition is false return false;
 		}
 	}
 	return true; //else return true
 }
 
-bool dtmf::testCondition(dtmf::StateCondition condition)
-{
-	if (condition) {
-		return true;
-	}
-	return false;
-}
+
 
 void dtmf::runStateActions()
 {
@@ -254,6 +247,8 @@ void dtmf::initializeServer(void(*actionRecieved)(Action action)) {
 		}),
 
 	};
+	
+
 
 
 	
@@ -271,6 +266,10 @@ void dtmf::initializeServer(void(*actionRecieved)(Action action)) {
 	std::cout << "State: " << states[currentState].name << "\n";
 
 
+
+	std::cout << states[0].transitions[0].targetId << "\n";
+	std::cout << states[1].transitions[0].targetId << "\n";
+	std::cout << states[2].transitions[0].targetId << "\n";
 
 	//dtmf::actionRecieved = actionRecieved;
 	//dtmf::stateMachine = std::thread(&dtmf::stateMachineThread);

@@ -48,7 +48,7 @@ namespace dtmf
 	{
 		StateCondition(bool(*test)()) : result(test) {};
 		bool(*result)();
-		explicit operator bool() { return result(); }
+		operator bool() const { return result(); }
 	};
 	
 	struct Message
