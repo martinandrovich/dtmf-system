@@ -28,14 +28,12 @@ namespace dtmf
 	void recieved(Message msg);
 
 
-	int  testCurrentState();
+	void testCurrentState();
 	int getTransitionId(dtmf::StateTransition transition);
 	bool testTransition(dtmf::StateTransition transition);
 	bool testCondition(dtmf::StateCondition condition);
 
-	
-	int getIndexedValue(dtmf::indexValues index);
-	void setIndexedValue(dtmf::indexValues index, int value);
+	void runStateActions();
 
 
 
@@ -80,15 +78,6 @@ namespace dtmf
 
 
 
-	std::map<indexValues, int*> mappedValues = {
-		{indexValues::clientID,&clientID},
-		{indexValues::currentState,&currentState},
-		{indexValues::var1,&var1},
-		{indexValues::var2,&var2},
-		{indexValues::var3,&var3},
-		{indexValues::var4,&var4},
-		{indexValues::var4,& currentMessage.id}
-	};
 	
 
 }
@@ -130,18 +119,20 @@ void dtmf::actionSend(Action::actions action)
 
 
 
-int dtmf::testCurrentState()
+void dtmf::testCurrentState()
 {
 	for (auto transition : states[currentState].transitions) {
 		if (testTransition(transition)) {
-			return getTransitionId(transition);
+			currentState=getTransitionId(transition);
+			runStateActions();
+			return;
 		}
 	}
-	return -1;
 }
 
 int dtmf::getTransitionId(dtmf::StateTransition transition)
 {
+	std::cout << "changing state to "<<transition.targetName << "\n";
 	if (transition.targetId != -1) {
 		return transition.targetId;
 	}
@@ -174,63 +165,13 @@ bool dtmf::testCondition(dtmf::StateCondition condition)
 	return false;
 }
 
-int dtmf::getIndexedValue(dtmf::indexValues index)
+void dtmf::runStateActions()
 {
-	if (index <= dtmf::indexValues::C15) {
-		return (int)index;
+	for (auto action : states[currentState].actions) {
+		action.function();
 	}
-	if (index <= dtmf::indexValues::var4) {
-		return *dtmf::mappedValues[index];
-	}
-	switch (index)
-	{
-	case dtmf::indexValues::action:
-		return (int)currentAction;
-	case dtmf::indexValues::direction:
-		return (int)currentMessage.direction;
-	case dtmf::indexValues::id:
-		return (int)currentMessage.id;
-	case dtmf::indexValues::data:
-		return (int)currentMessage.command;
-	case dtmf::indexValues::randomValue:
-		return rand() % 14; //generate random nuber from 0-13 (allowed numbers, 14 is error message, 15 is syncronization message)
-	default:
-		return -1;
-	}
+	testCurrentState();
 }
-void dtmf::setIndexedValue(dtmf::indexValues index, int value)
-{
-	if (index <= dtmf::indexValues::C15) {
-		return;
-	}
-	if (index <= dtmf::indexValues::var4) {
-		*dtmf::mappedValues[index]=value;
-	}
-	switch (index)
-	{
-	case dtmf::indexValues::action:
-		currentAction = (dtmf::Action::actions)value;
-		return;
-	case dtmf::indexValues::direction:
-		currentMessage.direction = value;
-		currentMessage.address = currentMessage.direction * 8 + currentMessage.id;
-		return;
-	case dtmf::indexValues::id:
-		currentMessage.id = value;
-		currentMessage.address = currentMessage.direction * 8 + currentMessage.id;
-		return;
-	case dtmf::indexValues::data:
-		currentMessage.command = value;
-		return;
-	
-	default:
-		return;
-	}
-}
-
-
-
-
 
 
 void dtmf::checkAction() {
@@ -267,9 +208,11 @@ void dtmf::checkTriggers() {
 
 }
 
+
 void dtmf::stateMachineThread() {
 	while (true) {
 
+		checkTriggers();
 
 		std::this_thread::sleep_for(std::chrono::milliseconds(1));
 		timeoutTimer += 1;
@@ -281,33 +224,56 @@ void dtmf::stateMachineThread() {
 void dtmf::initializeServer(void(*actionRecieved)(Action action)) {
 
 
-	std::cout << getIndexedValue(indexValues::id) << "\n";
 
 
 
 	states = {
 		State("Base", {
-			StateAction()
+			
+		}, {
+			StateTransition("Two", {
+				StateCondition([] { return var1==5; })
+			}),
+			
+		}),
+		State("Two", {
+			
+		}, {
+			StateTransition("Three", {
+				
+			}),
+			
+		}),
+		State("Three", {
+			StateAction([] { var1--; })
 		}, {
 			StateTransition("Base", {
-				StateCondition([] { return clientID > 3; })
+				StateCondition([] { return var1 == 3; })
 			}),
-			StateTransition("Base", {
-				StateCondition([] { return currentMessage.address == clientID; })
-			}),
-			StateTransition("Base", {
-				StateCondition([] { return currentAction==Action::left; })
-			})
+			
 		}),
 
 	};
+
+
 	
+	std::cout << "State: "<<states[currentState].name << "\n";
+	var1 = 5;
+	testCurrentState();
+	std::cout << "State: " << states[currentState].name << "\n";
+	testCurrentState();
+	std::cout << "State: " << states[currentState].name << "\n";
+	var1--;
+	testCurrentState();
+	std::cout << "State: " << states[currentState].name << "\n";
+	var1--;
+	testCurrentState();
+	std::cout << "State: " << states[currentState].name << "\n";
 
-	std::cout << states[0].transitions[2].targetName<< "\n";
 
 
-	dtmf::actionRecieved = actionRecieved;
-	dtmf::stateMachine = std::thread(&dtmf::stateMachineThread);
+	//dtmf::actionRecieved = actionRecieved;
+	//dtmf::stateMachine = std::thread(&dtmf::stateMachineThread);
 
 
 
