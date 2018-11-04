@@ -32,7 +32,6 @@ namespace dtmf
 	{
 		StateAction(void(*test)()) : function(test) {};
 		void(*function)();
-		//explicit operator void() { function(); }
 	};
 	
 	
@@ -49,7 +48,7 @@ namespace dtmf
 	{
 		StateCondition(bool(*test)()) : result(test) {};
 		bool(*result)();
-		//explicit operator bool() { return result(); }
+		explicit operator bool() { return result(); }
 	};
 	
 	struct Message

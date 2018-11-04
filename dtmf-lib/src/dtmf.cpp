@@ -159,7 +159,7 @@ bool dtmf::testTransition(dtmf::StateTransition transition)
 
 bool dtmf::testCondition(dtmf::StateCondition condition)
 {
-	if (condition.result()) {
+	if (condition) {
 		return true;
 	}
 	return false;
