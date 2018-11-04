@@ -24,7 +24,7 @@ namespace dtmf
 
 	int  testTransitions(const State &state);
 	bool testConditions(const StateTransition &transition);
-	void dtmf::testCurrentState();
+	void testCurrentState();
 
 	// Private Members
 	State* currentState;
