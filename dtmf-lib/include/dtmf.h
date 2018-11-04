@@ -44,14 +44,14 @@ namespace dtmf
 	
 	struct StateCondition
 	{
-		StateCondition(int subject, int test) : subject(subject), test(test) {};
-		int subject;
-		int test;
+		StateCondition(bool(*test)()) : result(test) {};
+		bool(*result)();
+		explicit operator bool() { return result(); }
 	};
 	
 	struct Message
 	{
-		Message() : direction(0), id(0), address(0), command(0) {};
+		Message() : direction(-1), id(-1), address(-1), command(-1) {};
 		Message(int address, int command) : direction(address / 8), id(address & 7), address(address), command(command) {};
 		Message(int direction, int id, int command) : direction(direction), id(id), address(direction * 8 + id), command(command) {};
 

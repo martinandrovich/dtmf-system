@@ -59,14 +59,7 @@ namespace dtmf
 
 	
 	
-	std::map<indexValues, int*> mappedValues = { 
-		{indexValues::clientID,&clientID},
-		{indexValues::currentState,&currentState},
-		{indexValues::var1,&var1},
-		{indexValues::var2,&var2},
-		{indexValues::var3,&var3},
-		{indexValues::var4,&var4}
-	};
+	
 
 
 	std::thread	stateMachine;
@@ -87,6 +80,15 @@ namespace dtmf
 
 
 
+	std::map<indexValues, int*> mappedValues = {
+		{indexValues::clientID,&clientID},
+		{indexValues::currentState,&currentState},
+		{indexValues::var1,&var1},
+		{indexValues::var2,&var2},
+		{indexValues::var3,&var3},
+		{indexValues::var4,&var4},
+		{indexValues::var4,& currentMessage.id}
+	};
 	
 
 }
@@ -113,9 +115,17 @@ void dtmf::process(int toneID)
 		newMessageFlag = true;
 	}
 	messageLock.unlock();
+}
 
+void dtmf::actionSend(Action::actions action)
+{
+	actionLock.lock();
+	if (newActionFlag) {
+		currentAction = action;
+	}
 
-
+	newActionFlag = true;
+	actionLock.unlock();
 }
 
 
@@ -158,6 +168,9 @@ bool dtmf::testTransition(dtmf::StateTransition transition)
 
 bool dtmf::testCondition(dtmf::StateCondition condition)
 {
+	if (condition.result()) {
+		return true;
+	}
 	return false;
 }
 
@@ -263,16 +276,7 @@ void dtmf::stateMachineThread() {
 	}
 }
 
-void dtmf::actionSend(Action::actions action)
-{
-	actionLock.lock();
-	if (newActionFlag) {
-		currentAction = action;
-	}
 
-	newActionFlag = true;
-	actionLock.unlock();
-}
 
 void dtmf::initializeServer(void(*actionRecieved)(Action action)) {
 
@@ -286,19 +290,20 @@ void dtmf::initializeServer(void(*actionRecieved)(Action action)) {
 			StateAction()
 		}, {
 			StateTransition("Base", {
-				StateCondition(6,1)
+				StateCondition([] { return clientID > 3; })
 			}),
 			StateTransition("Base", {
-				StateCondition(8,1)
+				StateCondition([] { return currentMessage.address == clientID; })
 			}),
 			StateTransition("Base", {
-				StateCondition(11,1)
+				StateCondition([] { return currentAction==Action::left; })
 			})
 		}),
 
 	};
+	
 
-	std::cout << states[0].transitions[2].conditions[0].subject<< "\n";
+	std::cout << states[0].transitions[2].targetName<< "\n";
 
 
 	dtmf::actionRecieved = actionRecieved;
