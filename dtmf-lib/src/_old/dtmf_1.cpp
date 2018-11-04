@@ -84,7 +84,7 @@ bool dtmf::testConditions(const StateTransition &transition)
 {
 	for (const auto& condition : transition.conditions)
 	{
-		if (condition.result())
+		if (condition)
 		{
 			return true;
 		}
@@ -100,7 +100,7 @@ void dtmf::testCurrentState()
 	{
 		for (const auto& condition : transition.conditions)
 		{
-			if (condition.result())
+			if (condition)
 			{
 				currentState = &states[transition.targetId];
 			}
