@@ -89,9 +89,10 @@ namespace dtmf
 void dtmf::process(int toneID)
 {
 	messageLock.lock();
-	if (toneID == 15) hasRecievedDirID = false;
+	if (toneID == 15) {
+		hasRecievedDirID = false;
 
-
+	}
 	else if (hasRecievedDirID == false) 
 	{
 		
@@ -119,7 +120,9 @@ void dtmf::process(int toneID)
 void dtmf::actionSend(Action::actions action)
 {
 	messageLock.lock();
-	if (newActionFlag) currentAction = action;
+	if (newActionFlag) {
+		currentAction = action;
+	}
 
 	newActionFlag = true;
 	messageLock.unlock();
@@ -144,8 +147,10 @@ void dtmf::testCurrentState()
 int dtmf::getStateId(dtmf::StateTransition& transition)
 {
 	std::cout << "changing state to "<<transition.targetName << "\n";
-	if (transition.targetId != -1) return transition.targetId;
-
+	if (transition.targetId != -1) 
+	{
+		return transition.targetId;
+	}
 	for (int i = 0; i < states.size(); i++) 
 	{
 		if (states[i].name == transition.targetName) 
@@ -163,8 +168,10 @@ bool dtmf::testTransition(dtmf::StateTransition& transition)
 {
 	for (const auto& condition : transition.conditions) 
 	{
-		if (!condition) return false; //if any condition is false return false;
-		
+		if (!condition) 
+		{
+			return false; //if any condition is false return false;
+		}
 	}
 	return true; //else return true
 }
