@@ -54,6 +54,7 @@ namespace dtmf
 	struct Message
 	{
 		Message() : direction(-1), id(-1), address(-1), command(-1) {};
+		Message(int command) : direction(-1), id(-1), address(-1), command(command) {};
 		Message(int address, int command) : direction(address / 8), id(address & 7), address(address), command(command) {};
 		Message(int direction, int id, int command) : direction(direction), id(id), address(direction * 8 + id), command(command) {};
 

@@ -89,26 +89,23 @@ namespace dtmf
 void dtmf::process(int toneID)
 {
 	messageLock.lock();
-	if (toneID == 15) hasRecievedDirID = false;
+	if (toneID == 15) {
+		hasRecievedDirID = false;
 
-
-	else if (hasRecievedDirID == false) 
-	{
+	}
+	else if (hasRecievedDirID == false) {
 		
-		if (isQuickState) 
-		{
+		if (isQuickState) {
 			currentMessage = Message(toneID);
 			newMessageFlag = true;
 		}
-		else 
-		{
+		else {
 
 			oldToneId = toneID;
 			hasRecievedDirID = true;
 		}
 	}
-	else 
-	{
+	else {
 		currentMessage = Message(oldToneId, toneID);
 		hasRecievedDirID = false;
 		newMessageFlag = true;
@@ -119,7 +116,9 @@ void dtmf::process(int toneID)
 void dtmf::actionSend(Action::actions action)
 {
 	messageLock.lock();
-	if (newActionFlag) currentAction = action;
+	if (newActionFlag) {
+		currentAction = action;
+	}
 
 	newActionFlag = true;
 	messageLock.unlock();
@@ -129,10 +128,8 @@ void dtmf::actionSend(Action::actions action)
 
 void dtmf::testCurrentState()
 {
-	for (auto& transition : states[currentState].transitions) 
-	{
-		if (testTransition(transition)) 
-		{
+	for (auto& transition : states[currentState].transitions) {
+		if (testTransition(transition)) {
 			currentState=getStateId(transition);
 			isQuickState = states[currentState].isQuickState;
 			runStateActions();
@@ -144,12 +141,11 @@ void dtmf::testCurrentState()
 int dtmf::getStateId(dtmf::StateTransition& transition)
 {
 	std::cout << "changing state to "<<transition.targetName << "\n";
-	if (transition.targetId != -1) return transition.targetId;
-
-	for (int i = 0; i < states.size(); i++) 
-	{
-		if (states[i].name == transition.targetName) 
-		{
+	if (transition.targetId != -1) {
+		return transition.targetId;
+	}
+	for (int i = 0; i < states.size(); i++) {
+		if (states[i].name == transition.targetName) {
 			
 			transition.targetId=i;
 			return i;
@@ -161,10 +157,10 @@ int dtmf::getStateId(dtmf::StateTransition& transition)
 
 bool dtmf::testTransition(dtmf::StateTransition& transition)
 {
-	for (const auto& condition : transition.conditions) 
-	{
-		if (!condition) return false; //if any condition is false return false;
-		
+	for (const auto& condition : transition.conditions) {
+		if (!condition) {
+			return false; //if any condition is false return false;
+		}
 	}
 	return true; //else return true
 }
@@ -173,8 +169,7 @@ bool dtmf::testTransition(dtmf::StateTransition& transition)
 
 void dtmf::runStateActions()
 {
-	for (auto action : states[currentState].actions) 
-	{
+	for (auto action : states[currentState].actions) {
 		action.function();
 	}
 	testCurrentState();
@@ -183,8 +178,7 @@ void dtmf::runStateActions()
 
 void dtmf::checkAction() {
 	messageLock.lock();
-	if (newActionFlag) 
-	{
+	if (newActionFlag) {
 		testCurrentState();
 		newActionFlag = false;
 		currentAction = Action::null;
@@ -192,11 +186,9 @@ void dtmf::checkAction() {
 
 	messageLock.unlock();
 }
-void dtmf::checkMessage() 
-{
+void dtmf::checkMessage() {
 	messageLock.lock();
-	if (newMessageFlag) 
-	{
+	if (newMessageFlag) {
 		testCurrentState();
 
 		newMessageFlag = false;
@@ -205,13 +197,11 @@ void dtmf::checkMessage()
 
 	messageLock.unlock();
 }
-void dtmf::checkTimeOut() 
-{
+void dtmf::checkTimeOut() {
 
 }
 
-void dtmf::checkTriggers() 
-{
+void dtmf::checkTriggers() {
 	
 	checkAction();
 	checkMessage();
@@ -221,10 +211,8 @@ void dtmf::checkTriggers()
 }
 
 
-void dtmf::stateMachineThread() 
-{
-	while (true) 
-	{
+void dtmf::stateMachineThread() {
+	while (true) {
 
 		checkTriggers();
 
@@ -235,8 +223,7 @@ void dtmf::stateMachineThread()
 
 
 
-void dtmf::initializeServer(void(*actionRecieved)(Action action)) 
-{
+void dtmf::initializeServer(void(*actionRecieved)(Action action)) {
 
 	states = {
 		State("Base", {
