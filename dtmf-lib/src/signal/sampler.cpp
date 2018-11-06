@@ -12,12 +12,12 @@ sampler::sampler(void(*callback)(std::vector<short> samples))
 	: callback(callback), rate(SAMPLE_RATE), interval(SAMPLE_INTERVAL), status(state::idle)
 {
 	// set processing interval
-	this->setProcessingInterval(sf::milliseconds(this->interval));
+	this->setProcessingInterval(sf::microseconds(this->interval));
 
 	// log
 	std::cout << "\nInitialized sampler with:\n";
 	std::cout << "SAMPLE RATE:\t\t"			<< this->rate << " Hz \n";
-	std::cout << "SAMPLE INTERVAL:\t"		<< this->interval << " ms \n";	
+	std::cout << "SAMPLE INTERVAL:\t"		<< this->interval << " mys \n";	
 }
 
 // Destructor

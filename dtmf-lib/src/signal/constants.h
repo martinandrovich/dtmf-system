@@ -9,7 +9,7 @@ constexpr auto	DURATION			= 500;							// Default signal duration [ms]
 constexpr auto	PAUSE				= 20;							// Default signal pause [ms]
 constexpr auto	FADE				= 0.15f;						// Default signal fade percentage [decimal] (0.1 = 10%)
 constexpr auto	SAMPLE_RATE			= 44100;						// Default signal sample rate in [Hz]
-constexpr int	SAMPLE_INTERVAL		= 50;							// Default interval of sample processing [ms]
+constexpr int	SAMPLE_INTERVAL		= 100;							// Default interval of sample processing [mys]
 constexpr auto	AMPLITUDE_MAX		= 16384;						// Maximum possible signal amplitude (100%) (SIGNED INT16 -> 2^15 / 2)
 
 //const int		freqLow[4]			= {  697,  770,  852,  941 };
