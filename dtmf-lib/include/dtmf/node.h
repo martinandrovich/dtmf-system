@@ -3,17 +3,16 @@
 #include "..\src\_old\cake.h"
 
 namespace dtmf
-{
+{	
+	namespace node
+	{
+		// Public Constructs
+		;
 
-	// Public Constructs
-	class cake;
-
-	// Public Members
-	;
+		// Public Members
+		;
 	
-	// Public Methods
-	void testGenerator();
-	void testGeneratorSequence();
-	void testDecodeLog();
-	void testDecodeKeyboard();
+		// Public Methods
+		;
+	}
 }

@@ -1,19 +1,21 @@
-#pragma once
 #include <iostream>
 
-#include <dtmf/dtmf.h>
+#include <dtmf/node.h>
 #include <dtmf/toolbox.h>
 
 int main()
 {	
 	
-	std::cout << "Ear Rape Simulator 1.0\n";
+	// init
+	std::cout << "Ear Rape Simulator 1.1\n";
 
-	std::cout << "Testing Decoder w/ keypresses\n";
-	dtmf::testDecodeKeyboard();
-
+	// test functions
+	std::cout << "Testing Decoder Keyboard Presses";
+	dtmf::toolbox::testDecoderKeyboard();
+	
 	dtmf::cake test(10);
 
+	// stall & exit
 	std::cin.get();
 	return 0;
 }

@@ -33,17 +33,14 @@
     <ClInclude Include="src\_old\cake.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\dtmf\dtmf.h">
+    <ClInclude Include="include\dtmf\toolbox.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\dtmf\toolbox.h">
+    <ClInclude Include="include\dtmf\node.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\dtmf.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="src\signal\constants.h">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -63,6 +60,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\toolbox.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\node.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

@@ -13,7 +13,9 @@ namespace dtmf
 		;
 
 		// Public Methods
-		;
-
+		void testGenerator();
+		void testGeneratorSequence();
+		void testDecoderLog();
+		void testDecoderKeyboard();
 	}
 }
