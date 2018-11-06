@@ -33,7 +33,7 @@
     <ClInclude Include="src\signal\sampler.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\node\cake.h">
+    <ClInclude Include="src\_old\cake.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -56,7 +56,7 @@
     <ClCompile Include="src\signal\sampler.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\node\cake.cpp">
+    <ClCompile Include="src\_old\cake.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
