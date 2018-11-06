@@ -9,7 +9,6 @@
 
 #include "signal/generator.h"
 #include "signal/decoder.h"
-#include "node/node.h"
 
 //// Private Declarations /////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -82,7 +81,6 @@ void dtmf::executePayload(uint toneID)
 
 	switch (toneID)
 	{
-
 	//Left
 	case 0:
 		keyPress(0x25, keyMoveDuration);

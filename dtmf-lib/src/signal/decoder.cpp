@@ -43,7 +43,10 @@ void decoder::init(void(*callback)(uint toneID))
 
 	// init sampler
 	if (sampler::isAvailable())
+	{
 		rec = new sampler(&decoder::appendQueue);
+	}
+		
 	
 	decoder::status = state::idle;
 }
@@ -52,7 +55,9 @@ void decoder::init(void(*callback)(uint toneID))
 void decoder::run()
 {
 	if (decoder::status == state::unitialized)
+	{
 		return;
+	}
 
 	// start sampler & update status
 	decoder::rec->start();
@@ -76,22 +81,26 @@ void decoder::thread()
 {
 	while (true)
 	{		
+		// check status
 		if (decoder::status != state::running)
+		{
 			continue;
+		}
 
+		// critical section
 		decoder::queueMutex.lock();
 
-			if (decoder::queue.size() < 5)								// better done with a condition variable?
+			if (decoder::queue.size() < STEP_WINDOW_SIZE)
 			{
 				decoder::queueMutex.unlock();
 				continue;
 			}
 			
-			buffer.clear();
+			decoder::buffer.clear();
 
 			for (auto sampleChunks : queue)
 			{  
-				buffer.insert(buffer.end(), sampleChunks.begin(), sampleChunks.end());
+				decoder::buffer.insert(decoder::buffer.end(), sampleChunks.begin(), sampleChunks.end());
 			}
 
 			decoder::queue.pop_front();
@@ -155,7 +164,9 @@ int decoder::extractToneID(std::array<int, 2> &indexes)
 	int indexHigh	= indexes[1];
 
 	if ((indexLow * indexHigh) < 0)
+	{
 		return -1;
+	}
 
 	return (indexLow * 4 + indexHigh);
 }
@@ -182,7 +193,9 @@ void decoder::decode(std::vector<short> &samples)
 
 	// callback
 	if (toneID >= 0)
+	{
 		callback(toneID);
+	}
 
 	decoder::status = state::running;
 }
