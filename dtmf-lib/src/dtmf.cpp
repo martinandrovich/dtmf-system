@@ -5,7 +5,7 @@
 
 #define WINVER 0x0500
 
-#include "dtmf.h"
+#include "dtmf/dtmf.h"
 
 #include "signal/generator.h"
 #include "signal/decoder.h"

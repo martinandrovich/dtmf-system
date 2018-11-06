@@ -1,6 +1,8 @@
 #pragma once
 #include <iostream>
-#include <dtmf.h>
+
+#include <dtmf/dtmf.h>
+#include <dtmf/toolbox.h>
 
 int main()
 {	
