@@ -1,12 +1,8 @@
 #include <iostream>
-<<<<<<< HEAD
-#include <dtmf.h>
-#define LOG(x) std::cout << x << std::endl;
-=======
-
 #include <dtmf/node.h>
 #include <dtmf/toolbox.h>
->>>>>>> master
+
+#define LOG(x) std::cout << x << std::endl;
 
 void init() {
 	char ID;
@@ -39,10 +35,6 @@ void init() {
 }
 int main()
 {	
-<<<<<<< HEAD
-
-	init();
-=======
 	
 	// init
 	std::cout << "Ear Rape Simulator 1.1\n";
@@ -50,7 +42,6 @@ int main()
 	// test functions
 	std::cout << "Testing Decoder Keyboard Presses";
 	dtmf::toolbox::testDecoderKeyboard();
->>>>>>> master
 	
 	dtmf::cake test(10);
 
