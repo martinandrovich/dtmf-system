@@ -73,10 +73,11 @@ int main() {
 
 	//-------------------------- Global times -----------------------------------------------------------------------
 	high_resolution_clock::time_point	startTime;
-	high_resolution_clock::time_point	endTime;
-	duration<double>					totalTime;
+	high_resolution_clock::time_point	t1;
+	high_resolution_clock::time_point	t2;
 
-	high_resolution_clock::time_point	inputTime;
+
+	duration<double>					totalTime;
 	std::vector <double>                inputDelta;
 	
 	//---------------------------------------------------------------------------------------------------------------
@@ -132,91 +133,92 @@ int main() {
 
 		if (sf::Keyboard::isKeyPressed(Bomb))
 		{
-			//Saving time since last input (if first input NaN)
-			inputTime = high_resolution_clock::now();
-			duration<double> dur = duration_cast<duration<double>>(inputTime- endTime);
+			//Starting time for start input;
+			t1 = high_resolution_clock::now();
+
+			duration<double> dur = duration_cast<duration<double>>(t1 - t2);
 			inputDelta.push_back(dur.count());
 
-			//Starting time for start input;
-			high_resolution_clock::time_point t1 = high_resolution_clock::now();
 			while (sf::Keyboard::isKeyPressed(Bomb))
 			{
 
 			}
-			high_resolution_clock::time_point t2 = high_resolution_clock::now();
+			t2 = high_resolution_clock::now();
 			//Saving time since input start
 			duration<double> time_span = duration_cast<duration<double>>(t2 - t1);
 			durationsBomb.push_back(time_span.count());
 
-			endTime = high_resolution_clock::now(); //Seting time end after last input
 		}
 		else if(sf::Keyboard::isKeyPressed(Up))
 		{
-			inputTime = high_resolution_clock::now();
-			duration<double> dur = duration_cast<duration<double>>(inputTime - endTime);
+
+			//Starting time for start input;
+			t1 = high_resolution_clock::now();
+
+			duration<double> dur = duration_cast<duration<double>>(t1 - t2);
 			inputDelta.push_back(dur.count());
 
-			high_resolution_clock::time_point t1 = high_resolution_clock::now();
 			while (sf::Keyboard::isKeyPressed(Up))
 			{
 
 			}
-			high_resolution_clock::time_point t2 = high_resolution_clock::now();
+			t2 = high_resolution_clock::now();
 			duration<double> time_span = duration_cast<duration<double>>(t2 - t1);
 			durationsUp.push_back(time_span.count());
 
-			endTime = high_resolution_clock::now(); //Seting time end after last input
 		}
 		else if (sf::Keyboard::isKeyPressed(Down))
 		{
-			inputTime = high_resolution_clock::now();
-			duration<double> dur = duration_cast<duration<double>>(inputTime - endTime);
+
+			//Starting time for start input;
+			t1 = high_resolution_clock::now();
+
+			duration<double> dur = duration_cast<duration<double>>(t1 - t2);
 			inputDelta.push_back(dur.count());
 
-			high_resolution_clock::time_point t1 = high_resolution_clock::now();
 			while (sf::Keyboard::isKeyPressed(Down))
 			{
 
 			}
-			high_resolution_clock::time_point t2 = high_resolution_clock::now();
+			t2 = high_resolution_clock::now();
 			duration<double> time_span = duration_cast<duration<double>>(t2 - t1);
 			durationsDown.push_back(time_span.count());
-
-			endTime = high_resolution_clock::now(); //Seting time end after last input
 		}
 		else if (sf::Keyboard::isKeyPressed(Right))
 		{
-			inputTime = high_resolution_clock::now();
-			duration<double> dur = duration_cast<duration<double>>(inputTime - endTime);
+
+			//Starting time for start input;
+			t1 = high_resolution_clock::now();
+
+			duration<double> dur = duration_cast<duration<double>>(t1 - t2);
 			inputDelta.push_back(dur.count());
 
-			high_resolution_clock::time_point t1 = high_resolution_clock::now();
 			while (sf::Keyboard::isKeyPressed(Right))
 			{
 
 			}
-			high_resolution_clock::time_point t2 = high_resolution_clock::now();
+			t2 = high_resolution_clock::now();
 			duration<double> time_span = duration_cast<duration<double>>(t2 - t1);
 			durationsRight.push_back(time_span.count());
 
-			endTime = high_resolution_clock::now(); //Seting time end after last input
 		}
 		else if (sf::Keyboard::isKeyPressed(Left))
 		{
-			inputTime = high_resolution_clock::now();
-			duration<double> dur = duration_cast<duration<double>>(inputTime - endTime);
+
+			//Starting time for start input;
+			t1 = high_resolution_clock::now();
+
+			duration<double> dur = duration_cast<duration<double>>(t1 - t2);
 			inputDelta.push_back(dur.count());
 
-			high_resolution_clock::time_point t1 = high_resolution_clock::now();
 			while (sf::Keyboard::isKeyPressed(Left))
 			{
 
 			}
-			high_resolution_clock::time_point t2 = high_resolution_clock::now();
+			t2 = high_resolution_clock::now();
 			duration<double> time_span = duration_cast<duration<double>>(t2 - t1);
 			durationsLeft.push_back(time_span.count());
 
-			endTime = high_resolution_clock::now(); //Seting time end after last input
 		}
 
 	}
@@ -229,7 +231,7 @@ int main() {
 
 
 
-	totalTime = duration_cast<duration<double>>(endTime - startTime);
+	totalTime = duration_cast<duration<double>>(t2 - startTime);
 
 	int totalCount = inputDelta.size(); //The number of inputs is equal to all inputs
 
