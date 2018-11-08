@@ -46,7 +46,7 @@ double averageDur(std::vector<double> durations)
 	{
 		return NAN;
 	}
-	return total / float(durations.size());
+	return total / double(durations.size());
 }
 
 void pop_front(std::vector<double>& vec) // Used to remove the first element in inputDelta
@@ -56,6 +56,16 @@ void pop_front(std::vector<double>& vec) // Used to remove the first element in 
 	vec.pop_back();
 }
 
+double sum(std::vector<double> durations)
+{
+	double sum = 0;
+	for (unsigned i = 0; i < durations.size(); i++)
+	{
+		sum += durations[i];
+	}
+
+	return sum;
+}
 
 
 int main() {
@@ -66,8 +76,6 @@ int main() {
 	high_resolution_clock::time_point	endTime;
 	duration<double>					totalTime;
 
-
-	high_resolution_clock::time_point	newTime;
 	high_resolution_clock::time_point	inputTime;
 	std::vector <double>                inputDelta;
 	
@@ -126,7 +134,7 @@ int main() {
 		{
 			//Saving time since last input (if first input NaN)
 			inputTime = high_resolution_clock::now();
-			duration<double> dur = duration_cast<duration<double>>(inputTime- newTime);
+			duration<double> dur = duration_cast<duration<double>>(inputTime- endTime);
 			inputDelta.push_back(dur.count());
 
 			//Starting time for start input;
@@ -140,13 +148,12 @@ int main() {
 			duration<double> time_span = duration_cast<duration<double>>(t2 - t1);
 			durationsBomb.push_back(time_span.count());
 
-			//Starting a new time for last input
-			newTime = high_resolution_clock::now();
+			endTime = high_resolution_clock::now(); //Seting time end after last input
 		}
 		else if(sf::Keyboard::isKeyPressed(Up))
 		{
 			inputTime = high_resolution_clock::now();
-			duration<double> dur = duration_cast<duration<double>>(inputTime - newTime);
+			duration<double> dur = duration_cast<duration<double>>(inputTime - endTime);
 			inputDelta.push_back(dur.count());
 
 			high_resolution_clock::time_point t1 = high_resolution_clock::now();
@@ -158,12 +165,12 @@ int main() {
 			duration<double> time_span = duration_cast<duration<double>>(t2 - t1);
 			durationsUp.push_back(time_span.count());
 
-			newTime = high_resolution_clock::now();
+			endTime = high_resolution_clock::now(); //Seting time end after last input
 		}
 		else if (sf::Keyboard::isKeyPressed(Down))
 		{
 			inputTime = high_resolution_clock::now();
-			duration<double> dur = duration_cast<duration<double>>(inputTime - newTime);
+			duration<double> dur = duration_cast<duration<double>>(inputTime - endTime);
 			inputDelta.push_back(dur.count());
 
 			high_resolution_clock::time_point t1 = high_resolution_clock::now();
@@ -175,12 +182,12 @@ int main() {
 			duration<double> time_span = duration_cast<duration<double>>(t2 - t1);
 			durationsDown.push_back(time_span.count());
 
-			newTime = high_resolution_clock::now();
+			endTime = high_resolution_clock::now(); //Seting time end after last input
 		}
 		else if (sf::Keyboard::isKeyPressed(Right))
 		{
 			inputTime = high_resolution_clock::now();
-			duration<double> dur = duration_cast<duration<double>>(inputTime - newTime);
+			duration<double> dur = duration_cast<duration<double>>(inputTime - endTime);
 			inputDelta.push_back(dur.count());
 
 			high_resolution_clock::time_point t1 = high_resolution_clock::now();
@@ -192,12 +199,12 @@ int main() {
 			duration<double> time_span = duration_cast<duration<double>>(t2 - t1);
 			durationsRight.push_back(time_span.count());
 
-			newTime = high_resolution_clock::now();
+			endTime = high_resolution_clock::now(); //Seting time end after last input
 		}
 		else if (sf::Keyboard::isKeyPressed(Left))
 		{
 			inputTime = high_resolution_clock::now();
-			duration<double> dur = duration_cast<duration<double>>(inputTime - newTime);
+			duration<double> dur = duration_cast<duration<double>>(inputTime - endTime);
 			inputDelta.push_back(dur.count());
 
 			high_resolution_clock::time_point t1 = high_resolution_clock::now();
@@ -209,12 +216,12 @@ int main() {
 			duration<double> time_span = duration_cast<duration<double>>(t2 - t1);
 			durationsLeft.push_back(time_span.count());
 
-			newTime = high_resolution_clock::now();
+			endTime = high_resolution_clock::now(); //Seting time end after last input
 		}
 
 	}
 	
-	endTime = high_resolution_clock::now(); //Seting time when monitoring finished
+	
 
 	//-------------------------------------- end of monitoring ---------------------------------------------------------------
 
@@ -236,7 +243,6 @@ int main() {
 
 	std::cout << "Total time = " << totalTime.count() <<" s" << std::endl << std::endl;
 
-	
 	std::cout << std::setw(5) << std::left << "Key" << std::setw(2) << std::left << "|" << std::setw(7) << std::left << "Amount" << std::setw(2) << std::left << "|" << std::setw(22) << std::left << "Shortest duration" << std::setw(2) << std::left << "|" << std::setw(10) << std::left << "Average duration" << std::endl;
 	std::cout << std::setw(5) << std::left << "Bomb" << std::setw(2) << std::left << "|" << std::setw(7) << std::left << durationsBomb.size() << std::setw(2) << std::left << "|" << std::setw(12) << std::left << shortestDur(durationsBomb) << std::setw(10) << std::left << "s" << std::setw(2) << std::left << "|" << std::setw(12) << std::left << averageDur(durationsBomb) << "s" << std::endl;
 	std::cout << std::setw(5) << std::left << "Up" << std::setw(2) << std::left << "|" << std::setw(7) << std::left << durationsUp.size() << std::setw(2) << std::left << "|" << std::setw(12) << std::left << shortestDur(durationsUp) << std::setw(10) << std::left << "s" << std::setw(2) << std::left << "|" << std::setw(12) << std::left << averageDur(durationsUp) << "s" << std::endl;
@@ -248,8 +254,14 @@ int main() {
 	std::cout << std::setw(5) << std::left << "" << std::setw(2) << std::left << "|" << std::setw(7) << std::left << totalCount << std::setw(2) << std::left << "|" << std::setw(12) << std::left << shortestDur(inputDelta) << std::setw(10) << std::left << "s" << std::setw(2) << std::left << "|" << std::setw(12) << std::left << averageDur(inputDelta) << "s" << std::endl << std::endl;
 
 
-	std::cout << "key-strokes pr.s : " << (1/totalTime.count())*totalCount << std::endl;
+	std::cout << "key-strokes pr.s : " << (1/totalTime.count())*totalCount << std::endl<<std::endl;
 
+	double checkTime = sum(durationsBomb) + sum(durationsDown) + sum(durationsLeft) + sum(durationsRight) + sum(durationsUp) + sum(inputDelta);
+
+
+	double pro = (abs(checkTime-totalTime.count())/((checkTime+totalTime.count())/2))*100;
+
+	std::cout << "There are a discrepancy of " << pro << "%" << std::endl;
 	//----------------------------------------------------------------------------------------------------------------------
 	int wait;
 	std::cin >> wait;
