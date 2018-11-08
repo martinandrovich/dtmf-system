@@ -1,0 +1,23 @@
+#include <iostream>
+#include <vector>
+#include <bitset>
+#include <Windows.h>
+
+#include "dtmf/node.h"
+#include "signal/generator.h"
+#include "signal/decoder.h"
+#include "_old/cake.h"
+
+//// Private Declarations /////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+namespace dtmf
+{
+	// Private Members
+	;
+
+	// Private Methods
+	;
+	
+}
+
+//// Method Definitions ///////////////////////////////////////////////////////////////////////////////////////////////////////////

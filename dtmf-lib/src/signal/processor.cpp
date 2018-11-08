@@ -20,7 +20,9 @@ float processor::getAverageAmplitude(std::array<float, 8> &sampleArray)
 	float sum = 0.f;
 
 	for (const auto& s : sampleArray)
+	{
 		sum += s;
+	}		
 
 	return sum/8.f;
 }
@@ -35,7 +37,6 @@ float processor::goertzel(std::vector<short> &samples, int frequency)
 		//k = (N*targetFreq)/sampleFreq
 	//w(n)=2cos(2*pi*k/N)*w(n-1)-w(n-2)+x(n)
 	
-
 
 	// variable definitions
 	int		numSamples			= samples.size();
@@ -94,7 +95,9 @@ void processor::printGoertzelArray(std::array<float, 8> &sampleArray)
 	std::cout << "Goertzel array:\n";
 
 	for (int i = 0; i < 8; i++)
+	{
 		std::cout << freq[i] << " : " << sampleArray[i] << " | ";
+	}
 
 	std::cout << "\n\n";
 }

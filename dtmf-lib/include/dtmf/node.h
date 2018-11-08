@@ -1,15 +1,18 @@
 #pragma once
-
 //// Public Declarations [Interface] //////////////////////////////////////////////////////////////////////////////////////////////
+#include "..\src\_old\cake.h"
 
 namespace dtmf
-{
-	// Public Members
-	;	
+{	
+	namespace node
+	{
+		// Public Constructs
+		;
+
+		// Public Members
+		;
 	
-	// Public Methods
-	void testGenerator();
-	void testGeneratorSequence();
-	void testDecodeLog();
-	void testDecodeKeyboard();
+		// Public Methods
+		;
+	}
 }

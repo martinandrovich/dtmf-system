@@ -17,7 +17,8 @@ namespace decoder
 {
 	// Private Members
 	state							status = state::unitialized;
-	std::queue<std::vector<short>>	queue;
+	std::deque<std::vector<short>>	queue;
+	std::vector<short>				buffer;
 	std::mutex						queueMutex;
 	std::thread						worker;
 	sampler*						rec;
@@ -42,7 +43,10 @@ void decoder::init(void(*callback)(uint toneID))
 
 	// init sampler
 	if (sampler::isAvailable())
+	{
 		rec = new sampler(&decoder::appendQueue);
+	}
+		
 	
 	decoder::status = state::idle;
 }
@@ -51,7 +55,9 @@ void decoder::init(void(*callback)(uint toneID))
 void decoder::run()
 {
 	if (decoder::status == state::unitialized)
+	{
 		return;
+	}
 
 	// start sampler & update status
 	decoder::rec->start();
@@ -75,24 +81,34 @@ void decoder::thread()
 {
 	while (true)
 	{		
+		// check status
 		if (decoder::status != state::running)
+		{
 			continue;
+		}
 
+		// critical section
 		decoder::queueMutex.lock();
 
-			if (decoder::queue.empty())								// better done with a condition variable?
+			if (decoder::queue.size() < STEP_WINDOW_SIZE)
 			{
 				decoder::queueMutex.unlock();
 				continue;
 			}
+			
+			decoder::buffer.clear();
 
-			auto samplesCopy = decoder::queue.front();				// make copy so that queue isn't blocked while decoding
-			decoder::queue.pop();
+			for (auto sampleChunks : queue)
+			{  
+				decoder::buffer.insert(decoder::buffer.end(), sampleChunks.begin(), sampleChunks.end());
+			}
+
+			decoder::queue.pop_front();
 
 		decoder::queueMutex.unlock();
 		
 		// decode the copied samples
-		decoder::decode(samplesCopy);
+		decoder::decode(buffer);
 	}
 }
 
@@ -102,7 +118,7 @@ void decoder::appendQueue(std::vector<short> samples)
 	decoder::queueMutex.lock();
 
 	//std::cout << "[QUEUE] Adding to queue with [" << decoder::queue.size() << "] elements.\n";
-	decoder::queue.push(samples);
+	decoder::queue.push_back(samples);
 
 	decoder::queueMutex.unlock();
 }
@@ -148,7 +164,9 @@ int decoder::extractToneID(std::array<int, 2> &indexes)
 	int indexHigh	= indexes[1];
 
 	if ((indexLow * indexHigh) < 0)
+	{
 		return -1;
+	}
 
 	return (indexLow * 4 + indexHigh);
 }
@@ -160,9 +178,6 @@ void decoder::decode(std::vector<short> &samples)
 	
 	// decode
 	//std::cout << "[DECODER] Decoding [" << samples.size() << "] samples...\n\n";
-
-	// combine 5 latest sample chunks
-	;
 
 	// compile goertzelArray for all DTMF frequencies
 	auto goertzelArray = processor::goertzelArray(samples);
@@ -178,7 +193,9 @@ void decoder::decode(std::vector<short> &samples)
 
 	// callback
 	if (toneID >= 0)
+	{
 		callback(toneID);
+	}
 
 	decoder::status = state::running;
 }
