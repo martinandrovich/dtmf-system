@@ -166,6 +166,7 @@ void toolbox::plotSamples(std::vector<short> &samples)
 	// currently simply manual copy scripts folder to current working path of console-app
 
 	// run MATLAB script/function
+	// needs to be changed to cd "/script"
 	std::string cmd = "matlab -nosplash -nodesktop -r \"plot_script('" + filename + ".dat')\"";
 	system(cmd.c_str());
 }

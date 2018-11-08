@@ -11,7 +11,10 @@ int main()
 
 	// test functions
 	std::cout << "Testing Decoder Keyboard Presses";
-	dtmf::toolbox::testDecoderKeyboardReciever();
+	//dtmf::toolbox::testDecoderKeyboardReciever();
+
+	std::vector<short> test = { 0, 2, 3, -4, 2, 1, -7 };
+	dtmf::toolbox::plotSamples(test);
 
 	// stall & exit
 	std::cin.get();
