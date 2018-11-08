@@ -141,4 +141,33 @@ void toolbox::testDecoderKeyboardSender()
 	generator::playback(0, 50);
 }
 
+///  Debug Methods ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+void toolbox::exportSamples(std::vector<short> &samples, std::string filename)
+{
+	std::ofstream outputStream(filename + ".dat");
+
+	for (const auto &sample : samples)
+	{
+		outputStream << sample << "\n";
+	}
+
+	outputStream.close();
+}
+
+void toolbox::plotSamples(std::vector<short> &samples)
+{
+	// export samples
+	std::string filename = "samples_plot";
+	toolbox::exportSamples(samples, filename);
+
+	// export plot function
+	// or somehow include/copy the MATLAB scripts to the destination path
+	// currently simply manual copy scripts folder to current working path of console-app
+
+	// run MATLAB script/function
+	std::string cmd = "matlab -nosplash -nodesktop -r \"plot_script('" + filename + ".dat')\"";
+	system(cmd.c_str());
+}
+
 }

@@ -1,4 +1,9 @@
 #pragma once
+#include <iostream>
+#include <fstream>
+#include <string>
+#include <vector>
+
 //// Public Declarations [Interface] //////////////////////////////////////////////////////////////////////////////////////////////
 
 namespace dtmf
@@ -19,5 +24,8 @@ namespace dtmf
 
 		void testDecoderKeyboardReciever();
 		void testDecoderKeyboardSender();
+
+		void exportSamples(std::vector<short> &samples, std::string filename = "output");
+		void plotSamples(std::vector<short> &samples);
 	}
 }
