@@ -17,9 +17,9 @@ double shortestDur(std::vector<double> durations)
 	{
 		shortest = durations[0];
 	}
-	else
+	else if (durations.size() <= 0)
 	{
-		return 0;
+		return NAN;
 	}
 
 	for (unsigned i = 0; i < durations.size(); i++)
@@ -42,7 +42,10 @@ double averageDur(std::vector<double> durations)
 	{
 		total += durations[i];
 	}
-
+	if (durations.size() < 1)
+	{
+		return NAN;
+	}
 	return total / float(durations.size());
 }
 
