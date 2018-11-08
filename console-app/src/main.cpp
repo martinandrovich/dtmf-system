@@ -12,8 +12,6 @@ int main()
 	// test functions
 	std::cout << "Testing Decoder Keyboard Presses";
 	dtmf::toolbox::testDecoderKeyboardReciever();
-	
-	dtmf::cake test(10);
 
 	// stall & exit
 	std::cin.get();
