@@ -16,6 +16,8 @@ namespace dtmf
 		void testGenerator();
 		void testGeneratorSequence();
 		void testDecoderLog();
-		void testDecoderKeyboard();
+
+		void testDecoderKeyboardReciever();
+		void testDecoderKeyboardSender();
 	}
 }

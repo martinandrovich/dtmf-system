@@ -129,10 +129,16 @@ void toolbox::testDecoderLog()
 }
 
 // Initialize decoder and execute keypress according to the payload (toneId) of percieved DTMF tones
-void toolbox::testDecoderKeyboard()
+void toolbox::testDecoderKeyboardReciever()
 {
 	decoder::init(&dtmf::toolbox::executePayload);
 	decoder::run();
+}
+
+// ...
+void toolbox::testDecoderKeyboardSender()
+{
+	generator::playback(0, 50);
 }
 
 }

@@ -11,7 +11,7 @@ int main()
 
 	// test functions
 	std::cout << "Testing Decoder Keyboard Presses";
-	dtmf::toolbox::testDecoderKeyboard();
+	dtmf::toolbox::testDecoderKeyboardReciever();
 	
 	dtmf::cake test(10);
 
