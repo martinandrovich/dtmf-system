@@ -68,10 +68,10 @@ namespace dtmf
 
 
 	// Public Methods
-	void actionSend(Action::actions action);
-	void initializeServer(void(*callback)(Action action));
-	
-
+	void sendPayload(int payload);
+	bool payloadReady();
+	void initializeServer(void(*callback)(int payload, int id));
+	void initializeClient(void(*callback)(int payload, int id));
 
 	// Public Members
 

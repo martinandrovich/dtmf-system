@@ -23,7 +23,7 @@
 namespace dtmf
 {
 	// Private Methods
-	void send(int msg); // msg struct
+	void send(Message msg); // msg struct
 	void process(int toneID);
 	void recieved(Message msg);
 
@@ -64,12 +64,12 @@ namespace dtmf
 
 	std::mutex messageLock;
 	bool newMessageFlag, newActionFlag;
-	Action::actions currentAction;
+	int currentAction;
 	Message currentMessage;
 	int timeoutTimer;
 	int oldToneId;
 	bool hasRecievedDirID;
-
+	bool isInitialized=false;
 
 	std::vector<State> states;
 
@@ -85,6 +85,12 @@ namespace dtmf
 
 
 
+
+void dtmf::send(Message msg)
+{
+	
+	generator::playbackSequence({});
+}
 
 void dtmf::process(int toneID)
 {
@@ -117,16 +123,21 @@ void dtmf::process(int toneID)
 	messageLock.unlock();
 }
 
-void dtmf::actionSend(Action::actions action)
+void dtmf::sendPayload(int action)
 {
 	messageLock.lock();
-	if (newActionFlag) {
-		currentAction = action;
-	}
+	currentAction = action;
 
 	newActionFlag = true;
 	messageLock.unlock();
 }
+
+bool dtmf::payloadReady()
+{
+	return newActionFlag;
+}
+
+
 
 
 
@@ -223,8 +234,6 @@ void dtmf::checkTriggers()
 	checkAction();
 	checkMessage();
 	checkTimeOut();
-
-
 }
 
 
@@ -232,8 +241,10 @@ void dtmf::stateMachineThread()
 {
 	while (true) 
 	{
-
 		checkTriggers();
+
+
+		
 
 		std::this_thread::sleep_for(std::chrono::milliseconds(1));
 		timeoutTimer += 1;
@@ -241,9 +252,52 @@ void dtmf::stateMachineThread()
 }
 
 
-
-void dtmf::initializeServer(void(*actionRecieved)(Action action)) 
+void dtmf::initializeClient(void(*callback)(int payload, int id))
 {
+	if (isInitialized) {
+		return;
+	}
+	isInitialized = true;
+
+	states = {
+		State("start",{
+
+			},{
+				StateTransition("Two",{
+				StateCondition([] { return var1 == 5; })
+					}),
+
+			}),
+		State("newClient",{
+
+			},{
+				StateTransition("Three",{
+
+					}),
+
+			}),
+			State("base",{
+		StateAction([] { var1--; })
+				},{
+					StateTransition("Base",{
+					StateCondition([] { return var1 == 3; })
+						}),
+
+				}),
+
+	};
+
+
+	dtmf::stateMachine = std::thread(&dtmf::stateMachineThread);
+}
+
+
+void dtmf::initializeServer(void(*callback)(int payload, int id))
+{
+	if (isInitialized) {
+		return;
+	}
+	isInitialized = true;
 
 	states = {
 		State("Base", {
@@ -274,32 +328,6 @@ void dtmf::initializeServer(void(*actionRecieved)(Action action))
 	};
 	
 
-
-
-	
-	std::cout << "State: "<<states[currentState].name << "\n";
-	var1 = 5;
-	testCurrentState();
-	std::cout << "State: " << states[currentState].name << "\n";
-	testCurrentState();
-	std::cout << "State: " << states[currentState].name << "\n";
-	var1--;
-	testCurrentState();
-	std::cout << "State: " << states[currentState].name << "\n";
-	var1--;
-	testCurrentState();
-	std::cout << "State: " << states[currentState].name << "\n";
-
-
-
-	std::cout << states[0].transitions[0].targetId << "\n";
-	std::cout << states[1].transitions[0].targetId << "\n";
-	std::cout << states[2].transitions[0].targetId << "\n";
-
-	//dtmf::actionRecieved = actionRecieved;
-	//dtmf::stateMachine = std::thread(&dtmf::stateMachineThread);
-
-
-
+	dtmf::stateMachine = std::thread(&dtmf::stateMachineThread);
 
 }
