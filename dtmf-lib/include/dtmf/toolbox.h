@@ -25,7 +25,9 @@ namespace dtmf
 		void testDecoderKeyboardReciever();
 		void testDecoderKeyboardSender();
 
-		void exportSamples(std::vector<short> &samples, std::string filename = "output");
-		void plotSamples(std::vector<short> &samples);
+		
+		void				exportSamples(std::vector<short> &samples, std::string filename = "output");
+		void				plotSamples(std::vector<short> &samples);
+		std::vector<short>	convertAudio(std::string filename);
 	}
 }

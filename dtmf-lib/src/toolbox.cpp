@@ -143,8 +143,9 @@ void toolbox::testDecoderKeyboardSender()
 
 ///  Debug Methods ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+// ...
 void toolbox::exportSamples(std::vector<short> &samples, std::string filename)
-{
+{	
 	std::ofstream outputStream(filename + ".dat");
 
 	for (const auto &sample : samples)
@@ -153,8 +154,11 @@ void toolbox::exportSamples(std::vector<short> &samples, std::string filename)
 	}
 
 	outputStream.close();
+
+	std::cout << "Samples array[" << samples.size() << "] exported as \"" << filename << ".dat\" ...\n";
 }
 
+// ...
 void toolbox::plotSamples(std::vector<short> &samples)
 {
 	// export samples
@@ -165,10 +169,32 @@ void toolbox::plotSamples(std::vector<short> &samples)
 	// or somehow include/copy the MATLAB scripts to the destination path
 	// currently simply manual copy scripts folder to current working path of console-app
 
+	std::cout << "Launching MatLab script...\n";
+
 	// run MATLAB script/function
 	// needs to be changed to cd "/script"
-	std::string cmd = "matlab -nosplash -nodesktop -r \"plot_script('" + filename + ".dat')\"";
+	std::string cmd = "matlab -nodesktop -r \"plot_script('" + filename + ".dat')\"";
 	system(cmd.c_str());
+}
+
+// Convert an audio file to an samples array; return vector of shorts
+std::vector<short> toolbox::convertAudio(std::string filename)
+{
+	std::cout << "Converting \"" << filename << "\" to array.\n";
+	
+	sf::SoundBuffer buffer;
+	
+	if (!buffer.loadFromFile(filename))
+	{
+		return { 0 };
+	}
+
+	const short* data = &buffer.getSamples()[0];
+	const int size = buffer.getSampleCount();
+
+	std::vector<short> samples(data, data + size);
+
+	return samples;
 }
 
 }
