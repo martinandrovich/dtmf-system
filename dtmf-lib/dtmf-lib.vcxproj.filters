@@ -30,7 +30,17 @@
     <ClInclude Include="src\signal\sampler.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+<<<<<<< HEAD
     <ClInclude Include="include\node.h">
+=======
+    <ClInclude Include="src\_old\cake.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\dtmf\toolbox.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\dtmf\node.h">
+>>>>>>> master
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -50,6 +60,15 @@
     <ClCompile Include="src\signal\sampler.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+<<<<<<< HEAD
+=======
+    <ClCompile Include="src\_old\cake.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\toolbox.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+>>>>>>> master
     <ClCompile Include="src\node.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
