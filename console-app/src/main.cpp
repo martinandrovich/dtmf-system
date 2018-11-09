@@ -7,13 +7,16 @@ int main()
 {	
 	
 	// init
-	std::cout << "Ear Rape Simulator 1.1\n";
+	std::cout << "Ear Rape Simulator 1.1\n\n";
 
 	// test functions
-	std::cout << "Testing Decoder Keyboard Presses";
+	//std::cout << "Testing Decoder Keyboard Presses";
 	//dtmf::toolbox::testDecoderKeyboardReciever();
 
-	std::vector<short> test = { 0, 2, 3, -4, 2, 1, -7 };
+	//std::vector<short> test = { 0, 2, 3, -4, 2, 1, -7 };
+	//dtmf::toolbox::plotSamples(test);
+
+	auto test = dtmf::toolbox::convertAudio("test.wav");
 	dtmf::toolbox::plotSamples(test);
 
 	// stall & exit
