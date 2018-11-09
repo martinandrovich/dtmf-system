@@ -102,6 +102,15 @@ void toolbox::pressKey(int key, int duration)
 	SendInput(1, &ip, sizeof(INPUT));
 }
 
+// Get current working directory path; return string
+std::string toolbox::getWorkingDirectory()
+{
+	char buffer[MAX_PATH];
+	GetModuleFileName(NULL, buffer, MAX_PATH);
+
+	return std::string(buffer);
+}
+
 ///  Test Methods /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 // Playback all DTMF tones for 200ms
@@ -169,7 +178,7 @@ void toolbox::plotSamples(std::vector<short> &samples)
 	// or somehow include/copy the MATLAB scripts to the destination path
 	// currently simply manual copy scripts folder to current working path of console-app
 
-	std::cout << "Launching MatLab script...\n";
+	std::cout << "Launching MatLab script ...\n";
 
 	// run MATLAB script/function
 	// needs to be changed to cd "/script"
@@ -177,7 +186,7 @@ void toolbox::plotSamples(std::vector<short> &samples)
 	system(cmd.c_str());
 }
 
-// Convert an audio file to an samples array; return vector of shorts
+// Convert an audio file to a samples array; return vector of shorts
 std::vector<short> toolbox::convertAudio(std::string filename)
 {
 	std::cout << "Converting \"" << filename << "\" to array.\n";
