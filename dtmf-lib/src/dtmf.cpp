@@ -52,6 +52,8 @@ namespace dtmf
 	bool isQuickState = false;
 	int currentErrorState; //state to return to upon error signal
 	int clientID=-1;
+	int numClients = 0;
+	bool isServer;
 	int var1=32, var2=45, var3=112, var4=56; //random access variables for state machine
 	
 
@@ -73,7 +75,6 @@ namespace dtmf
 
 	std::vector<State> states;
 
-	void(*actionRecieved)(Action action);
 
 
 
@@ -88,8 +89,8 @@ namespace dtmf
 
 void dtmf::send(Message msg)
 {
-	
-	generator::playbackSequence({});
+	std::vector<int> sequense = { msg.address,msg.command };
+	generator::playbackSequence(sequense);
 }
 
 void dtmf::process(int toneID)
@@ -205,7 +206,7 @@ void dtmf::checkAction() {
 	{
 		testCurrentState();
 		newActionFlag = false;
-		currentAction = Action::null;
+		currentAction = null;
 	}
 
 	messageLock.unlock();
@@ -258,32 +259,51 @@ void dtmf::initializeClient(void(*callback)(int payload, int id))
 		return;
 	}
 	isInitialized = true;
+	isServer = false;
 
 	states = {
-		State("start",{
-
+		State("start",
+			{
 			},{
-				StateTransition("Two",{
-				StateCondition([] { return var1 == 5; })
+				StateTransition("connect",
+					{
+						StateCondition([] { return currentAction != 0; }),
+						StateCondition([] { return newActionFlag; })
 					}),
 
 			}),
-		State("newClient",{
-
+		State("connect",
+			{
+				StateAction([] { var1=currentAction; }),
+				StateAction([] { send(Message((int)isServer,0,var1)); })
 			},{
-				StateTransition("Three",{
-
+				StateTransition("setId",
+					{
+						StateCondition([] { return currentMessage.command == var1; }),
+						StateCondition([] { return currentMessage.id!=0; })
+					}),
+				StateTransition("start",
+					{
+						StateCondition([] { return currentMessage.command != var1; })
 					}),
 
 			}),
-			State("base",{
-		StateAction([] { var1--; })
-				},{
-					StateTransition("Base",{
-					StateCondition([] { return var1 == 3; })
-						}),
+		State("setId",
+			{
+				StateAction([] { clientID = currentMessage.id; }),
+			},{
+				StateTransition("base",
+					{
+						
+					}),
 
-				}),
+			}),
+		State("base",
+			{
+			},{
+
+
+			}),
 
 	};
 
@@ -298,31 +318,34 @@ void dtmf::initializeServer(void(*callback)(int payload, int id))
 		return;
 	}
 	isInitialized = true;
+	isServer = true;
 
 	states = {
-		State("Base", {
+		State("start",{
 			
-		}, {
-			StateTransition("Two", {
-				StateCondition([] { return var1==5; })
+		},{
+			StateTransition("newClient",{
+				StateCondition([] { return currentMessage.id == 0; })
 			}),
-			
+			StateTransition("base",{
+				StateCondition([] { return currentMessage.command == menu; }),
+				StateCondition([] { return currentMessage.id != 0; })
+			})
+
 		}),
-		State("Two", {
-			
-		}, {
-			StateTransition("Three", {
-				
+		State("newClient",{
+			StateAction([] { numClients++; }),
+			StateAction([] { send(Message((int)isServer,numClients,currentMessage.command)); })
+		},{
+			StateTransition("start",{
+
 			}),
-			
+
 		}),
-		State("Three", {
-			StateAction([] { var1--; })
-		}, {
-			StateTransition("Base", {
-				StateCondition([] { return var1 == 3; })
-			}),
+		State("base",{
+		},{
 			
+
 		}),
 
 	};

@@ -7,11 +7,7 @@ namespace dtmf
 {
 
 	// Public Constructs
-	struct Action
-	{
-		int clientID;
-		enum actions { null, up, down, left, right, primary, secondary, menu };
-	};
+	enum actions { null, up, down, left, right, primary, secondary, menu };
 	
 	struct State;
 	struct StateAction;

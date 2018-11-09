@@ -4,7 +4,7 @@
 
 
 
-void actionRecieved(dtmf::Action action) {
+void actionRecieved(int action, int id) {
 
 }
 
