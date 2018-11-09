@@ -30,12 +30,10 @@ The following conventions are used within the solution's code:
 
 ```
 Constants		: SOME_CONSTANT
-Classes / Namepspace	: someClass || SomeClass
-Structures		: someStructure || SomeStructure
+Classes / Namepspace	: someClass
+Structures		: someStructure
 Methods			: someMethod()
 Member Methods		: this->someMethod() || namespace::someMethod()
 Variables		: someVariable
 Member Variables	: this->someVariable || namespace::someVariable
-
-Curly Braces		: Explicit & New-Line
 ```

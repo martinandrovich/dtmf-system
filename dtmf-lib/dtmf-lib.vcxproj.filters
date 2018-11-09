@@ -31,6 +31,7 @@
       <Filter>Header Files</Filter>
     </ClInclude>
 <<<<<<< HEAD
+<<<<<<< HEAD
     <ClInclude Include="include\node.h">
 =======
     <ClInclude Include="src\_old\cake.h">
@@ -41,6 +42,9 @@
     </ClInclude>
     <ClInclude Include="include\dtmf\node.h">
 >>>>>>> master
+=======
+    <ClInclude Include="include\node.h">
+>>>>>>> f1ae74b4d136d5edb6245a60dc70985fba6a99bf
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -61,6 +65,7 @@
       <Filter>Source Files</Filter>
     </ClCompile>
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
     <ClCompile Include="src\_old\cake.cpp">
       <Filter>Source Files</Filter>
@@ -69,6 +74,8 @@
       <Filter>Source Files</Filter>
     </ClCompile>
 >>>>>>> master
+=======
+>>>>>>> f1ae74b4d136d5edb6245a60dc70985fba6a99bf
     <ClCompile Include="src\node.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>

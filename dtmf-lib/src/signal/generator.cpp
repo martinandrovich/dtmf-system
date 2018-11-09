@@ -42,7 +42,7 @@ sf::SoundBuffer* generator::generateSamples(uint f1, uint f2, uint duration, uin
 		}
 
 		// Array entry
-		temp[i] = amplitudeFinal * (sin(f1 * 2 * PI * (i * 1.f / sampleRate)) + sin(f2 * 2 * PI * (i * 1.f / sampleRate)));
+		temp[i] = amplitudeFinal * (sin(f1 * 2 * PI*(i * 1.f / sampleRate)) + sin(f2 * 2 * PI*(i * 1.f / sampleRate)));
 	}
 
 	// Load and return buffer
@@ -55,9 +55,7 @@ sf::SoundBuffer* generator::generateDTMF(uint toneID, uint duration, uint amplit
 {
 	// Check if valid tone input
 	if (toneID > 15)
-	{
 		return nullptr;
-	}		
 
 	// Return buffer generated from an appropriate set of frequencies
 	//return generator::generateSamples(freqLow[toneID / 4], freqHigh[toneID % 4], duration, amplitude);
@@ -76,12 +74,10 @@ void generator::playback(uint toneID, uint duration)
 	generator::player->setBuffer(*buffer);
 	generator::player->play();
 	
-	// Block thread while playing
+	// Wait while playing
 	while (generator::player->getStatus() == generator::player->Playing)
-	{
 		;
-	}
-	
+
 	generator::status = generator::state::idle;
 
 	// Cleanup
@@ -116,10 +112,8 @@ void generator::exportBuffer(sf::SoundBuffer& buffer, std::string filename)
 
 	std::ofstream outFile(filename + ".txt");
 
-	for (const auto &sample : samples)
-	{
-		outFile << sample << "\n";
-	}
+	for (const auto &s : samples)
+		outFile << s << "\n";
 
 	outFile.close();
 }

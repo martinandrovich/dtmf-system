@@ -16,11 +16,14 @@
 #include "signal/generator.h"
 #include "signal/decoder.h"
 
+<<<<<<< HEAD
 #include "dtmf/node.h"
 #include "signal/generator.h"
 #include "signal/decoder.h"
 #include "_old/cake.h"
 
+=======
+>>>>>>> f1ae74b4d136d5edb6245a60dc70985fba6a99bf
 
 //// Private Declarations /////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -363,8 +366,12 @@ void dtmf::initializeServer(void(*callback)(int payload, int id))
 
 	dtmf::stateMachine = std::thread(&dtmf::stateMachineThread);
 
+<<<<<<< HEAD
 }
 	
 
 //// Method Definitions ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+=======
+}
+>>>>>>> f1ae74b4d136d5edb6245a60dc70985fba6a99bf
