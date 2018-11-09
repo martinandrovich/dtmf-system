@@ -1,5 +1,4 @@
 #include <iostream>
-<<<<<<< HEAD
 #include <node.h>
 
 
@@ -7,16 +6,13 @@
 void actionRecieved(int action, int id) {
 
 }
-=======
 
 #include <dtmf/node.h>
 #include <dtmf/toolbox.h>
->>>>>>> master
 
 int main()
 {	
 	
-<<<<<<< HEAD
 
 
 
@@ -27,7 +23,7 @@ int main()
 
 
 	//dtmf::testDecodeKeyboard();
-=======
+
 	// init
 	std::cout << "Ear Rape Simulator 1.1\n";
 
@@ -37,17 +33,14 @@ int main()
 
 	std::vector<short> test = { 0, 2, 3, -4, 2, 1, -7 };
 	dtmf::toolbox::plotSamples(test);
->>>>>>> master
+
 
 	// stall & exit
 	std::cin.get();
 	return 0;
-<<<<<<< HEAD
+
 
 }
 
 
 
-=======
-}
->>>>>>> master

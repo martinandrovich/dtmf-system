@@ -3,7 +3,6 @@
 #include <bitset>
 #include <Windows.h>
 
-<<<<<<< HEAD
 #include <map>
 
 
@@ -17,18 +16,16 @@
 #include "signal/generator.h"
 #include "signal/decoder.h"
 
-=======
 #include "dtmf/node.h"
 #include "signal/generator.h"
 #include "signal/decoder.h"
 #include "_old/cake.h"
->>>>>>> master
+
 
 //// Private Declarations /////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 namespace dtmf
 {
-<<<<<<< HEAD
 	// Private Methods
 	void send(Message msg); // msg struct
 	void process(int toneID);
@@ -367,14 +364,7 @@ void dtmf::initializeServer(void(*callback)(int payload, int id))
 	dtmf::stateMachine = std::thread(&dtmf::stateMachineThread);
 
 }
-=======
-	// Private Members
-	;
-
-	// Private Methods
-	;
 	
-}
 
 //// Method Definitions ///////////////////////////////////////////////////////////////////////////////////////////////////////////
->>>>>>> master
+
