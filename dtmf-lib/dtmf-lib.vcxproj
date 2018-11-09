@@ -158,23 +158,17 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\node.h" />
-<<<<<<< HEAD
     <ClInclude Include="include\dtmf\toolbox.h" />
     <ClInclude Include="src\_old\cake.h" />
     <ClInclude Include="include\dtmf\node.h" />
-=======
->>>>>>> f1ae74b4d136d5edb6245a60dc70985fba6a99bf
     <ClInclude Include="src\signal\decoder.h" />
     <ClInclude Include="src\signal\generator.h" />
     <ClInclude Include="src\signal\processor.h" />
     <ClInclude Include="src\signal\sampler.h" />
   </ItemGroup>
   <ItemGroup>
-<<<<<<< HEAD
     <ClCompile Include="src\toolbox.cpp" />
     <ClCompile Include="src\_old\cake.cpp" />
-=======
->>>>>>> f1ae74b4d136d5edb6245a60dc70985fba6a99bf
     <ClCompile Include="src\node.cpp" />
     <ClCompile Include="src\signal\constants.h" />
     <ClCompile Include="src\signal\decoder.cpp" />
