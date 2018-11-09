@@ -26,19 +26,23 @@ void assignClients(int am)
 }
 int listenForKey()
 {
-	int key;
-	if (GetKeyState(VK_LEFT) == true)
+	int key=0;
+	if (GetKeyState('S') < 0) 
+		LOG("s down")
+	if (GetKeyState(VK_LEFT) < 0)
 		key = 1;
-	if (GetKeyState(VK_UP) == true)
+	if (GetKeyState(VK_UP) < 0)
 		key = 2;
-	if (GetKeyState(VK_DOWN) == true)
+	if (GetKeyState(VK_DOWN) < 0)
 		key = 3;
-	if (GetKeyState(VK_RIGHT) == true)
+	if (GetKeyState(VK_RIGHT) < 0)
 		key = 4;
-	if (GetKeyState(VK_SPACE) == true)
-		key = 5;
-	if (GetKeyState(VK_LEFT) == true)
+	if (GetKeyState(VK_SPACE) < 0)
+		key=5;
+	if (GetKeyState(VK_CONTROL) < 0)
 		key = 6;
+	if (GetKeyState(VK_ESCAPE) < 0)
+		key = 7;
 
 	return key;
 }
@@ -47,8 +51,19 @@ void clientWork()
 {
 	while (true)
 	{
-		LOG(listenForKey())
-	
+		//Implementering af prioritetsliste: esc>actions>movement
+		int payload = listenForKey();
+		int priority;
+		if (payload < 5)
+			priority = 0;
+		else if (payload < 7)
+			priority = 1;
+		else priority = 2;
+		//node::sendPayload(payload, prioritet)
+			if (keydown != 0)
+				LOG(keydown);
+
+		std::this_thread::sleep_for(std::chrono::milliseconds(30));
 	}
 }
 
@@ -56,33 +71,28 @@ void init() {
 	std::string input;
 	int nInput;
 	char ID;
-	std::cout << "Er jeg server eller klient? [SPACE]/g \n";
+	std::cout << "Er jeg server eller klient? [SPACE]/g/w \n";
 	std::getline(std::cin, input);
 	if (input == " ") {
 		std::cout << "Server valgt \n";
 		ID = 'S';
-		LOG("Hvor mange klienter ønsker du at tilkoble");
-		std::cin >> nInput;
-		assignClients(nInput);
-	
+		//LOG("Hvor mange klienter ønsker du at tilkoble");
+		//std::cin >> nInput;
+		//assignClients(nInput);
+		void serverWork();
 	}
 	else {
 		std::cout << "Klient valgt \n";
 		ID = 'K';
 		clientWork();
 	}
-
-	switch (ID)
-	{
-	case 'S': {
-	
-	}
-	case 'K': {
-		while (true)
-			return;
-	}
-	}
 }
+void serverWork()
+	{
+		ShellExecute(0, 0, "https://www.playing-with-fire-game.com/", 0, 0, SW_SHOW);
+	}
+
+
 
 
 
@@ -94,7 +104,6 @@ int main()
 	//std::cout << "Testing Decoder Keyboard Presses";
 	//dtmf::toolbox::testDecoderKeyboard();
 	
-	LOG("yooo")
 	// stall & exit
 	std::cin.get();
 	std::cin.get();
