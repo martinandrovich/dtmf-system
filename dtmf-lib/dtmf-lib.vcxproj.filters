@@ -18,13 +18,7 @@
     <None Include="doc\CHANGELOG.md" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="include\dtmf.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="src\signal\generator.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\node\node.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\signal\decoder.h">
@@ -36,18 +30,15 @@
     <ClInclude Include="src\signal\sampler.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="include\node.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\dtmf.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="src\signal\constants.h">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\signal\generator.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\node\node.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\signal\decoder.cpp">
@@ -57,6 +48,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\signal\sampler.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\node.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

@@ -64,7 +64,7 @@ namespace dtmf
 
 
 	// Public Methods
-	void sendPayload(int payload);
+	void sendPayload(int payload, int priority=0);
 	bool payloadReady();
 	void initializeServer(void(*callback)(int payload, int id));
 	void initializeClient(void(*callback)(int payload, int id));

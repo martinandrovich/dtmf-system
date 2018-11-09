@@ -11,9 +11,8 @@
 
 #define WINVER 0x0500
 
-#include "dtmf.h"
+#include "node.h"
 
-#include "node/node.h"
 #include "signal/generator.h"
 #include "signal/decoder.h"
 
@@ -67,6 +66,7 @@ namespace dtmf
 	std::mutex messageLock;
 	bool newMessageFlag, newActionFlag;
 	int currentAction;
+	int currentActionPriority;
 	Message currentMessage;
 	int timeoutTimer;
 	int oldToneId;
@@ -91,6 +91,10 @@ void dtmf::send(Message msg)
 {
 	std::vector<int> sequense = { msg.address,msg.command };
 	generator::playbackSequence(sequense);
+
+	newActionFlag = false;
+	currentAction = null;
+	currentActionPriority = 0;
 }
 
 void dtmf::process(int toneID)
@@ -124,10 +128,13 @@ void dtmf::process(int toneID)
 	messageLock.unlock();
 }
 
-void dtmf::sendPayload(int action)
+void dtmf::sendPayload(int action, int priority)
 {
 	messageLock.lock();
-	currentAction = action;
+	if (currentActionPriority <= priority) {
+		currentAction = action;
+		currentActionPriority = priority;
+	}
 
 	newActionFlag = true;
 	messageLock.unlock();
@@ -205,8 +212,6 @@ void dtmf::checkAction() {
 	if (newActionFlag) 
 	{
 		testCurrentState();
-		newActionFlag = false;
-		currentAction = null;
 	}
 
 	messageLock.unlock();
