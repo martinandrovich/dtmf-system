@@ -157,24 +157,13 @@
     <None Include="doc\CHANGELOG.md" />
   </ItemGroup>
   <ItemGroup>
-<<<<<<< HEAD
     <ClInclude Include="include\node.h" />
-=======
-    <ClInclude Include="include\dtmf\toolbox.h" />
-    <ClInclude Include="src\_old\cake.h" />
-    <ClInclude Include="include\dtmf\node.h" />
->>>>>>> master
     <ClInclude Include="src\signal\decoder.h" />
     <ClInclude Include="src\signal\generator.h" />
     <ClInclude Include="src\signal\processor.h" />
     <ClInclude Include="src\signal\sampler.h" />
   </ItemGroup>
   <ItemGroup>
-<<<<<<< HEAD
-=======
-    <ClCompile Include="src\toolbox.cpp" />
-    <ClCompile Include="src\_old\cake.cpp" />
->>>>>>> master
     <ClCompile Include="src\node.cpp" />
     <ClCompile Include="src\signal\constants.h" />
     <ClCompile Include="src\signal\decoder.cpp" />
