@@ -1,6 +1,5 @@
 #pragma once
 #include <iostream>
-#include <node.h>
 
 
 
@@ -9,7 +8,7 @@ void actionRecieved(int action, int id) {
 }
 
 #include <dtmf/node.h>
-#include <dtmf/toolbox.h>
+//#include <dtmf/toolbox.h>
 
 int main()
 {	
@@ -33,7 +32,7 @@ int main()
 	//dtmf::toolbox::testDecoderKeyboardReciever();
 
 	std::vector<short> test = { 0, 2, 3, -4, 2, 1, -7 };
-	dtmf::toolbox::plotSamples(test);
+//	dtmf::toolbox::plotSamples(test);
 
 
 	std::cin.get();

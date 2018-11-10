@@ -11,7 +11,7 @@
 
 #define WINVER 0x0500
 
-#include "node.h"
+
 
 #include "signal/generator.h"
 #include "signal/decoder.h"
@@ -19,7 +19,6 @@
 #include "dtmf/node.h"
 #include "signal/generator.h"
 #include "signal/decoder.h"
-#include "_old/cake.h"
 
 
 //// Private Declarations /////////////////////////////////////////////////////////////////////////////////////////////////////////
