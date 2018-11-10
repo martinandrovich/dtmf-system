@@ -158,11 +158,15 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\main.cpp" />
+    <ClCompile Include="src\system.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\dtmf-lib\dtmf-lib.vcxproj">
       <Project>{e6a77344-067c-4da5-91ae-c629e5134997}</Project>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="src\system.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
