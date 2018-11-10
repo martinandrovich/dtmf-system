@@ -55,7 +55,7 @@ void decoder::run()
 		return;
 
 	// start sampler & update status
-	decoder::rec->start();
+	decoder::rec->start(SAMPLE_RATE);
 	decoder::status = state::running;
 }
 
