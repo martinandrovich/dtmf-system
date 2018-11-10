@@ -18,8 +18,8 @@ int main()
 	//dtmf::toolbox::testDecoderKeyboardReciever();
 
 	std::cout << "Testing Audio Conversion and Sample Plot\n";
-	auto test = dtmf::toolbox::convertAudio("test.wav");
-	dtmf::toolbox::plotSamples(test);
+	//auto test = dtmf::toolbox::convertAudio("test.wav");
+	//dtmf::toolbox::plotSamples(test);
 
 	// stall & exit
 	std::cin.get();

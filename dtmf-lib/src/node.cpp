@@ -10,14 +10,363 @@
 
 //// Private Declarations /////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+#include <iostream>
+#include <vector>
+#include <bitset>
+#include <Windows.h>
+
+#include <map>
+
+
+
+#include <thread>
+
+
+
+
+
+//// Private Declarations /////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 namespace dtmf
 {
-	// Private Members
-	;
+	namespace node {
+		// Private Methods
+		void send(Message msg); // msg struct
+		void process(int toneID);
+		void recieved(Message msg);
 
-	// Private Methods
-	;
-	
+
+		void testCurrentState();
+		int getStateId(StateTransition& transition);
+		bool testTransition(StateTransition& transition);
+
+		void runStateActions();
+
+
+
+		void checkAction();
+		void checkMessage();
+		void checkTimeOut();
+
+		void checkTriggers();
+
+
+
+
+		void stateMachineThread();
+
+		// Private Members
+		int currentState = 0;
+		bool isQuickState = false;
+		int currentErrorState; //state to return to upon error signal
+		int clientID = -1;
+		int numClients = 0;
+		bool isServer;
+		int var1 = 32, var2 = 45, var3 = 112, var4 = 56; //random access variables for state machine
+
+
+
+
+
+
+
+		std::thread	stateMachine;
+
+		std::mutex messageLock;
+		bool newMessageFlag, newActionFlag;
+		int currentAction;
+		int currentActionPriority;
+		node::Message currentMessage;
+		int timeoutTimer;
+		int oldToneId;
+		bool hasRecievedDirID;
+		bool isInitialized = false;
+
+		std::vector<State> states;
+
+
+
+
+
+	}
 }
 
 //// Method Definitions ///////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+
+void dtmf::node::send(Message msg)
+{
+	std::vector<int> sequense = { msg.address,msg.command };
+	generator::playbackSequence(sequense);
+
+	newActionFlag = false;
+	currentAction = null;
+	currentActionPriority = 0;
+}
+
+void dtmf::node::process(int toneID)
+{
+	messageLock.lock();
+	if (toneID == 15) {
+		hasRecievedDirID = false;
+
+	}
+	else if (hasRecievedDirID == false)
+	{
+
+		if (isQuickState)
+		{
+			currentMessage = Message(toneID);
+			newMessageFlag = true;
+		}
+		else
+		{
+
+			oldToneId = toneID;
+			hasRecievedDirID = true;
+		}
+	}
+	else
+	{
+		currentMessage = Message(oldToneId, toneID);
+		hasRecievedDirID = false;
+		newMessageFlag = true;
+	}
+	messageLock.unlock();
+}
+
+void dtmf::node::sendPayload(int action, int priority)
+{
+	messageLock.lock();
+	if (currentActionPriority <= priority) {
+		currentAction = action;
+		currentActionPriority = priority;
+	}
+
+	newActionFlag = true;
+	messageLock.unlock();
+}
+
+bool dtmf::node::payloadReady()
+{
+	return newActionFlag;
+}
+
+
+
+
+
+void dtmf::node::testCurrentState()
+{
+	for (auto& transition : states[currentState].transitions)
+	{
+		if (testTransition(transition))
+		{
+			currentState = getStateId(transition);
+			isQuickState = states[currentState].isQuickState;
+			runStateActions();
+			return;
+		}
+	}
+}
+
+int dtmf::node::getStateId(StateTransition& transition)
+{
+	std::cout << "changing state to " << transition.targetName << "\n";
+	if (transition.targetId != -1)
+	{
+		return transition.targetId;
+	}
+	for (int i = 0; i < states.size(); i++)
+	{
+		if (states[i].name == transition.targetName)
+		{
+
+			transition.targetId = i;
+			return i;
+		}
+	}
+	return -1;
+}
+
+
+bool dtmf::node::testTransition(StateTransition& transition)
+{
+	for (const auto& condition : transition.conditions)
+	{
+		if (!condition)
+		{
+			return false; //if any condition is false return false;
+		}
+	}
+	return true; //else return true
+}
+
+
+
+void dtmf::node::runStateActions()
+{
+	for (auto action : states[currentState].actions)
+	{
+		action.function();
+	}
+	testCurrentState();
+}
+
+
+void dtmf::node::checkAction() {
+	messageLock.lock();
+	if (newActionFlag)
+	{
+		testCurrentState();
+	}
+
+	messageLock.unlock();
+}
+void dtmf::node::checkMessage()
+{
+	messageLock.lock();
+	if (newMessageFlag)
+	{
+		testCurrentState();
+
+		newMessageFlag = false;
+		currentMessage = Message();
+	}
+
+	messageLock.unlock();
+}
+void dtmf::node::checkTimeOut()
+{
+
+}
+
+void dtmf::node::checkTriggers()
+{
+
+	checkAction();
+	checkMessage();
+	checkTimeOut();
+}
+
+
+void dtmf::node::stateMachineThread()
+{
+	while (true)
+	{
+		checkTriggers();
+
+
+
+
+		std::this_thread::sleep_for(std::chrono::milliseconds(1));
+		timeoutTimer += 1;
+	}
+}
+
+
+void dtmf::node::initializeClient(void(*callback)(int payload, int id))
+{
+	if (isInitialized) {
+		return;
+	}
+	isInitialized = true;
+	isServer = false;
+
+	states = {
+		State("start",
+			{
+			},{
+				StateTransition("connect",
+					{
+						StateCondition([] { return currentAction != 0; }),
+						StateCondition([] { return newActionFlag; })
+					}),
+
+			}),
+		State("connect",
+			{
+				StateAction([] { var1 = currentAction; }),
+				StateAction([] { send(Message((int)isServer,0,var1)); })
+			},{
+				StateTransition("setId",
+					{
+						StateCondition([] { return currentMessage.command == var1; }),
+						StateCondition([] { return currentMessage.id != 0; })
+					}),
+				StateTransition("start",
+					{
+						StateCondition([] { return currentMessage.command != var1; })
+					}),
+
+			}),
+		State("setId",
+			{
+				StateAction([] { clientID = currentMessage.id; }),
+			},{
+				StateTransition("base",
+					{
+
+					}),
+
+			}),
+		State("base",
+			{
+			},{
+
+
+			}),
+
+	};
+
+
+	stateMachine = std::thread(&dtmf::node::stateMachineThread);
+}
+
+
+void dtmf::node::initializeServer(void(*callback)(int payload, int id))
+{
+	if (isInitialized) {
+		return;
+	}
+	isInitialized = true;
+	isServer = true;
+
+	states = {
+		State("start",{
+
+		},{
+			StateTransition("newClient",{
+				StateCondition([] { return currentMessage.id == 0; })
+			}),
+			StateTransition("base",{
+				StateCondition([] { return currentMessage.command == menu; }),
+				StateCondition([] { return currentMessage.id != 0; })
+			})
+
+		}),
+		State("newClient",{
+			StateAction([] { numClients++; }),
+			StateAction([] { send(Message((int)isServer,numClients,currentMessage.command)); })
+		},{
+			StateTransition("start",{
+
+			}),
+
+		}),
+		State("base",{
+		},{
+
+
+		}),
+
+	};
+
+
+	stateMachine = std::thread(&dtmf::node::stateMachineThread);
+
+}
+
+
