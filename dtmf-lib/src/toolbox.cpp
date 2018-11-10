@@ -1,3 +1,9 @@
+#include <iostream>
+#include <fstream>
+#include <string>
+#include <vector>
+#include <windows.h>
+
 #include "dtmf/toolbox.h"
 
 #include "signal/generator.h"
@@ -102,6 +108,15 @@ void toolbox::pressKey(int key, int duration)
 	SendInput(1, &ip, sizeof(INPUT));
 }
 
+// Get current working directory path; return string
+std::string toolbox::getWorkingDirectory()
+{
+	char buffer[MAX_PATH];
+	GetModuleFileName(NULL, buffer, MAX_PATH);
+
+	return std::string(buffer);
+}
+
 ///  Test Methods /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 // Playback all DTMF tones for 200ms
@@ -129,10 +144,72 @@ void toolbox::testDecoderLog()
 }
 
 // Initialize decoder and execute keypress according to the payload (toneId) of percieved DTMF tones
-void toolbox::testDecoderKeyboard()
+void toolbox::testDecoderKeyboardReciever()
 {
 	decoder::init(&dtmf::toolbox::executePayload);
 	decoder::run();
+}
+
+// ...
+void toolbox::testDecoderKeyboardSender()
+{
+	generator::playback(0, 50);
+}
+
+///  Debug Methods ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+// ...
+void toolbox::exportSamples(std::vector<short> &samples, std::string filename)
+{	
+	std::ofstream outputStream(filename + ".dat");
+
+	for (const auto &sample : samples)
+	{
+		outputStream << sample << "\n";
+	}
+
+	outputStream.close();
+
+	std::cout << "Samples array[" << samples.size() << "] exported as \"" << filename << ".dat\" ...\n";
+}
+
+// ...
+void toolbox::plotSamples(std::vector<short> &samples)
+{
+	// export samples
+	std::string filename = "samples_plot";
+	toolbox::exportSamples(samples, filename);
+
+	// export plot function
+	// or somehow include/copy the MATLAB scripts to the destination path
+	// currently simply manual copy scripts folder to current working path of console-app
+
+	std::cout << "Launching MatLab script ...\n";
+
+	// run MATLAB script/function
+	// needs to be changed to cd "/script"
+	std::string cmd = "matlab -nodesktop -r \"plot_script('" + filename + ".dat')\"";
+	system(cmd.c_str());
+}
+
+// Convert an audio file to a samples array; return vector of shorts
+std::vector<short> toolbox::convertAudio(std::string filename)
+{
+	std::cout << "Converting \"" << filename << "\" to array.\n";
+	
+	sf::SoundBuffer buffer;
+	
+	if (!buffer.loadFromFile(filename))
+	{
+		return { 0 };
+	}
+
+	const short* data = &buffer.getSamples()[0];
+	const int size = buffer.getSampleCount();
+
+	std::vector<short> samples(data, data + size);
+
+	return samples;
 }
 
 }

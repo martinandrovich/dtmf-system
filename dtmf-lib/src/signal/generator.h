@@ -1,11 +1,7 @@
 #pragma once
 #include <SFML/Audio.hpp>
-#include <iostream>
-#include <fstream>
-#include <cmath>
 #include <vector>
 #include <string>
-#include <Windows.h>
 
 #include "constants.h"
 

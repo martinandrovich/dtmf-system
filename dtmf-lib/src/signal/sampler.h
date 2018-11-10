@@ -1,6 +1,7 @@
 #pragma once
 #include <SFML/Audio.hpp>
 #include <SFML/System/Time.hpp>
+#include <vector>
 
 #include "constants.h"
 

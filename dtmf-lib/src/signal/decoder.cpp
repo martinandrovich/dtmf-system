@@ -5,7 +5,7 @@
 #include <queue>
 #include <array>
 #include <stdlib.h>
-#include <Windows.h>
+#include <windows.h>
 
 #include "decoder.h"
 #include "sampler.h"
@@ -60,7 +60,7 @@ void decoder::run()
 	}
 
 	// start sampler & update status
-	decoder::rec->start();
+	decoder::rec->start(SAMPLE_RATE);
 	decoder::status = state::running;
 }
 

@@ -1,4 +1,11 @@
-#pragma once
+#include <SFML/Audio.hpp>
+#include <iostream>
+#include <fstream>
+#include <cmath>
+#include <vector>
+#include <string>
+#include <windows.h>
+
 #include "generator.h"
 
 //// Private Declarations /////////////////////////////////////////////////////////////////////////////////////////////////////////
