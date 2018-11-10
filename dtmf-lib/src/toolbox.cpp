@@ -1,3 +1,9 @@
+#include <iostream>
+#include <fstream>
+#include <string>
+#include <vector>
+#include <windows.h>
+
 #include "dtmf/toolbox.h"
 
 #include "signal/generator.h"

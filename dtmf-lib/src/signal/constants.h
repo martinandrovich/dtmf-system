@@ -2,7 +2,8 @@
 
 // _ //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-using uint = unsigned int;
+using			uint				= unsigned int;
+using			uchar				= unsigned char;
 
 constexpr auto	PI					= 3.141592653589732;
 constexpr auto	AMPLITUDE_MAX		= 16384;						// Maximum possible signal amplitude (100%) (SIGNED INT16 -> 2^15 / 2)

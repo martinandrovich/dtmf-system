@@ -1,8 +1,8 @@
 #pragma once
+#include <string>
 #include <vector>
-#include <mutex>
+
 //// Public Declarations [Interface] //////////////////////////////////////////////////////////////////////////////////////////////
-#include "..\src\_old\cake.h"
 
 namespace dtmf
 {	
@@ -30,12 +30,12 @@ namespace dtmf
 			std::vector<StateAction> actions;
 			std::vector<StateTransition> transitions;
 		};
+
 		struct StateAction
 		{
 			StateAction(void(*test)()) : function(test) {};
 			void(*function)();
 		};
-
 
 		struct StateTransition
 		{
@@ -66,21 +66,15 @@ namespace dtmf
 			int address;
 		};
 
-
-
-
 		// Public Methods
-		void sendPayload(int payload, int priority = 0);
-		bool payloadReady();
 		void initializeServer(void(*callback)(int payload, int id));
 		void initializeClient(void(*callback)(int payload, int id));
 
+		void sendPayload(int payload, int priority = 0);
+		bool payloadReady();		
+
 		// Public Members
-
-
-
-
-
+		;
 
 	}
 }
