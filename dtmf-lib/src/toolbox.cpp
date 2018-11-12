@@ -303,9 +303,10 @@ void toolbox::testLatency()
 		}
 		else if (!playing)
 		{
-			// start non-blocking playback
 			log[timeElapsed] = 5000;
 			playing = true;
+			generator::playback(0, 50, true);
+			log[timeElapsed] = 5001;
 			return;
 		}
 
@@ -323,7 +324,7 @@ void toolbox::testLatency()
 	{
 		timeElapsed = static_cast<duration<double, std::milli>>(clock.now() - timeStart).count();
 
-		if (counter == dur) { break; }
+		if (counter > dur) { break; }
 
 		if (!initialized)
 		{
