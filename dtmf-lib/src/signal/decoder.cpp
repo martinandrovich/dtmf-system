@@ -177,7 +177,7 @@ void decoder::decode(std::vector<short> &samples)
 	decoder::status = state::working;
 	
 	// decode
-	//std::cout << "[DECODER] Decoding [" << samples.size() << "] samples...\n\n";
+	std::cout << "[DECODER] Decoding [" << samples.size() << "] samples...\n\n";
 
 	// compile goertzelArray for all DTMF frequencies
 	auto goertzelArray = processor::goertzelArray(samples);

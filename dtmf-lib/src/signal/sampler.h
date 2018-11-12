@@ -12,7 +12,7 @@ class sampler : public sf::SoundRecorder
 public:
 
 	// Constructor & Destructor
-	sampler(std::function<void(std::vector<short> samples)> callback);
+	sampler(std::function<void(std::vector<short> samples)> callback, bool allowPlayback = false);
 	virtual ~sampler();
 
 	// Status Enum
@@ -31,6 +31,7 @@ private:
 	int					interval;
 	state				status;
 	std::vector<short>	buffer;
+	bool				allowPlayback;
 
 	//void(*callback)(std::vector<short> samples);
 	std::function<void(std::vector<short>)> callback;

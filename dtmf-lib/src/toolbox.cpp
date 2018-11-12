@@ -2,11 +2,16 @@
 #include <fstream>
 #include <string>
 #include <vector>
+#include <map>
+#include <chrono>
+#include <atomic>
 #include <windows.h>
 
 #include "dtmf/toolbox.h"
 
 #include "signal/generator.h"
+#include "signal/sampler.h"
+#include "signal/processor.h"
 #include "signal/decoder.h"
 
 #define WINVER 0x0500
@@ -156,12 +161,119 @@ void toolbox::testDecoderKeyboardSender()
 	generator::playback(0, 50);
 }
 
+// ...
+void toolbox::testStepWindow(long long delay)
+{
+	using namespace std::chrono;
+
+	// variables
+	steady_clock				clock;
+	time_point<steady_clock>	timeStart;
+	long long					timeElapsed		= 0;		// ms
+
+	int							frequency		= 697;
+
+	int							numToDiscard	= STEP_WINDOW_SIZE * 5;
+	int							numToStore		= STEP_WINDOW_SIZE * 2;
+	int							counter			= 0;
+
+	std::vector<short>			samples;
+	std::map<int, float>		goertzel;
+	std::vector<short>			goertzel2(numToStore);
+	sampler*					recorder;
+
+	std::atomic<bool>			logging(false);
+
+	// brief pause
+	Sleep(1000);
+
+	// begin
+	std::cout << "Step Window Analysis, " << delay << "ms playback delay\n";
+
+	// initialize recoder w/ lambda
+	recorder = new sampler([&](std::vector<short> samplesChunk)
+	{
+		// check counter
+		if (counter >= (numToStore + numToDiscard))
+		{
+			return;
+		}
+		
+		// increment counter
+		counter++;
+
+		// discard first sample chunks
+		if (counter < numToDiscard + 1)
+		{
+			return;
+		}
+
+		// initialize timer if sampling is beginning
+		if (counter == numToDiscard + 1)
+		{
+			std::cout << "Timer started.\n";
+			timeStart = clock.now();
+			logging = true;
+		}
+
+		// log
+		int		datapoint		= counter - numToDiscard -1;
+		float	magnitude		= processor::goertzel(samplesChunk, frequency);
+
+		std::cout << "Logging datapoint[" << datapoint << "][" << magnitude <<"] after " << static_cast<duration<double, std::milli>>(clock.now() - timeStart).count() << "ms.\n";
+				
+		goertzel[datapoint]		= magnitude;
+		goertzel2[datapoint]	= magnitude;
+		samples.insert(samples.end(), samplesChunk.begin(), samplesChunk.end());	
+
+		// end
+		if (counter == numToStore + numToDiscard)
+		{
+			logging = false;
+		}
+
+	}, true);
+
+	// start recorder
+	recorder->start(SAMPLE_RATE);
+
+	// wait of logging start
+	while (!logging) {}
+
+	// update timer
+	while (true)
+	{
+		timeElapsed = static_cast<duration<double, std::milli>>(clock.now() - timeStart).count();
+
+		if (timeElapsed >= delay)
+		{
+			std::cout << "Playing tone after " << static_cast<duration<double, std::milli>>(clock.now() - timeStart).count() << "ms \n";
+			generator::playback(0, 50);
+			break;
+		}
+	 }
+
+	// wait until logging done
+	while (logging) {}
+
+	// stop recorder
+	recorder->stop();
+	
+	// data here
+	toolbox::plotSamples(samples, "g1.dat");
+	toolbox::plotSamples(goertzel2, "g2.dat");
+	toolbox::exportAudio(samples);
+
+	// clean up
+	delete recorder;
+}
+
 ///  Debug Methods ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 // ...
 void toolbox::exportSamples(std::vector<short> &samples, std::string filename)
 {	
-	std::ofstream outputStream(filename + ".dat");
+	std::ofstream outputStream(filename);
 
 	for (const auto &sample : samples)
 	{
@@ -170,14 +282,13 @@ void toolbox::exportSamples(std::vector<short> &samples, std::string filename)
 
 	outputStream.close();
 
-	std::cout << "Samples array[" << samples.size() << "] exported as \"" << filename << ".dat\" ...\n";
+	std::cout << "Samples array[" << samples.size() << "] exported as \"" << filename << "\" ...\n";
 }
 
 // ...
-void toolbox::plotSamples(std::vector<short> &samples)
+void toolbox::plotSamples(std::vector<short> &samples, std::string filename)
 {
 	// export samples
-	std::string filename = "samples_plot";
 	toolbox::exportSamples(samples, filename);
 
 	// export plot function
@@ -188,7 +299,7 @@ void toolbox::plotSamples(std::vector<short> &samples)
 
 	// run MATLAB script/function
 	// needs to be changed to cd "/script"
-	std::string cmd = "matlab -nodesktop -r \"plot_script('" + filename + ".dat')\"";
+	std::string cmd = "matlab -nodesktop -r \"plot_script('" + filename + "')\"";
 	system(cmd.c_str());
 }
 
@@ -210,6 +321,14 @@ std::vector<short> toolbox::convertAudio(std::string filename)
 	std::vector<short> samples(data, data + size);
 
 	return samples;
+}
+
+void toolbox::exportAudio(std::vector<short> &samples)
+{
+	sf::SoundBuffer buffer;
+	buffer.loadFromSamples(&samples[0], samples.size(), 1, SAMPLE_RATE);
+
+	buffer.saveToFile("output_sound.wav");
 }
 
 }

@@ -22,10 +22,13 @@ namespace dtmf
 
 		void testDecoderKeyboardReciever();
 		void testDecoderKeyboardSender();
+
+		void testStepWindow(long long delay);
 		
-		void				exportSamples(std::vector<short> &samples, std::string filename = "output");
-		void				plotSamples(std::vector<short> &samples);
+		void				exportSamples(std::vector<short> &samples, std::string filename = "output.dat");
+		void				plotSamples(std::vector<short> &samples, std::string filename = "samples_plot.dat");
 		std::vector<short>	convertAudio(std::string filename);
+		void				exportAudio(std::vector<short> &samples);
 
 		std::string			getWorkingDirectory();
 	}

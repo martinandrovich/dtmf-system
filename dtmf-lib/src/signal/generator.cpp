@@ -37,7 +37,8 @@ sf::SoundBuffer* generator::generateSamples(uint f1, uint f2, uint duration, uin
 		// Fade function on amplitude
 		if (i < fadeSize)
 		{
-			amplitudeFinal = (i / (fadeSize * 1.f)) * amplitude;
+			//amplitudeFinal = (i / (fadeSize * 1.f)) * amplitude;
+			amplitudeFinal = amplitude;
 		}
 		else if (i > sampleSize - fadeSize)
 		{
@@ -83,6 +84,8 @@ void generator::playback(uint toneID, uint duration)
 	generator::player->setBuffer(*buffer);
 	generator::player->play();
 	
+	std::cout << "Playing tone [" << toneID << "]\n";
+
 	// Block thread while playing
 	while (generator::player->getStatus() == generator::player->Playing)
 	{

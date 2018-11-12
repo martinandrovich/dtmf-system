@@ -8,8 +8,8 @@
 //// Constructor & Destructor /////////////////////////////////////////////////////////////////////////////////////////////////////
 
 // Default Constructor
-sampler::sampler(std::function<void(std::vector<short> samples)> callback)
-	: callback(callback), rate(SAMPLE_RATE), interval(SAMPLE_INTERVAL), status(state::idle)
+sampler::sampler(std::function<void(std::vector<short> samples)> callback, bool allowPlayback)
+	: callback(callback), rate(SAMPLE_RATE), interval(SAMPLE_INTERVAL), status(state::idle), allowPlayback(allowPlayback)
 {
 	// set processing interval
 	this->setProcessingInterval(sf::microseconds(this->interval));
@@ -17,7 +17,7 @@ sampler::sampler(std::function<void(std::vector<short> samples)> callback)
 	// log
 	std::cout << "\nInitialized sampler with:\n";
 	std::cout << "SAMPLE RATE:\t\t" << this->rate << " Hz \n";
-	std::cout << "SAMPLE INTERVAL:\t" << this->interval << " mys \n";
+	std::cout << "SAMPLE INTERVAL:\t" << this->interval << " mys \n\n";
 }
 
 // Destructor
@@ -57,13 +57,15 @@ bool sampler::onProcessSamples(const sf::Int16* samples, std::size_t sampleCount
 	
 	this->status = state::processing;
 
+	std::cout << "PROCESSING SAMPLES [" << sampleCount << "] ...\n";
+
 	// create vector of samples
 	const short* data = &samples[0]; // Int16*
 	std::vector<short> samplesCopy(data, data + sampleCount);
 
 	// return silent (zero) array if generator is playing
 	// NOT THREAD SAFE !#!#!#!#!#!#!#!#!#!#!						!#!#!#!#!#!#!#!#!#!#!!#!
-	if (generator::getState() == generator::state::playing)
+	if (!this->allowPlayback && generator::getState() == generator::state::playing)
 	{
 		std::fill(samplesCopy.begin(), samplesCopy.end(), 0);
 	}
