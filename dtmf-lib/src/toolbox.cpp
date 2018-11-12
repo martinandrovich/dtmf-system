@@ -268,6 +268,80 @@ void toolbox::testStepWindow(long long delay)
 	delete recorder;
 }
 
+// ...
+void toolbox::testLatency()
+{
+	using namespace std::chrono;
+
+	const long long						latency			= 200;				// ms (must be in multiples of sampling interval)
+	const int							delay			= 10;				// number of chunks to trash
+	const int							dur				= delay + 10;		// number of chunks to log
+
+	// variables
+	high_resolution_clock				clock;
+	time_point<high_resolution_clock>	timeStart;
+	long long							timeElapsed		= 0;		// ms
+
+	bool								initialized		= false;
+	bool								playing			= false;
+	std::atomic<bool>					logging			= false;
+	std::atomic<int>					counter			= 0;
+
+	std::map<double, short>				log;
+	std::vector<short>					samples;
+
+	sampler	recorder([&](std::vector<short> samplesChunk)
+	{
+		logging = true;
+
+		counter++;
+
+		// trash until delay is reached
+		if (counter < delay)
+		{
+			return;
+		}
+		else if (!playing)
+		{
+			// start non-blocking playback
+			log[timeElapsed] = 5000;
+			playing = true;
+			return;
+		}
+
+		log[timeElapsed] = 500;
+		samples.insert(samples.end(), samplesChunk.begin(), samplesChunk.end());
+		
+		logging = false;
+	}, true);
+
+	// init clock
+	timeStart = clock.now();
+
+	// loop
+	while (true)
+	{
+		timeElapsed = static_cast<duration<double, std::milli>>(clock.now() - timeStart).count();
+
+		if (counter == dur) { break; }
+
+		if (!initialized)
+		{
+			log[timeElapsed] = 1000;
+			initialized = true;
+			recorder.start(SAMPLE_RATE);
+		}
+		else if (!logging && log.count(timeElapsed) == 0)
+		{
+			log[timeElapsed] = 0;
+		}
+	}
+
+	// data here
+	log;
+
+}
+
 ///  Debug Methods ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 // ...

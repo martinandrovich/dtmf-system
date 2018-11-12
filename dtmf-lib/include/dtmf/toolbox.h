@@ -24,6 +24,7 @@ namespace dtmf
 		void testDecoderKeyboardSender();
 
 		void testStepWindow(long long delay);
+		void testLatency();
 		
 		void				exportSamples(std::vector<short> &samples, std::string filename = "output.dat");
 		void				plotSamples(std::vector<short> &samples, std::string filename = "samples_plot.dat");
