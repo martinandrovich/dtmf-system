@@ -73,7 +73,7 @@ sf::SoundBuffer* generator::generateDTMF(uint toneID, uint duration, uint amplit
 }
 
 // Playback a tone for a duration; spinlock while playing
-void generator::playback(uint toneID, uint duration)
+void generator::playback(uint toneID, uint duration, bool parallel)
 {
 	// Create buffer
 	auto buffer = generateDTMF(toneID, duration);
@@ -86,7 +86,14 @@ void generator::playback(uint toneID, uint duration)
 	
 	std::cout << "Playing tone [" << toneID << "]\n";
 
-	// Block thread while playing
+	// escape function !!! BAD FOR MEMORY
+	if (parallel)
+	{
+		generator::status = generator::state::idle;
+		return;
+	}
+
+	// Block thread while playing (parallel = false)
 	while (generator::player->getStatus() == generator::player->Playing)
 	{
 		;
