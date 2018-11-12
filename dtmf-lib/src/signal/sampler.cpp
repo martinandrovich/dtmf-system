@@ -1,5 +1,6 @@
-#include <vector>
 #include <iostream>
+#include <vector>
+#include <functional>
 
 #include "sampler.h"
 #include "generator.h"
@@ -7,7 +8,7 @@
 //// Constructor & Destructor /////////////////////////////////////////////////////////////////////////////////////////////////////
 
 // Default Constructor
-sampler::sampler(void(*callback)(std::vector<short> samples))
+sampler::sampler(std::function<void(std::vector<short> samples)> callback)
 	: callback(callback), rate(SAMPLE_RATE), interval(SAMPLE_INTERVAL), status(state::idle)
 {
 	// set processing interval
@@ -15,8 +16,8 @@ sampler::sampler(void(*callback)(std::vector<short> samples))
 
 	// log
 	std::cout << "\nInitialized sampler with:\n";
-	std::cout << "SAMPLE RATE:\t\t"			<< this->rate		<< " Hz \n";
-	std::cout << "SAMPLE INTERVAL:\t"		<< this->interval	<< " mys \n";	
+	std::cout << "SAMPLE RATE:\t\t" << this->rate << " Hz \n";
+	std::cout << "SAMPLE INTERVAL:\t" << this->interval << " mys \n";
 }
 
 // Destructor

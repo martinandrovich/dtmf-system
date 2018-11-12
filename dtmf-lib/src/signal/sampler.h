@@ -2,6 +2,7 @@
 #include <SFML/Audio.hpp>
 #include <SFML/System/Time.hpp>
 #include <vector>
+#include <functional>
 
 #include "constants.h"
 
@@ -11,7 +12,7 @@ class sampler : public sf::SoundRecorder
 public:
 
 	// Constructor & Destructor
-	sampler(void(*callback)(std::vector<short> samples));
+	sampler(std::function<void(std::vector<short> samples)> callback);
 	virtual ~sampler();
 
 	// Status Enum
@@ -31,7 +32,8 @@ private:
 	state				status;
 	std::vector<short>	buffer;
 
-	void(*callback)(std::vector<short> samples);
+	//void(*callback)(std::vector<short> samples);
+	std::function<void(std::vector<short>)> callback;
 
 //// Protected Declarations ///////////////////////////////////////////////////////////////////////////////////////////////////////
 protected:
