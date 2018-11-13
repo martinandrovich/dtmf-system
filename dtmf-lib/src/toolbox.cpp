@@ -339,7 +339,8 @@ void toolbox::testLatency()
 	std::atomic<bool>					logging			= false;
 	std::atomic<int>					counter			= 0;
 
-	std::map<double, short>				log;
+	std::map<double, short>				logEvents;
+	std::map<double, std::vector<short>>logChunks;
 	std::vector<short>					samples;
 
 	sampler	recorder([&](std::vector<short> samplesChunk)
@@ -355,14 +356,16 @@ void toolbox::testLatency()
 		}
 		else if (!playing)
 		{
-			log[timeElapsed] = 5000;
+			logEvents[timeElapsed] = 5000;
 			playing = true;
 			generator::playback(0, 50, true);
-			log[timeElapsed] = 5001;
+			logEvents[timeElapsed] = 5001;
 			return;
 		}
 
-		log[timeElapsed] = 500;
+		logEvents[timeElapsed] = 500;
+		logChunks[timeElapsed] = samplesChunk;
+
 		samples.insert(samples.end(), samplesChunk.begin(), samplesChunk.end());
 		
 		logging = false;
@@ -380,18 +383,28 @@ void toolbox::testLatency()
 
 		if (!initialized)
 		{
-			log[timeElapsed] = 1000;
+			logEvents[timeElapsed] = 1000;
 			initialized = true;
 			recorder.start(SAMPLE_RATE);
 		}
-		else if (!logging && log.count(timeElapsed) == 0)
+		else if (!logging && logEvents.count(timeElapsed) == 0)
 		{
-			log[timeElapsed] = 0;
+			logEvents[timeElapsed] = 0;
 		}
 	}
 
+	recorder.stop();
+	Sleep(1000);
+
 	// data here
-	log;
+	toolbox::exportMap(logEvents);
+	logEvents;
+
+}
+
+// ...
+void toolbox::testLatency2()
+{
 
 }
 
@@ -450,12 +463,26 @@ std::vector<short> toolbox::convertAudio(std::string filename)
 	return samples;
 }
 
+// ...
 void toolbox::exportAudio(std::vector<short> &samples)
 {
 	sf::SoundBuffer buffer;
 	buffer.loadFromSamples(&samples[0], samples.size(), 1, SAMPLE_RATE);
 
 	buffer.saveToFile("output_sound.wav");
+}
+
+// ...
+void toolbox::exportMap(std::map<double, short> map, std::string filename)
+{
+	std::ofstream outputStream(filename);
+	
+	for (auto pair : map)
+	{
+		outputStream << pair.first << ";" << pair.second << "\n";
+	}
+
+	outputStream.close();
 }
 
 }
