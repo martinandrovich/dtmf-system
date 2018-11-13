@@ -9,7 +9,7 @@
 void init()
 {
 	system("cls");
-	std::cout << "Ear Rape Simulator 1.0.3\n\n";
+	std::cout << "Ear Rape Simulator 1.0.4\n\n";
 }
 
 // commands map
