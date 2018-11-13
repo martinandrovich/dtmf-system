@@ -123,44 +123,8 @@ std::string toolbox::getWorkingDirectory()
 	return std::string(buffer);
 }
 
-///  Test Methods /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-// Playback all DTMF tones for 200ms
-void toolbox::testGenerator()
-{
-	for (int i = 0; i <= 16; i++)
-	{
-		i = i % 16;
-		generator::playback(i, 200);
-	}
-}
-
-// Playback some DTMF tone sequence for 50ms each
-void toolbox::testGeneratorSequence()
-{
-	std::vector<int> test = { 2, 0, 13, 7, 4 };
-	generator::playbackSequence(test, 50);
-}
-
-// Initialize decoder and log the payload (toneId) of percieved DTMF tones
-void toolbox::testDecoderLog()
-{
-	decoder::init(&dtmf::toolbox::logPayload);
-	decoder::run();
-}
-
-void toolbox::testSampler2()
-{
-	
-	sampler2* samplertest = new sampler2([](std::vector<short> samples) {std::cout << "c" << samples.size() << std::endl; });
-	samplertest->prepare();
-
-	auto s = samplertest->sample();
-	//toolbox::exportAudio(s);
-	samplertest->stop();
-}
-
-std::map<double, short> toolbox::LatencyMap(std::map< double, std::vector<short>> map, double startTime)
+// ...
+std::map<double, short> toolbox::convertLatencyMap(std::map< double, std::vector<short>> map, double startTime)
 {
 	std::vector<double> time;
 	std::vector<short> samples;
@@ -198,6 +162,108 @@ std::map<double, short> toolbox::LatencyMap(std::map< double, std::vector<short>
 	}
 
 	return output;
+}
+
+// ...
+void toolbox::exportSamples(std::vector<short> &samples, std::string filename)
+{
+	std::ofstream outputStream(filename);
+
+	for (const auto &sample : samples)
+	{
+		outputStream << sample << "\n";
+	}
+
+	outputStream.close();
+
+	std::cout << "Samples array[" << samples.size() << "] exported as \"" << filename << "\" ...\n";
+}
+
+// ...
+template <class key, class value>
+void toolbox::exportMap(std::map<key, value> map, std::string filename)
+{
+	std::ofstream outputStream(filename);
+
+	for (auto pair : map)
+	{
+		outputStream << pair.first << ";" << pair.second << "\n";
+	}
+
+	outputStream.close();
+}
+
+// ...
+void toolbox::exportAudio(std::vector<short> &samples, std::string filename)
+{
+	sf::SoundBuffer buffer;
+	buffer.loadFromSamples(&samples[0], samples.size(), 1, SAMPLE_RATE);
+
+	buffer.saveToFile(filename);
+}
+
+// ...
+void toolbox::plotSamples(std::vector<short> &samples, std::string filename)
+{
+	// export samples
+	toolbox::exportSamples(samples, filename);
+
+	// export plot function
+	// or somehow include/copy the MATLAB scripts to the destination path
+	// currently simply manual copy scripts folder to current working path of console-app
+
+	std::cout << "Launching MatLab script ...\n";
+
+	// run MATLAB script/function
+	// needs to be changed to cd "/script"
+	std::string cmd = "matlab -nodesktop -r \"plot_script('" + filename + "')\"";
+	system(cmd.c_str());
+}
+
+// Convert an audio file to a samples array; return vector of shorts
+std::vector<short> toolbox::convertAudio(std::string filename)
+{
+	std::cout << "Converting \"" << filename << "\" to array.\n";
+
+	sf::SoundBuffer buffer;
+
+	if (!buffer.loadFromFile(filename))
+	{
+		return { 0 };
+	}
+
+	const short* data = &buffer.getSamples()[0];
+	const int size = buffer.getSampleCount();
+
+	std::vector<short> samples(data, data + size);
+
+	return samples;
+}
+
+///  Test Methods /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+// Playback all DTMF tones for 200ms
+void toolbox::testGenerator()
+{
+	for (int i = 0; i <= 16; i++)
+	{
+		i = i % 16;
+		generator::playback(i, 200);
+	}
+}
+
+// Playback some DTMF tone sequence for 50ms each
+void toolbox::testGeneratorSequence()
+{
+	std::vector<int> test = { 2, 0, 13, 7, 4 };
+	generator::playbackSequence(test, 50);
+}
+
+// Initialize decoder and log the payload (toneId) of percieved DTMF tones
+void toolbox::testDecoderLog()
+{
+	decoder::init(&dtmf::toolbox::logPayload);
+	decoder::run();
 }
 
 // Initialize decoder and execute keypress according to the payload (toneId) of percieved DTMF tones
@@ -321,6 +387,93 @@ void toolbox::testStepWindow(long long delay)
 }
 
 // ...
+void toolbox::testStepWindow2(std::string args)
+{
+
+	using namespace std::chrono;
+
+	// constants
+	const int							toneDuration = 50;			// ms
+	const int							latency = 100;			// ms
+	long long							delay = std::stoi(args);
+	const int							windowSize = SAMPLE_INTERVAL;
+	const int							desiredWindows = 2 * toneDuration / SAMPLE_INTERVAL;
+	const int							latencyWindows = latency / SAMPLE_INTERVAL;
+
+	// variables
+	sampler2							sampler([](std::vector<short> samples) {});
+	std::thread							player;
+	std::function<void()>				delayedPlayer;
+
+	std::vector<short>					samples;
+	std::map<long long, float>			goertzel;
+	std::vector<short>					goertzel2(desiredWindows + latencyWindows);
+	std::map<double, short>				goertzel3;
+
+	high_resolution_clock				clock;
+	time_point<high_resolution_clock>	timeStart;
+	std::atomic<long long>				timeElapsed = 0;					// ms
+
+	unsigned int						counter = 0;
+
+	// prepare delayed playback thread
+	delayedPlayer = [&]()
+	{
+		while (true)
+		{
+			timeElapsed = static_cast<duration<double, std::milli>>(clock.now() - timeStart).count();
+
+			if (timeElapsed > delay)
+			{
+				generator::playback(0, toneDuration);
+				break;
+			}
+		}
+	};
+
+	// select delay from case
+	;
+
+	std::cout << "Step Window Analysis (v2), " << delay << "ms playback delay\n";
+	Sleep(1000);
+
+	// prepare sampler
+	sampler.prepare();
+	std::vector<short>	samplesChunk(NUMPTS);
+
+	// start clock
+	timeStart = clock.now();
+
+	// start delayed playback thread
+	player = std::thread(delayedPlayer);
+
+	// datalogging loop
+	for (int i = 0; i < (desiredWindows + latencyWindows); i++)
+	{
+		samplesChunk = sampler.sample();
+		float	magnitude = processor::goertzel(samplesChunk, 697);
+		timeElapsed = static_cast<duration<double, std::milli>>(clock.now() - timeStart).count();
+
+		//std::cout << "Logging datapoint[" << i << "][" << magnitude << "] after " << timeElapsed << "ms.\n";
+
+		//goertzel[timeElapsed] = magnitude;
+		//goertzel2[i] = magnitude;
+		goertzel3[timeElapsed] = magnitude;
+		//samples.insert(samples.end(), samplesChunk.begin(), samplesChunk.end());
+	}
+
+	// remove latency values
+	;
+
+	// cleanup
+	player.join();
+
+	// data here
+	goertzel3;
+	toolbox::exportMap(goertzel3);
+}
+
+// ...
 void toolbox::testLatency()
 {
 	using namespace std::chrono;
@@ -406,168 +559,16 @@ void toolbox::testLatency()
 
 }
 
-// ...
-void toolbox::testStepWindow2(std::string args)
+// Test sampler2 class; record a single chunk using callback
+void toolbox::testSampler2()
 {
+	sampler2* test = new sampler2([](std::vector<short> samples) {std::cout << "Got chunk [" << samples.size() << "]\n"; });
+	test->prepare();
 
-	using namespace std::chrono;
-
-	// constants
-	const int							toneDuration		= 50;			// ms
-	const int							latency				= 100;			// ms
-	long long							delay				= std::stoi(args);
-	const int							windowSize			= SAMPLE_INTERVAL;
-	const int							desiredWindows		= 2 * toneDuration / SAMPLE_INTERVAL;
-	const int							latencyWindows		= latency / SAMPLE_INTERVAL;
-
-	// variables
-	sampler2							sampler([](std::vector<short> samples) {});
-	std::thread							player;
-	std::function<void()>				delayedPlayer;
-
-	std::vector<short>					samples;
-	std::map<long long, float>			goertzel;
-	std::vector<short>					goertzel2(desiredWindows + latencyWindows);
-	std::map<double, short>				goertzel3;
-
-	high_resolution_clock				clock;
-	time_point<high_resolution_clock>	timeStart;
-	std::atomic<long long>				timeElapsed			= 0;					// ms
-
-	unsigned int						counter				= 0;
-
-	// prepare delayed playback thread
-	delayedPlayer = [&]()
-	{
-		while (true)
-		{
-			timeElapsed = static_cast<duration<double, std::milli>>(clock.now() - timeStart).count();
-
-			if (timeElapsed > delay)
-			{
-				generator::playback(0, toneDuration);
-				break;
-			}
-		}
-	};
-
-	// select delay from case
-	;
-	
-	std::cout << "Step Window Analysis (v2), " << delay << "ms playback delay\n";
-	Sleep(1000);
-
-	// prepare sampler
-	sampler.prepare();
-	std::vector<short>	samplesChunk(NUMPTS);
-
-	// start clock
-	timeStart = clock.now();
-
-	// start delayed playback thread
-	player = std::thread(delayedPlayer);
-
-	// datalogging loop
-	for (int i = 0; i < (desiredWindows + latencyWindows); i++)
-	{
-		samplesChunk			= sampler.sample();
-		float	magnitude		= processor::goertzel(samplesChunk, 697);
-		timeElapsed				= static_cast<duration<double, std::milli>>(clock.now() - timeStart).count();
-
-		//std::cout << "Logging datapoint[" << i << "][" << magnitude << "] after " << timeElapsed << "ms.\n";
-		
-		//goertzel[timeElapsed] = magnitude;
-		//goertzel2[i] = magnitude;
-		goertzel3[timeElapsed] = magnitude;
-		//samples.insert(samples.end(), samplesChunk.begin(), samplesChunk.end());
-	}
-
-	// remove latency values
-	;
-
-	// cleanup
-	player.join();
-
-	// data here
-	goertzel3;
-	toolbox::exportMap(goertzel3);
-}
-
-///  Debug Methods ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-// ...
-void toolbox::exportSamples(std::vector<short> &samples, std::string filename)
-{	
-	std::ofstream outputStream(filename);
-
-	for (const auto &sample : samples)
-	{
-		outputStream << sample << "\n";
-	}
-
-	outputStream.close();
-
-	std::cout << "Samples array[" << samples.size() << "] exported as \"" << filename << "\" ...\n";
-}
-
-// ...
-void toolbox::plotSamples(std::vector<short> &samples, std::string filename)
-{
-	// export samples
-	toolbox::exportSamples(samples, filename);
-
-	// export plot function
-	// or somehow include/copy the MATLAB scripts to the destination path
-	// currently simply manual copy scripts folder to current working path of console-app
-
-	std::cout << "Launching MatLab script ...\n";
-
-	// run MATLAB script/function
-	// needs to be changed to cd "/script"
-	std::string cmd = "matlab -nodesktop -r \"plot_script('" + filename + "')\"";
-	system(cmd.c_str());
-}
-
-// Convert an audio file to a samples array; return vector of shorts
-std::vector<short> toolbox::convertAudio(std::string filename)
-{
-	std::cout << "Converting \"" << filename << "\" to array.\n";
-	
-	sf::SoundBuffer buffer;
-	
-	if (!buffer.loadFromFile(filename))
-	{
-		return { 0 };
-	}
-
-	const short* data = &buffer.getSamples()[0];
-	const int size = buffer.getSampleCount();
-
-	std::vector<short> samples(data, data + size);
-
-	return samples;
-}
-
-// ...
-void toolbox::exportAudio(std::vector<short> &samples)
-{
-	sf::SoundBuffer buffer;
-	buffer.loadFromSamples(&samples[0], samples.size(), 1, SAMPLE_RATE);
-
-	buffer.saveToFile("output_sound.wav");
-}
-
-// ...
-void toolbox::exportMap(std::map<double, short> map, std::string filename)
-{
-	std::ofstream outputStream(filename);
-	
-	for (auto pair : map)
-	{
-		outputStream << pair.first << ";" << pair.second << "\n";
-	}
-
-	outputStream.close();
+	auto chunk = test->sample();
+	//toolbox::exportAudio(chunk);
+	test->stop();
+	delete test;
 }
 
 }
