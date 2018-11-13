@@ -13,6 +13,7 @@
 #include "signal/sampler.h"
 #include "signal/processor.h"
 #include "signal/decoder.h"
+#include "signal/sampler2.h"
 
 #define WINVER 0x0500
 
@@ -146,6 +147,17 @@ void toolbox::testDecoderLog()
 {
 	decoder::init(&dtmf::toolbox::logPayload);
 	decoder::run();
+}
+
+void toolbox::testSampler2()
+{
+	sampler2 sampler([](std::vector<short> samples) {std::cout << samples.size() << std::endl; });
+
+	sampler.start();
+	while (true)
+	{
+
+	}
 }
 
 // Initialize decoder and execute keypress according to the payload (toneId) of percieved DTMF tones

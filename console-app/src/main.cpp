@@ -22,6 +22,7 @@ std::unordered_map<std::string, void(*)(std::string args)> commandMap =
 	{ "step",	[](std::string args) { dtmf::toolbox::testStepWindow(0);	} },
 	{ "log",	[](std::string args) { dtmf::toolbox::testDecoderLog();	} },
 	{ "lat",	[](std::string args) { dtmf::toolbox::testLatency();	} },
+	{ "wins",	[](std::string args) { dtmf::toolbox::testSampler2();	} },
 };
 
 // main function

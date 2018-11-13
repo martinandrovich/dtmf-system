@@ -20,6 +20,8 @@ namespace dtmf
 		void testGeneratorSequence();
 		void testDecoderLog();
 
+		void testSampler2();
+
 		void testDecoderKeyboardReciever();
 		void testDecoderKeyboardSender();
 

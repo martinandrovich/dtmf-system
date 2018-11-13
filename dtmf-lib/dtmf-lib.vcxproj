@@ -158,6 +158,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\dtmf\toolbox.h" />
+    <ClInclude Include="src\signal\sampler2.h" />
     <ClInclude Include="src\_old\cake.h" />
     <ClInclude Include="include\dtmf\node.h" />
     <ClInclude Include="src\signal\decoder.h" />
@@ -166,6 +167,7 @@
     <ClInclude Include="src\signal\sampler.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\signal\sampler2.cpp" />
     <ClCompile Include="src\toolbox.cpp" />
     <ClCompile Include="src\_old\cake.cpp" />
     <ClCompile Include="src\node.cpp" />

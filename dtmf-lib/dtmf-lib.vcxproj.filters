@@ -39,6 +39,9 @@
     <ClInclude Include="include\dtmf\node.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\signal\sampler2.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\signal\constants.h">
@@ -63,6 +66,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\node.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\signal\sampler2.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

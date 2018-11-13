@@ -34,14 +34,14 @@ bool sampler2::start()
 
 	prepare();
 
-	worker = std::thread(&thread);
+	this->worker = new std::thread(&sampler2::thread, this);
 
 	return true;
 }
 
 void sampler2::stop()
 {
-	worker.join();
+	worker->join();
 	waveInClose(hWaveIn);
 }
 
@@ -74,16 +74,18 @@ void sampler2::thread()
 
 void sampler2::prepare()
 {
-	
+	int counter = 0;
 	std::vector<short> samplesChunk(NUMPTS);
 	while (true)
 	{
+		counter++;
+
 		samplesChunk = sample();
 		if (std::any_of(samplesChunk.begin(), samplesChunk.end(), [](short sample) {return abs(sample) > 2; }))
 		{
+			std::cout << "Ready after: " << counter << " chunks" << std::endl;
 			break;
 		}
-
 	}
 }
 

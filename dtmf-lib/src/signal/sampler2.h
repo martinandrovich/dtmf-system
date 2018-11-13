@@ -3,7 +3,6 @@
 #include <Windows.h>
 #include <mmsystem.h>
 #include <iostream>
-#include <fstream>
 #include <vector>
 #include <thread>
 #include <functional>
@@ -21,15 +20,29 @@ public:
 	void prepare();
 	std::vector<short> sample();
 
+	enum class state {
+		unitialized,
+		idle,
+		sampling,
+		processing
+	};
+
+	state	getStatus();
+
 	~sampler2();
 
 private:
-	std::thread						worker;
+	std::thread*			worker;
 	void thread();
 	HWAVEIN     hWaveIn;
 	WAVEHDR     WaveInHdr;
 	//MMRESULT	result;
 	WAVEFORMATEX pFormat;
+
+	std::function<void(std::vector<short>)> callback;
+
+	state				status;
+	bool				allowPlayback;
 
 	short int waveIn[NUMPTS];   
 };
