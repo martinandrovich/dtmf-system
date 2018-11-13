@@ -220,6 +220,25 @@ void toolbox::plotSamples(std::vector<short> &samples, std::string filename)
 	system(cmd.c_str());
 }
 
+// ...
+template <class key, class value>
+void toolbox::plotMap(std::map<key, value> map, std::string filename)
+{
+	// export samples
+	toolbox::exportMap(map, filename);
+
+	// export plot function
+	// or somehow include/copy the MATLAB scripts to the destination path
+	// currently simply manual copy scripts folder to current working path of console-app
+
+	std::cout << "Launching MatLab script ...\n";
+
+	// run MATLAB script/function
+	// needs to be changed to cd "/script"
+	std::string cmd = "matlab -nodesktop -r \"plot_map('" + filename + "')\"";
+	system(cmd.c_str());
+}
+
 // Convert an audio file to a samples array; return vector of shorts
 std::vector<short> toolbox::convertAudio(std::string filename)
 {

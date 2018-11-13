@@ -37,6 +37,7 @@ namespace dtmf
 		template <class key, class value> void	exportMap(std::map<key, value> map, std::string filename = "output_map.dat");
 		void									exportAudio(std::vector<short> &samples, std::string filename = "output_sound.wav");
 		void									plotSamples(std::vector<short> &samples, std::string filename = "samples_plot.dat");
+		template <class key, class value> void	plotMap(std::map<key, value> map, std::string filename = "map_plot.dat");
 		
 		std::vector<short>						convertAudio(std::string filename);
 
