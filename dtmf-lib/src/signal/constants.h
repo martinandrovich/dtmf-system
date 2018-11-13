@@ -13,6 +13,7 @@ constexpr auto	FADE				= 0.15f;						// Default signal fade percentage [decimal]
 constexpr auto	SAMPLE_RATE			= 44100;						// Default signal sample rate in [Hz] (default = 44100)
 constexpr auto	SAMPLE_INTERVAL		= 100;							// Default interval of sample processing [mys] (default = 100ms = 10000 mys)
 constexpr auto	STEP_WINDOW_SIZE	= 5;							// Number of minimum samples in queue (signal duration / sample interval)
+constexpr int 	NUMPTS				= SAMPLE_RATE * (SAMPLE_INTERVAL / 1000.);	// Number of samples (size of array for sampler2)
 
 //const int		freqLow[4]			= {  697,  770,  852,  941 };
 //const int		freqHigh[4]			= { 1209, 1336, 1477, 1633 };
