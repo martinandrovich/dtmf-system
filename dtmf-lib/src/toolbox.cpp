@@ -566,16 +566,14 @@ void toolbox::testLatency()
 		}
 	}
 
+	// stop recorder
 	recorder.stop();
-	Sleep(1000);
 
 	// data here
-	auto logFinal = toolbox::LatencyMap(logChunks, begin);
-	toolbox::exportMap(logFinal);
+	auto logFinal = toolbox::convertLatencyMap(logChunks, begin);
 	toolbox::exportAudio(samples);
 	toolbox::plotSamples(samples);
-	logEvents;
-
+	toolbox::plotMap(logFinal);
 }
 
 // Test sampler2 class; record a single chunk using callback
