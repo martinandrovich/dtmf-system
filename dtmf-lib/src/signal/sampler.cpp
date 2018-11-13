@@ -9,7 +9,7 @@
 
 // Default Constructor
 sampler::sampler(std::function<void(std::vector<short> samples)> callback, bool allowPlayback)
-	: callback(callback), rate(SAMPLE_RATE), interval(SAMPLE_INTERVAL), status(state::idle), allowPlayback(allowPlayback)
+	: callback(callback), rate(SAMPLE_RATE), interval(SAMPLE_INTERVAL*1000), status(state::idle), allowPlayback(allowPlayback)
 {
 	// set processing interval
 	this->setProcessingInterval(sf::microseconds(this->interval));
@@ -57,7 +57,7 @@ bool sampler::onProcessSamples(const sf::Int16* samples, std::size_t sampleCount
 	
 	this->status = state::processing;
 
-	std::cout << "PROCESSING SAMPLES [" << sampleCount << "] ...\n";
+	//std::cout << "PROCESSING SAMPLES [" << sampleCount << "] ...\n";
 
 	// create vector of samples
 	const short* data = &samples[0]; // Int16*
