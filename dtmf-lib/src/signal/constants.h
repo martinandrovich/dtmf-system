@@ -11,7 +11,7 @@ constexpr auto	DURATION			= 500;							// Default signal duration [ms]
 constexpr auto	PAUSE				= 20;							// Default signal pause [ms]
 constexpr auto	FADE				= 0.15f;						// Default signal fade percentage [decimal] (0.1 = 10%)
 constexpr auto	SAMPLE_RATE			= 44100;						// Default signal sample rate in [Hz] (default = 44100)
-constexpr auto	SAMPLE_INTERVAL		= 1;							// Default interval of sample processing [ms]
+constexpr auto	SAMPLE_INTERVAL		= 10;							// Default interval of sample processing [ms]
 constexpr auto	STEP_WINDOW_SIZE	= 5;							// Number of minimum samples in queue (signal duration / sample interval)
 constexpr int 	NUMPTS				= SAMPLE_RATE * (SAMPLE_INTERVAL / 1000.);	// Number of samples (size of array for sampler2)
 

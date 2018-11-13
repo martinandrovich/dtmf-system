@@ -433,7 +433,7 @@ void toolbox::testStepWindow2(std::string args)
 
 	high_resolution_clock				clock;
 	time_point<high_resolution_clock>	timeStart;
-	std::atomic<long long>				timeElapsed = 0;					// ms
+	std::atomic<long long>				timeElapsed			= 0;					// ms
 
 	unsigned int						counter				= 0;
 
@@ -442,9 +442,9 @@ void toolbox::testStepWindow2(std::string args)
 	{
 		while (true)
 		{
-			//timeElapsed = static_cast<duration<double, std::milli>>(clock.now() - timeStart).count();
+			timeElapsed = static_cast<duration<double, std::milli>>(clock.now() - timeStart).count();
 
-			if (1 > delay)
+			if (timeElapsed > delay)
 			{
 				generator::playback(0, toneDuration);
 				break;
@@ -472,14 +472,14 @@ void toolbox::testStepWindow2(std::string args)
 	for (int i = 0; i < (desiredWindows + latencyWindows); i++)
 	{
 		samplesChunk			= sampler.sample();
-		//float	magnitude		= processor::goertzel(samplesChunk, 697);
+		float	magnitude		= processor::goertzel(samplesChunk, 697);
 		timeElapsed				= static_cast<duration<double, std::milli>>(clock.now() - timeStart).count();
 
 		//std::cout << "Logging datapoint[" << i << "][" << magnitude << "] after " << timeElapsed << "ms.\n";
 		
 		//goertzel[timeElapsed] = magnitude;
 		//goertzel2[i] = magnitude;
-		//goertzel3[timeElapsed] = 0;
+		goertzel3[timeElapsed] = magnitude;
 		//samples.insert(samples.end(), samplesChunk.begin(), samplesChunk.end());
 	}
 
