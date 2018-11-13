@@ -159,7 +159,7 @@ void toolbox::testSampler2()
 
 }
 
-std::map<double, short> toolbox::LatencyMap(std::map< double, std::vector<short>> map)
+std::map<double, short> toolbox::LatencyMap(std::map< double, std::vector<short>> map, double startTime)
 {
 	std::vector<double> time;
 	std::vector<short> samples;
@@ -168,32 +168,31 @@ std::map<double, short> toolbox::LatencyMap(std::map< double, std::vector<short>
 	std::map<double, short> output;
 
 
-	double lastTime = 0;
+	double lastTime = startTime;
 
 
 	for (auto const& x : map)
 	{
 
+		// vector of all samples
 		for (int i = 0; i < x.second.size(); i++)
 		{
 			samples.push_back(x.second[i]);
 		}
 
-		int deltatime = (x.first - lastTime) / double(x.second.size());
+		double deltatime = (x.first - lastTime) / double(x.second.size());
 
+		// vector of all time
 		for (int i = 0; i < x.second.size(); i++)
 		{
-
 			time.push_back(lastTime);
 			lastTime += deltatime;
-
 		}
 
 	}
 
 	for (int i = 0; i < samples.size(); i++)
 	{
-
 		output[time[i]] = samples[i];
 	}
 
@@ -327,7 +326,7 @@ void toolbox::testLatency()
 
 	const long long						latency			= 200;				// ms (must be in multiples of sampling interval)
 	const int							delay			= 10;				// number of chunks to trash
-	const int							dur				= delay + 10;		// number of chunks to log
+	const int							dur				= delay + 100;		// number of chunks to log
 
 	// variables
 	high_resolution_clock				clock;
@@ -338,6 +337,7 @@ void toolbox::testLatency()
 	bool								playing			= false;
 	std::atomic<bool>					logging			= false;
 	std::atomic<int>					counter			= 0;
+	double								begin;
 
 	std::map<double, short>				logEvents;
 	std::map<double, std::vector<short>>logChunks;
@@ -358,7 +358,8 @@ void toolbox::testLatency()
 		{
 			logEvents[timeElapsed] = 5000;
 			playing = true;
-			generator::playback(0, 50, true);
+			begin = timeElapsed;
+			generator::playback(0, 100, true);
 			logEvents[timeElapsed] = 5001;
 			return;
 		}
@@ -397,7 +398,10 @@ void toolbox::testLatency()
 	Sleep(1000);
 
 	// data here
-	toolbox::exportMap(logEvents);
+	auto logFinal = toolbox::LatencyMap(logChunks, begin);
+	toolbox::exportMap(logFinal);
+	toolbox::exportAudio(samples);
+	toolbox::plotSamples(samples);
 	logEvents;
 
 }
