@@ -22,6 +22,8 @@ namespace dtmf
 
 		void testSampler2();
 
+		std::map<double, short> LatencyMap(std::map< double , std::vector<short>>);
+
 		void testDecoderKeyboardReciever();
 		void testDecoderKeyboardSender();
 
