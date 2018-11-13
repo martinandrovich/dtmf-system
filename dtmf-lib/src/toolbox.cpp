@@ -159,6 +159,47 @@ void toolbox::testSampler2()
 
 }
 
+std::map<double, short> toolbox::LatencyMap(std::map< double, std::vector<short>> map)
+{
+	std::vector<double> time;
+	std::vector<short> samples;
+
+
+	std::map<double, short> output;
+
+
+	double lastTime = 0;
+
+
+	for (auto const& x : map)
+	{
+
+		for (int i = 0; i < x.second.size(); i++)
+		{
+			samples.push_back(x.second[i]);
+		}
+
+		int deltatime = (x.first - lastTime) / double(x.second.size());
+
+		for (int i = 0; i < x.second.size(); i++)
+		{
+
+			time.push_back(lastTime);
+			lastTime += deltatime;
+
+		}
+
+	}
+
+	for (int i = 0; i < samples.size(); i++)
+	{
+
+		output[time[i]] = samples[i];
+	}
+
+	return output;
+}
+
 // Initialize decoder and execute keypress according to the payload (toneId) of percieved DTMF tones
 void toolbox::testDecoderKeyboardReciever()
 {
