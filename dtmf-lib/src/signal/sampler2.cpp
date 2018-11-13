@@ -4,6 +4,7 @@
 #include <thread>
 #include "generator.h"
 
+// Constructor
 sampler2::sampler2(std::function<void(std::vector<short>)> callback, bool allowplayback )
 {
 	pFormat.wFormatTag = WAVE_FORMAT_PCM;     // simple, uncompressed format
@@ -29,35 +30,58 @@ sampler2::sampler2(std::function<void(std::vector<short>)> callback, bool allowp
 	WaveInHdr.dwLoops = 0L;
 }
 
+// Destructor
+sampler2::~sampler2()
+{
+	stop();
+}
+
+// ...
 bool sampler2::start()
 {
-	
+	// prepare sampler
+	this->prepare();
 
-	prepare();
+	// update variables
+	this->status = state::sampling;
+	sampling = true;	
 
+	// start thread
 	this->worker = new std::thread(&sampler2::thread, this);
 
+	// return 
 	return true;
 }
 
+// ...
 void sampler2::stop()
 {
+	// update variables
+	this->status	= state::idle;
+	sampling		= false;
+	
+	// thread cleanup
 	if (this->worker != nullptr)
 	{
-		this->worker->join();
+		worker->join();
+		this->worker->~thread();
 		delete this->worker;
 	}
 
+	// close handle
 	waveInClose(hWaveIn);
+
+	std::cout << "Sampler has been stopped.\n";
 }
 
+// ...
 void sampler2::thread()
 {
-	while (true)
+	while (sampling)
 	{
 		this->status = state::processing;
 
-		std::cout << "PROCESSING SAMPLES [" << NUMPTS<< "] ...\n";
+		// std::cout << "PROCESSING SAMPLES [" << NUMPTS << "] ...\n";
 
 		// create vector of samples
 		
@@ -78,15 +102,17 @@ void sampler2::thread()
 	}
 }
 
+// ...
 void sampler2::prepare()
 {
 	int counter = 0;
 	std::vector<short> samplesChunk(NUMPTS);
+
 	while (true)
 	{
 		counter++;
-
 		samplesChunk = sample();
+
 		if (std::any_of(samplesChunk.begin(), samplesChunk.end(), [](short sample) {return abs(sample) > 2; }))
 		{
 			std::cout << "Ready after: " << counter << " chunks" << std::endl;
@@ -95,6 +121,7 @@ void sampler2::prepare()
 	}
 }
 
+// ...
 std::vector<short> sampler2::sample()
 {
 	using namespace std::chrono;
@@ -131,12 +158,8 @@ std::vector<short> sampler2::sample()
 	return samplesChunk;
 }
 
+// ...
 sampler2::state sampler2::getStatus()
 {
 	return status;
-}
-
-sampler2::~sampler2()
-{
-	stop();
 }

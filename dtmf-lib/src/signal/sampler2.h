@@ -6,6 +6,7 @@
 #include <vector>
 #include <thread>
 #include <functional>
+#include <atomic>
 #include "constants.h"
 
 class sampler2
@@ -43,6 +44,7 @@ private:
 
 	state				status;
 	bool				allowPlayback;
+	std::atomic<bool>	sampling = false;
 
 	short int waveIn[NUMPTS];   
 };
