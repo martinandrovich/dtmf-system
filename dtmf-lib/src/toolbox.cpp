@@ -4,6 +4,7 @@
 #include <vector>
 #include <map>
 #include <chrono>
+#include <functional>
 #include <atomic>
 #include <windows.h>
 
@@ -150,13 +151,13 @@ void toolbox::testDecoderLog()
 
 void toolbox::testSampler2()
 {
+	
 	sampler2* samplertest = new sampler2([](std::vector<short> samples) {std::cout << "c" << samples.size() << std::endl; });
 	samplertest->prepare();
-	auto s = samplertest->sample();
-	std::cout << s.size() << std::endl;
-	toolbox::exportAudio(s);
-	samplertest->stop();
 
+	auto s = samplertest->sample();
+	//toolbox::exportAudio(s);
+	samplertest->stop();
 }
 
 std::map<double, short> toolbox::LatencyMap(std::map< double, std::vector<short>> map, double startTime)
@@ -407,9 +408,90 @@ void toolbox::testLatency()
 }
 
 // ...
-void toolbox::testLatency2()
+void toolbox::testStepWindow2(std::string args)
 {
 
+	using namespace std::chrono;
+
+	// constants
+	const int							toneDuration		= 50;			// ms
+	const int							latency				= 100;			// ms
+	long long							delay				= std::stoi(args);
+	const int							windowSize			= SAMPLE_INTERVAL;
+	const int							desiredWindows		= 2 * toneDuration / SAMPLE_INTERVAL;
+	const int							latencyWindows		= latency / SAMPLE_INTERVAL;
+
+	// variables
+	sampler2							sampler([](std::vector<short> samples) {});
+	std::thread							player;
+	std::function<void()>				delayedPlayer;
+
+	std::vector<short>					samples;
+	std::map<long long, float>			goertzel;
+	std::vector<short>					goertzel2(desiredWindows + latencyWindows);
+	std::map<double, short>				goertzel3;
+
+	high_resolution_clock				clock;
+	time_point<high_resolution_clock>	timeStart;
+	std::atomic<long long>				timeElapsed = 0;					// ms
+
+	unsigned int						counter				= 0;
+
+	// prepare delayed playback thread
+	delayedPlayer = [&]()
+	{
+		while (true)
+		{
+			//timeElapsed = static_cast<duration<double, std::milli>>(clock.now() - timeStart).count();
+
+			if (1 > delay)
+			{
+				generator::playback(0, toneDuration);
+				break;
+			}
+		}
+	};
+
+	// select delay from case
+	;
+	
+	std::cout << "Step Window Analysis (v2), " << delay << "ms playback delay\n";
+	Sleep(1000);
+
+	// prepare sampler
+	sampler.prepare();
+	std::vector<short>	samplesChunk(NUMPTS);
+
+	// start clock
+	timeStart = clock.now();
+
+	// start delayed playback thread
+	player = std::thread(delayedPlayer);
+
+	// datalogging loop
+	for (int i = 0; i < (desiredWindows + latencyWindows); i++)
+	{
+		samplesChunk			= sampler.sample();
+		//float	magnitude		= processor::goertzel(samplesChunk, 697);
+		timeElapsed				= static_cast<duration<double, std::milli>>(clock.now() - timeStart).count();
+
+		//std::cout << "Logging datapoint[" << i << "][" << magnitude << "] after " << timeElapsed << "ms.\n";
+		
+		//goertzel[timeElapsed] = magnitude;
+		//goertzel2[i] = magnitude;
+		//goertzel3[timeElapsed] = 0;
+		//samples.insert(samples.end(), samplesChunk.begin(), samplesChunk.end());
+	}
+
+	// remove latency values
+	;
+
+	// cleanup
+	player.join();
+
+	// data here
+	goertzel3;
+	toolbox::exportMap(goertzel3);
 }
 
 ///  Debug Methods ////////////////////////////////////////////////////////////////////////////////////////////////////////////////

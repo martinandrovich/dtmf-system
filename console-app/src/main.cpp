@@ -19,10 +19,10 @@ std::unordered_map<std::string, void(*)(std::string args)> commandMap =
 	{ "exit",	[](std::string args) { exit(0);								} },
 	{ "cls",	[](std::string args) { init();								} },
 	{ "test",	[](std::string args) { auto test = dtmf::toolbox::convertAudio("test.wav");	dtmf::toolbox::plotSamples(test);	} },
-	{ "step",	[](std::string args) { dtmf::toolbox::testStepWindow(0);	} },
-	{ "log",	[](std::string args) { dtmf::toolbox::testDecoderLog();	} },
-	{ "lat",	[](std::string args) { dtmf::toolbox::testLatency();	} },
-	{ "wins",	[](std::string args) { dtmf::toolbox::testSampler2();	} },
+	{ "log",	[](std::string args) { dtmf::toolbox::testDecoderLog();		} },
+	{ "lat",	[](std::string args) { dtmf::toolbox::testLatency();		} },
+	{ "step",	[](std::string args) { dtmf::toolbox::testStepWindow2(args);} },
+	{ "sam",	[](std::string args) { dtmf::toolbox::testSampler2(); } },
 };
 
 // main function

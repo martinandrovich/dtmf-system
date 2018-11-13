@@ -1,9 +1,8 @@
 #include "sampler2.h"
 #include <algorithm>
+#include <chrono>
+#include <thread>
 #include "generator.h"
-
-
-
 
 sampler2::sampler2(std::function<void(std::vector<short>)> callback, bool allowplayback )
 {
@@ -98,24 +97,39 @@ void sampler2::prepare()
 
 std::vector<short> sampler2::sample()
 {
+	using namespace std::chrono;
+
+	high_resolution_clock				clock;
+	double dur;
+	time_point<high_resolution_clock>	timeStart = clock.now();
+
 	waveInPrepareHeader(hWaveIn, &WaveInHdr, sizeof(WAVEHDR));
+	//dur = static_cast<duration<double, std::milli>>(clock.now() - timeStart).count();
 
 	// Insert a wave input buffer
 	waveInAddBuffer(hWaveIn, &WaveInHdr, sizeof(WAVEHDR));
+	//dur = static_cast<duration<double, std::milli>>(clock.now() - timeStart).count();
 
 	// Commence sampling input
 	waveInStart(hWaveIn);
+	//dur = static_cast<duration<double, std::milli>>(clock.now() - timeStart).count();
 
-	while (waveInUnprepareHeader(hWaveIn, &WaveInHdr, sizeof(WAVEHDR)) == WAVERR_STILLPLAYING)
+	/*while (waveInUnprepareHeader(hWaveIn, &WaveInHdr, sizeof(WAVEHDR)) == WAVERR_STILLPLAYING)
 	{
 
-	}
+	}*/
+	
+	// sleep as needed
+	std::this_thread::sleep_for(milliseconds(SAMPLE_INTERVAL));
+
+	//dur = static_cast<duration<double, std::milli>>(clock.now() - timeStart).count();
 
 	std::vector<short> samplesChunk(&waveIn[0], &waveIn[0] + NUMPTS);
+	//dur = static_cast<duration<double, std::milli>>(clock.now() - timeStart).count();
 
+	//std::vector<short> samplesChunk;
 	return samplesChunk;
 }
-
 
 sampler2::state sampler2::getStatus()
 {
