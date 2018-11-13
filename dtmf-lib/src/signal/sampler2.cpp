@@ -17,10 +17,7 @@ sampler2::sampler2(std::function<void(std::vector<short>)> callback, bool allowp
 
 	this->callback = callback;
 	allowPlayback = allowplayback;
-}
 
-bool sampler2::start()
-{
 	waveInOpen(&hWaveIn, WAVE_MAPPER, &pFormat,
 		0L, 0L, WAVE_FORMAT_DIRECT);
 
@@ -31,6 +28,11 @@ bool sampler2::start()
 	WaveInHdr.dwUser = 0L;
 	WaveInHdr.dwFlags = 0L;
 	WaveInHdr.dwLoops = 0L;
+}
+
+bool sampler2::start()
+{
+	
 
 	prepare();
 
@@ -41,7 +43,12 @@ bool sampler2::start()
 
 void sampler2::stop()
 {
-	worker->join();
+	if (this->worker != nullptr)
+	{
+		this->worker->join();
+		delete this->worker;
+	}
+
 	waveInClose(hWaveIn);
 }
 

@@ -25,8 +25,7 @@ namespace dtmf
 namespace toolbox
 {
 	// Private Members
-	;
-
+	
 	// Private Methods
 	void logPayload(uint toneId);
 	void executePayload(uint toneId);
@@ -151,13 +150,13 @@ void toolbox::testDecoderLog()
 
 void toolbox::testSampler2()
 {
-	sampler2 sampler([](std::vector<short> samples) {std::cout << samples.size() << std::endl; });
+	sampler2* samplertest = new sampler2([](std::vector<short> samples) {std::cout << "c" << samples.size() << std::endl; });
+	samplertest->prepare();
+	auto s = samplertest->sample();
+	std::cout << s.size() << std::endl;
+	toolbox::exportAudio(s);
+	samplertest->stop();
 
-	sampler.start();
-	while (true)
-	{
-
-	}
 }
 
 // Initialize decoder and execute keypress according to the payload (toneId) of percieved DTMF tones
