@@ -33,7 +33,10 @@ sampler2::sampler2(std::function<void(std::vector<short>)> callback, bool allowp
 // Destructor
 sampler2::~sampler2()
 {
-	stop();
+	if (this->sampling)
+	{
+		this->stop();
+	}	
 }
 
 // ...
