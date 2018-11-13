@@ -15,14 +15,13 @@ void init()
 // commands map
 std::unordered_map<std::string, void(*)(std::string args)> commandMap = 
 {
-	{ "help",	[](std::string args) { help(args);							} },
-	{ "exit",	[](std::string args) { exit(0);								} },
-	{ "cls",	[](std::string args) { init();								} },
-	{ "test",	[](std::string args) { auto test = dtmf::toolbox::convertAudio("test.wav");	dtmf::toolbox::plotSamples(test);	} },
-	{ "log",	[](std::string args) { dtmf::toolbox::testDecoderLog();		} },
-	{ "lat",	[](std::string args) { dtmf::toolbox::testLatency();		} },
-	{ "step",	[](std::string args) { dtmf::toolbox::testStepWindow2(args);} },
-	{ "sam",	[](std::string args) { dtmf::toolbox::testSampler2(); } },
+	{ "help",	[](std::string args) { help(args);								} },
+	{ "exit",	[](std::string args) { exit(0);									} },
+	{ "cls",	[](std::string args) { init();									} },
+	{ "log",	[](std::string args) { dtmf::toolbox::testDecoderLog();			} },
+	{ "lat",	[](std::string args) { dtmf::toolbox::testLatency();			} },
+	{ "step",	[](std::string args) { dtmf::toolbox::testStepWindow2(args);	} },
+	{ "sam",	[](std::string args) { dtmf::toolbox::testSampler2();			} },
 };
 
 // main function

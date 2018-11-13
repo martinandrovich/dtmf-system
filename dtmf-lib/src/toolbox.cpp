@@ -325,7 +325,6 @@ void toolbox::testLatency()
 {
 	using namespace std::chrono;
 
-	const long long						latency			= 200;				// ms (must be in multiples of sampling interval)
 	const int							delay			= 10;				// number of chunks to trash
 	const int							dur				= delay + 100;		// number of chunks to log
 
@@ -344,7 +343,7 @@ void toolbox::testLatency()
 	std::map<double, std::vector<short>>logChunks;
 	std::vector<short>					samples;
 
-	sampler	recorder([&](std::vector<short> samplesChunk)
+	sampler2	recorder([&](std::vector<short> samplesChunk)
 	{
 		logging = true;
 
@@ -387,7 +386,7 @@ void toolbox::testLatency()
 		{
 			logEvents[timeElapsed] = 1000;
 			initialized = true;
-			recorder.start(SAMPLE_RATE);
+			recorder.start();
 		}
 		else if (!logging && logEvents.count(timeElapsed) == 0)
 		{
