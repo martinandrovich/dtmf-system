@@ -191,6 +191,8 @@ void toolbox::exportMap(std::map<key, value> map, std::string filename)
 	}
 
 	outputStream.close();
+
+	std::cout << "The map[" << map.size() << "] exported as \"" << filename << "\" ...\n";
 }
 
 // ...
@@ -203,7 +205,7 @@ void toolbox::exportAudio(std::vector<short> &samples, std::string filename)
 }
 
 // ...
-void toolbox::plotSamples(std::vector<short> &samples, std::string filename)
+void toolbox::plotSamples(std::vector<short> &samples, std::string filename, std::array<std::string, 3> labels)
 {
 	// export samples
 	toolbox::exportSamples(samples, filename);
@@ -216,13 +218,13 @@ void toolbox::plotSamples(std::vector<short> &samples, std::string filename)
 
 	// run MATLAB script/function
 	// needs to be changed to cd "/script"
-	std::string cmd = "matlab -nodesktop -r \"plot_script('" + filename + "')\"";
+	std::string cmd = "matlab -nodesktop -r \"plot_samples('" + filename + "', '" + labels[0] + "', '" + labels[1] + "', '" + labels[2] + "')\"";
 	system(cmd.c_str());
 }
 
 // ...
 template <class key, class value>
-void toolbox::plotMap(std::map<key, value> map, std::string filename)
+void toolbox::plotMap(std::map<key, value> &map, std::string filename, std::array<std::string, 3> labels)
 {
 	// export samples
 	toolbox::exportMap(map, filename);
@@ -235,7 +237,7 @@ void toolbox::plotMap(std::map<key, value> map, std::string filename)
 
 	// run MATLAB script/function
 	// needs to be changed to cd "/script"
-	std::string cmd = "matlab -nodesktop -r \"plot_map('" + filename + "')\"";
+	std::string cmd = "matlab -nodesktop -r \"plot_map('" + filename + "', '" + labels[0] + "', '" + labels[1] + "', '" + labels[2] + "')\"";
 	system(cmd.c_str());
 }
 
@@ -572,8 +574,8 @@ void toolbox::testLatency()
 	// data here
 	auto logFinal = toolbox::convertLatencyMap(logChunks, begin);
 	toolbox::exportAudio(samples);
-	toolbox::plotSamples(samples);
-	toolbox::plotMap(logFinal);
+	toolbox::plotSamples(samples, "latency_samples.dat", { "Samples Plot", "Sample [N]", "Amplitude [dB]" });
+	toolbox::plotMap(logFinal, "latency_map.dat", { "Map Plot", "Time [ms]", "Amplitude [dB]" });
 }
 
 // Test sampler2 class; record a single chunk using callback
