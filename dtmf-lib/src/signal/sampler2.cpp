@@ -1,35 +1,27 @@
-#include <windows.h>
-#include <mmsystem.h>
-
-#include <iostream>
-#include <vector>
+#include "sampler2.h"
 #include <algorithm>
-#include <functional>
 #include <chrono>
 #include <thread>
-#include <atomic>
-
-#include "sampler2.h"
 #include "generator.h"
 
-
 // Constructor
-sampler2::sampler2(std::function<void(std::vector<short>)> callback, bool allowPlayback )
-	: callback(callback), allowPlayback(allowPlayback), sampling(false)
+sampler2::sampler2(std::function<void(std::vector<short>)> callback, bool allowplayback )
 {
-	// sampling properties
-	pFormat.wFormatTag		= WAVE_FORMAT_PCM;			// simple, uncompressed format
-	pFormat.nChannels		= 1;						//  1=mono, 2=stereo
-	pFormat.nSamplesPerSec	= SAMPLE_RATE;				// 44100
-	pFormat.wBitsPerSample	= 16;						//  16 for high quality, 8 for telephone-grade
+	pFormat.wFormatTag = WAVE_FORMAT_PCM;     // simple, uncompressed format
+	pFormat.nChannels = 1;                    //  1=mono, 2=stereo
+	pFormat.nSamplesPerSec = SAMPLE_RATE;      // 44100
+	pFormat.wBitsPerSample = 16;              //  16 for high quality, 8 for telephone-grade
 	pFormat.nAvgBytesPerSec = pFormat.nSamplesPerSec * pFormat.nChannels*(pFormat.wBitsPerSample/8);
-	pFormat.nBlockAlign		= 2;						// = n.Channels * wBitsPerSample/8
-	pFormat.cbSize			= 0;
+	pFormat.nBlockAlign = 2;                  // = n.Channels * wBitsPerSample/8
+	pFormat.cbSize = 0;
 
-	// open wave hander
-	waveInOpen(&hWaveIn, WAVE_MAPPER, &pFormat,	0L, 0L, WAVE_FORMAT_DIRECT);
+	this->callback = callback;
+	allowPlayback = allowplayback;
 
-	// wave header properties
+	waveInOpen(&hWaveIn, WAVE_MAPPER, &pFormat,
+		0L, 0L, WAVE_FORMAT_DIRECT);
+
+
 	WaveInHdr.lpData = (LPSTR)waveIn;
 	WaveInHdr.dwBufferLength = NUMPTS * 2;
 	WaveInHdr.dwBytesRecorded = 0;
@@ -47,8 +39,8 @@ sampler2::~sampler2()
 	}	
 }
 
-// Start the sampler
-void sampler2::start()
+// ...
+bool sampler2::start()
 {
 	// prepare sampler
 	this->prepare();
@@ -59,9 +51,12 @@ void sampler2::start()
 
 	// start thread
 	this->worker = new std::thread(&sampler2::thread, this);
+
+	// return 
+	return true;
 }
 
-// Stop sampler; waits for current iteration to finish
+// ...
 void sampler2::stop()
 {
 	// update variables
@@ -76,17 +71,13 @@ void sampler2::stop()
 		delete this->worker;
 	}
 
-	// unprepare header
-	waveInUnprepareHeader(hWaveIn, &WaveInHdr, sizeof(WAVEHDR));
-
 	// close handle
 	waveInClose(hWaveIn);
 
-	// done
 	std::cout << "Sampler has been stopped.\n";
 }
 
-// The callback sampler thread; initiated by .start()
+// ...
 void sampler2::thread()
 {
 	while (sampling)
@@ -114,7 +105,7 @@ void sampler2::thread()
 	}
 }
 
-// Prepare the sampler; block thread until a sample chunk has actual audio data
+// ...
 void sampler2::prepare()
 {
 	int counter = 0;
@@ -133,25 +124,23 @@ void sampler2::prepare()
 	}
 }
 
-// Perform a single samplign; return sample chunk (array)
+// ...
 std::vector<short> sampler2::sample()
 {
 	using namespace std::chrono;
 
-	// timing variables
-	//high_resolution_clock				clock;
-	//double dur;
-	//time_point<high_resolution_clock>	timeStart = clock.now();
+	high_resolution_clock				clock;
+	double dur;
+	time_point<high_resolution_clock>	timeStart = clock.now();
 
-	// prepare header
 	waveInPrepareHeader(hWaveIn, &WaveInHdr, sizeof(WAVEHDR));
 	//dur = static_cast<duration<double, std::milli>>(clock.now() - timeStart).count();
 
-	// insert a wave input buffer
+	// Insert a wave input buffer
 	waveInAddBuffer(hWaveIn, &WaveInHdr, sizeof(WAVEHDR));
 	//dur = static_cast<duration<double, std::milli>>(clock.now() - timeStart).count();
 
-	// commence sampling input
+	// Commence sampling input
 	waveInStart(hWaveIn);
 	//dur = static_cast<duration<double, std::milli>>(clock.now() - timeStart).count();
 
@@ -160,29 +149,19 @@ std::vector<short> sampler2::sample()
 
 	}*/
 	
-	// sleep for the duration of a sample interval
+	// sleep as needed
 	std::this_thread::sleep_for(milliseconds(SAMPLE_INTERVAL));
-
-	/*
-
-	Can be optimized using a ringbuffer and pointers, such that the waveIn pointer is changed
-	and header preparations only need to be performed once, while a background thread cleans up.
-	
-	Although this should have a separate method, e.g. sample_many(int num_chunks);
-	
-	*/
 
 	//dur = static_cast<duration<double, std::milli>>(clock.now() - timeStart).count();
 
-	// create vector
 	std::vector<short> samplesChunk(&waveIn[0], &waveIn[0] + NUMPTS);
 	//dur = static_cast<duration<double, std::milli>>(clock.now() - timeStart).count();
 
-	// return vector
+	//std::vector<short> samplesChunk;
 	return samplesChunk;
 }
 
-// Return sampler status
+// ...
 sampler2::state sampler2::getStatus()
 {
 	return status;
