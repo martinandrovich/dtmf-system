@@ -1,26 +1,24 @@
+#pragma once
 #pragma comment(lib,"winmm.lib")
-
-#include <Windows.h>
+#include <windows.h>
 #include <mmsystem.h>
-#include <iostream>
+
 #include <vector>
-#include <thread>
 #include <functional>
+#include <thread>
 #include <atomic>
+
 #include "constants.h"
 
 class sampler2
 {
 public:
 
+	// Constructor & Destructor
 	sampler2(std::function<void(std::vector<short>)> callback , bool allowplayback = false );
+	~sampler2();
 
-	bool start();
-	void stop();
-
-	void prepare();
-	std::vector<short> sample();
-
+	// Status Enum
 	enum class state {
 		unitialized,
 		idle,
@@ -28,24 +26,33 @@ public:
 		processing
 	};
 
-	state	getStatus();
+	// Methods
+	void					prepare();
+	void					start();
+	void					stop();
 
-	~sampler2();
+	std::vector<short>		sample();
+
+	state					getStatus();
 
 private:
+
+	// Methods
 	std::thread*			worker;
-	void thread();
-	HWAVEIN     hWaveIn;
-	WAVEHDR     WaveInHdr;
-	//MMRESULT	result;
-	WAVEFORMATEX pFormat;
+	void					thread();
+
+	// Members
+	HWAVEIN					hWaveIn;
+	WAVEHDR					WaveInHdr;
+	MMRESULT				result;
+	WAVEFORMATEX			pFormat;
 
 	std::function<void(std::vector<short>)> callback;
 
-	state				status;
-	bool				allowPlayback;
-	std::atomic<bool>	sampling = false;
+	state					status;
+	bool					allowPlayback;
+	std::atomic<bool>		sampling;
 
-	short int waveIn[NUMPTS];   
+	short int				waveIn[NUMPTS];   
 };
 
