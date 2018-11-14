@@ -38,7 +38,6 @@ public:
 private:
 
 	// Methods
-	std::thread*			worker;
 	void					thread();
 
 	// Members
@@ -49,6 +48,7 @@ private:
 
 	std::function<void(std::vector<short>)> callback;
 
+	std::thread*			worker;
 	state					status;
 	bool					allowPlayback;
 	std::atomic<bool>		sampling;

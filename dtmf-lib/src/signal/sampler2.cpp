@@ -8,10 +8,9 @@
 #include <chrono>
 #include <thread>
 #include <atomic>
-
-#include "sampler2.h"
 #include "generator.h"
 
+#include "sampler2.h"
 
 // Constructor
 sampler2::sampler2(std::function<void(std::vector<short>)> callback, bool allowPlayback )
@@ -91,43 +90,51 @@ void sampler2::thread()
 {
 	while (sampling)
 	{
-		this->status = state::processing;
+		// continue sampling
+		this->status = state::sampling;
 
 		// std::cout << "PROCESSING SAMPLES [" << NUMPTS << "] ...\n";
 
 		// create vector of samples
-		
-		std::vector<short> samplesCopy = sample();
+		std::vector<short> samples = sample();
 
-		// return silent (zero) array if generator is playing
-		// NOT THREAD SAFE !#!#!#!#!#!#!#!#!#!#!						!#!#!#!#!#!#!#!#!#!#!!#!
+		// process data
+		this->status = state::processing;
+
+		// return silent (zero) array if playback disallowed and generator is playing
 		if (!this->allowPlayback && generator::getState() == generator::state::playing)
 		{
-			std::fill(samplesCopy.begin(), samplesCopy.end(), 0);
+			std::fill(samples.begin(), samples.end(), 0);
 		}
 
 		// callback with copy of samples chunk
-		this->callback(samplesCopy);
-
-		// continue sampling
-		this->status = state::sampling;
+		this->callback(samples);
 	}
 }
 
 // Prepare the sampler; block thread until a sample chunk has actual audio data
 void sampler2::prepare()
 {
+	using namespace std::chrono;
+	
+	// variables
 	int counter = 0;
 	std::vector<short> samplesChunk(NUMPTS);
+	high_resolution_clock				clock;
+	time_point<high_resolution_clock>	timeStart = clock.now();
 
 	while (true)
 	{
+		// update counter
 		counter++;
+
+		// get a chunk of samples
 		samplesChunk = sample();
 
-		if (std::any_of(samplesChunk.begin(), samplesChunk.end(), [](short sample) {return abs(sample) > 2; }))
+		// check whether any absolute value of chunk is greatear than 2; break if true.
+		if (std::any_of(samplesChunk.begin(), samplesChunk.end(), [&](short sample) {return abs(sample) > 2; }))
 		{
-			std::cout << "Ready after: " << counter << " chunks" << std::endl;
+			std::cout << "Ready after: " << counter << " chunk [ " << static_cast<duration<double, std::milli>>(clock.now() - timeStart).count() << " ms]\n";
 			break;
 		}
 	}
