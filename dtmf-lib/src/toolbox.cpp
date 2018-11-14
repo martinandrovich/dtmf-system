@@ -586,6 +586,8 @@ void toolbox::testSampler2()
 
 	auto chunk = test->sample();
 	//toolbox::exportAudio(chunk);
+	test->start();
+	std::this_thread::sleep_for(std::chrono::milliseconds(100));
 	test->stop();
 	delete test;
 }
