@@ -5,6 +5,7 @@
 #include <vector>
 #include <string>
 #include <windows.h>
+#include <atomic>
 
 #include "generator.h"
 
@@ -13,8 +14,8 @@
 namespace generator
 {
 	// Private Members
-	sf::Sound*			player = new sf::Sound;
-	state				status;
+	sf::Sound*					player = new sf::Sound;
+	std::atomic<state>			status;
 }
 
 //// Method Definitions ///////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -22,19 +23,19 @@ namespace generator
 // Generate an array of samples from two given frequencies; return a pointer to a heap-allocated SFML SoundBuffer object
 sf::SoundBuffer* generator::generateSamples(uint f1, uint f2, uint duration, uint amplitude, float fadePercentage, uint sampleRate)
 {
-	// Variables
+	// variables
 	float					sampleSize = sampleRate * (duration / 1000.f);
 	float					fadeSize = fadePercentage * sampleSize;
 	std::vector<sf::Int16>	temp(sampleSize);
 	uint					amplitudeFinal;
 
-	// Create NEW SoundBuffer on HEAP
+	// create heap allocated sf::SoundBuffer
 	sf::SoundBuffer*		buffer = new sf::SoundBuffer;						// [NEEDS GARBAGE COLLECTION !!!]
 
-	// Generate sample array
+	// generate sample array
 	for (uint i = 0; i < sampleSize; i++)
 	{
-		// Fade function on amplitude
+		// linear fade function on amplitude
 		if (i < fadeSize)
 		{
 			//amplitudeFinal = (i / (fadeSize * 1.f)) * amplitude;
@@ -49,11 +50,11 @@ sf::SoundBuffer* generator::generateSamples(uint f1, uint f2, uint duration, uin
 			amplitudeFinal = amplitude;
 		}
 
-		// Array entry
+		// array entry
 		temp[i] = amplitudeFinal * (sin(f1 * 2 * PI * (i * 1.f / sampleRate)) + sin(f2 * 2 * PI * (i * 1.f / sampleRate)));
 	}
 
-	// Load and return buffer
+	// load and return buffer
 	buffer->loadFromSamples(&temp[0], sampleSize, 1, sampleRate);
 	return buffer;
 }
@@ -61,39 +62,39 @@ sf::SoundBuffer* generator::generateSamples(uint f1, uint f2, uint duration, uin
 // Generate an array of samples from a given tone (char 0-D); return a pointer to a heap-allocated SFML SoundBuffer object
 sf::SoundBuffer* generator::generateDTMF(uint toneID, uint duration, uint amplitude, float fadePercentage, uint sampleRate)
 {
-	// Check if valid tone input
+	// check if valid tone input
 	if (toneID > 15)
 	{
 		return nullptr;
 	}		
 
-	// Return buffer generated from an appropriate set of frequencies
-	//return generator::generateSamples(freqLow[toneID / 4], freqHigh[toneID % 4], duration, amplitude);
+	// return buffer generated from an appropriate set of frequencies
 	return generator::generateSamples(freq[toneID / 4], freq[(toneID % 4) + 4], duration, amplitude);
+	///return generator::generateSamples(freqLow[toneID / 4], freqHigh[toneID % 4], duration, amplitude);
 }
 
 // Playback a tone for a duration; spinlock while playing
 void generator::playback(uint toneID, uint duration, bool parallel)
 {
-	// Create buffer
+	// create buffer
 	auto buffer = generateDTMF(toneID, duration);
 
 	generator::status = generator::state::playing;
 
-	// Set buffer and play
+	// set buffer and play
 	generator::player->setBuffer(*buffer);
 	generator::player->play();
 	
 	std::cout << "Playing tone [" << toneID << "]\n";
 
-	// escape function !!! BAD FOR MEMORY
+	// escape function if parellel enabled			!!! BAD FOR MEMORY
 	if (parallel)
 	{
 		generator::status = generator::state::idle;
 		return;
 	}
 
-	// Block thread while playing (parallel = false)
+	// block thread while playing (parallel = false)
 	while (generator::player->getStatus() == generator::player->Playing)
 	{
 		;
@@ -101,46 +102,21 @@ void generator::playback(uint toneID, uint duration, bool parallel)
 	
 	generator::status = generator::state::idle;
 
-	// Cleanup
+	// cleanup
 	delete buffer;
 }
 
-// Playback a sequence of tones for a duration and pause between; spinlock while playing
+// Playback a sequence of tones for a duration and pause between; block thread while playing
 void generator::playbackSequence(std::vector<int> &sequence, int duration, int pause)
 {
-	for (const auto &i : sequence)
+	for (const auto &tone : sequence)
 	{
-		generator::playback(i, duration);
+		generator::playback(tone, duration);
 		Sleep(pause); // BAD IMPLEMENTATION !!!!
 	}
 }
 
-// Generate a buffer of samples to a vector (sf::SoundBuffer<Int16> -> std::vector<short>)
-std::vector<short> generator::convertBuffer(sf::SoundBuffer& buffer)
-{
-	const short* data = &buffer.getSamples()[0]; // Int16*
-	const int size = buffer.getSampleCount();
-
-	std::vector<short> samples(data, data + size);
-	//std::vector<sf::Int16> samples((const short*)&buffer.getSamples()[0], (const short*)&buffer.getSamples()[0] + (int)buffer.getSampleCount());
-
-	return samples;
-}
-
-void generator::exportBuffer(sf::SoundBuffer& buffer, std::string filename)
-{
-	auto samples = generator::convertBuffer(buffer);
-
-	std::ofstream outFile(filename + ".txt");
-
-	for (const auto &sample : samples)
-	{
-		outFile << sample << "\n";
-	}
-
-	outFile.close();
-}
-
+// Return status state; thread safe
 generator::state generator::getState()
 {
 	return generator::status;
