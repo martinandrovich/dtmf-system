@@ -185,6 +185,13 @@ void toolbox::exportMap(std::map<key, value> map, std::string filename)
 {
 	std::ofstream outputStream(filename);
 
+	/* C++ 17
+	for (auto const&[k, v] : map)
+	{
+		std::cout << k << ";" << v << "\n";
+	}
+	*/
+
 	for (auto pair : map)
 	{
 		outputStream << pair.first << ";" << pair.second << "\n";
