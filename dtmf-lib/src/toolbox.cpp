@@ -308,7 +308,7 @@ void toolbox::testDecoderKeyboardSender()
 }
 
 // ...
-void toolbox::testStepWindow(long long delay)
+void toolbox::testStepWindow(std::string args)
 {
 	using namespace std::chrono;
 
@@ -318,6 +318,7 @@ void toolbox::testStepWindow(long long delay)
 	long long					timeElapsed		= 0;		// ms
 
 	int							frequency		= 697;
+	int							delay			= 0;
 
 	int							numToDiscard	= STEP_WINDOW_SIZE * 5;
 	int							numToStore		= STEP_WINDOW_SIZE * 2;
@@ -329,6 +330,12 @@ void toolbox::testStepWindow(long long delay)
 	sampler*					recorder;
 
 	std::atomic<bool>			logging(false);
+
+	// parse delay from arguments
+	if (args != "")
+	{
+		delay = std::stoi(args);
+	}
 
 	// brief pause
 	Sleep(1000);
@@ -408,7 +415,7 @@ void toolbox::testStepWindow(long long delay)
 	// data here
 	toolbox::plotSamples(samples, "g1.dat");
 	toolbox::plotSamples(goertzel2, "g2.dat");
-	toolbox::exportAudio(samples);
+	//toolbox::exportAudio(samples);
 
 	// clean up
 	delete recorder;
@@ -420,12 +427,14 @@ void toolbox::testStepWindow2(std::string args)
 	using namespace std::chrono;
 
 	// constants
-	const int							toneDuration		= 50;	// ms
 	const int							latency				= 100;	// ms
 	long long							delay				= 0;
 	const int							windowSize			= SAMPLE_INTERVAL;
-	const int							desiredWindows		= 2 * toneDuration / SAMPLE_INTERVAL;
-	const int							latencyWindows		= latency / SAMPLE_INTERVAL;
+	const int							desiredWindows		= 2 * (DURATION / SAMPLE_INTERVAL);
+	const int							latencyWindows		= 2 * (latency / SAMPLE_INTERVAL);
+
+	const int							testToneId			= 0;
+	const int							testFreq			= freq[testToneId / 4];
 
 	// variables
 	sampler2							sampler([](std::vector<short> samples) {});
@@ -433,9 +442,8 @@ void toolbox::testStepWindow2(std::string args)
 	std::function<void()>				delayedPlayer;
 
 	std::vector<short>					samples;
-	std::map<long long, float>			goertzel;
-	std::vector<short>					goertzel2(desiredWindows + latencyWindows);
-	std::map<double, short>				goertzel3;
+	std::map<double, short>				goertzel;
+	std::map<double, std::vector<short>>chunks;
 
 	high_resolution_clock				clock;
 	time_point<high_resolution_clock>	timeStart;
@@ -452,7 +460,7 @@ void toolbox::testStepWindow2(std::string args)
 
 			if (timeElapsed > delay)
 			{
-				generator::playback(3, toneDuration);
+				generator::playback(testToneId, DURATION);
 				break;
 			}
 		}
@@ -461,11 +469,19 @@ void toolbox::testStepWindow2(std::string args)
 	// parse delay from arguments
 	if (args != "")
 	{
-		std::stoi(args);
+		delay = std::stoi(args);
 	}
 
-	// print
-	std::cout << "Step Window Analysis (v2), " << delay << "ms playback delay\n";
+	// print information
+	std::cout << "Step Window Analysis (v2): ["
+		<< "freq: "			<< testFreq			<< " Hz | "
+		<< "tone: "			<< DURATION			<< " ms | "
+		<< "delay: "		<< delay			<< " ms | "
+		<< "interval: "		<< SAMPLE_INTERVAL	<< " ms | "
+		<< "sample rate: "	<< SAMPLE_RATE		<< " Hz "
+	<< "]\n";
+
+	// goodnight
 	std::this_thread::sleep_for(milliseconds(500));	
 
 	// prepare sampler
@@ -473,6 +489,7 @@ void toolbox::testStepWindow2(std::string args)
 	std::vector<short>	samplesChunk(NUMPTS);
 
 	// start clock
+	std::cout << "Started sampling [0.00ms]\n";
 	timeStart = clock.now();
 
 	// start delayed playback thread
@@ -481,27 +498,38 @@ void toolbox::testStepWindow2(std::string args)
 	// datalogging loop
 	for (int i = 0; i < (desiredWindows + latencyWindows); i++)
 	{
-		samplesChunk = sampler.sample();
-		float	magnitude = processor::goertzel(samplesChunk, 697);
+		//samplesChunk = sampler.sample();
+		//float	magnitude = processor::goertzel2(samplesChunk, 697, 205);
 		timeElapsed = static_cast<duration<double, std::milli>>(clock.now() - timeStart).count();
 
 		//std::cout << "Logging datapoint[" << i << "][" << magnitude << "] after " << timeElapsed << "ms.\n";
+		chunks[timeElapsed] = sampler.sample();
 
-		//goertzel[timeElapsed] = magnitude;
-		//goertzel2[i] = magnitude;
-		goertzel3[timeElapsed] = magnitude;
 		//samples.insert(samples.end(), samplesChunk.begin(), samplesChunk.end());
 	}
 
-	// remove latency values
-	;
+	std::cout << "Finished sampling [" << static_cast<duration<double, std::milli>>(clock.now() - timeStart).count() << "ms]\n";
+
+	// perform goertzel
+	for (auto pair : chunks)
+	{
+		auto samplesChunk = pair.second;
+
+		samples.insert(samples.end(), samplesChunk.begin(), samplesChunk.end());
+
+		processor::hanningWindow(samplesChunk);
+		goertzel[pair.first] = processor::goertzel(samplesChunk, testFreq);
+	}
+
+	std::cout << "Finished processing [" << static_cast<duration<double, std::milli>>(clock.now() - timeStart).count() << "ms]\n";
 
 	// cleanup
 	player.join();
 
 	// data here
-	goertzel3;
-	toolbox::plotMap(goertzel3);
+	toolbox::exportAudio(samples);
+	//toolbox::exportSamples(samples);
+	toolbox::plotMap(goertzel);
 }
 
 // ...
