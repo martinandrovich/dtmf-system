@@ -29,7 +29,7 @@ namespace dtmf
 		void									testDecoderKeyboardReciever();
 		void									testDecoderKeyboardSender();
 
-		void									testStepWindow(long long delay);
+		void									testStepWindow(std::string args);
 		void									testStepWindow2(std::string args);
 		void									testLatency();
 		
