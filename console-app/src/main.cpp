@@ -18,7 +18,7 @@ void init()
 {
 	system("cls");
 	std::cout << "Ear Rape Simulator 1.0.4\n\n";
-	dtmf::node::initializeServer(&someFunction);
+	//dtmf::node::initializeServer(&someFunction);
 }
 
 // commands map
