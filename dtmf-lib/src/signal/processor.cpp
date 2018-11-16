@@ -31,8 +31,21 @@ float processor::getAverageAmplitude(std::array<float, 8> &sampleArray)
 	return sum/8.f;
 }
 
+// Hanning window; perform on vector by reference
+void processor::hanningWindow(std::vector<short> &samples)
+{
+	int		size = samples.size();
+	double	multiplier;
+
+	for (int i = 0; i < samples.size(); i++)
+	{
+		multiplier = 0.5 * (1 - cos((2 * PI * i) / (size - 1)));
+		samples[i] = samples[i] * multiplier;
+	}
+}
+
 // Run goertzel algorithm on chunk of samples for a specific frequency; return float
-float processor::goertzel(std::vector<short> &samples, int frequency)
+float processor::goertzel(std::vector<short> &samples, int targetFrequency)
 {
 	//float   omega, sine, cosine, coeff, w0, w1, w2, magnitude, real, imag;
 
@@ -43,10 +56,10 @@ float processor::goertzel(std::vector<short> &samples, int frequency)
 	
 
 	// variable definitions
-	int		numSamples			= N[std::find(std::begin(freq), std::end(freq), frequency) - std::begin(freq)];
+	int		numSamples			= samples.size(); //N[std::find(std::begin(freq), std::end(freq), frequency) - std::begin(freq)];
 	float   numSamplesFloat		= (float)numSamples;
 	float   scalingFactor		= numSamples / 2.f;
-	int		k					= (int)(0.5 + ((numSamplesFloat * frequency) / SAMPLE_RATE));
+	int		k					= (int)(0.5 + ((numSamplesFloat * targetFrequency) / SAMPLE_RATE));
 
 	float	omega				= (2.f * PI * k) / numSamplesFloat;
 	float	sine				= sin(omega);

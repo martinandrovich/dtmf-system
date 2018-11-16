@@ -16,6 +16,7 @@ namespace processor
 	void equalize();
 	void fft();
 
+	void					hanningWindow(std::vector<short> &samples);
 	float					goertzel(std::vector<short> &samples, int frequency);
 	std::array<float, 8>	goertzelArray(std::vector<short> &samples);
 
