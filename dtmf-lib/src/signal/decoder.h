@@ -17,6 +17,7 @@ namespace decoder
 
 	// Public Methods
 	void init(void(*callback)(uint toneID));
+	bool tresholdTest(std::array<float, 8> goertzelarray);
 	void run();
 	void end();
 

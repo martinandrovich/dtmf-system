@@ -18,4 +18,4 @@ constexpr int 	NUMPTS				= SAMPLE_RATE * (SAMPLE_INTERVAL / 1000.);	// Number of
 //const int		freqLow[4]			= {  697,  770,  852,  941 };
 //const int		freqHigh[4]			= { 1209, 1336, 1477, 1633 };
 const int		freq[8]				= { 697,  770,  852,  941, 1209, 1336, 1477, 1633 };
-const int		freqThresholds[8]	= { 100,  100,  100,  100,  100,  100,  100,  100 };
+const int		freqThresholds[8]	= { 2000,  2000,  2000,  2000,  2000,  2000,  2000,  2000 };

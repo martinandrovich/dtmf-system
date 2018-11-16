@@ -417,16 +417,15 @@ void toolbox::testStepWindow(long long delay)
 // ...
 void toolbox::testStepWindow2(std::string args)
 {
-
 	using namespace std::chrono;
 
 	// constants
-	const int							toneDuration = 50;			// ms
-	const int							latency = 100;			// ms
-	long long							delay = std::stoi(args);
-	const int							windowSize = SAMPLE_INTERVAL;
-	const int							desiredWindows = 2 * toneDuration / SAMPLE_INTERVAL;
-	const int							latencyWindows = latency / SAMPLE_INTERVAL;
+	const int							toneDuration		= 50;	// ms
+	const int							latency				= 100;	// ms
+	long long							delay				= 0;
+	const int							windowSize			= SAMPLE_INTERVAL;
+	const int							desiredWindows		= 2 * toneDuration / SAMPLE_INTERVAL;
+	const int							latencyWindows		= latency / SAMPLE_INTERVAL;
 
 	// variables
 	sampler2							sampler([](std::vector<short> samples) {});
@@ -440,9 +439,9 @@ void toolbox::testStepWindow2(std::string args)
 
 	high_resolution_clock				clock;
 	time_point<high_resolution_clock>	timeStart;
-	std::atomic<long long>				timeElapsed = 0;					// ms
+	std::atomic<long long>				timeElapsed			= 0;	// ms
 
-	unsigned int						counter = 0;
+	unsigned int						counter				= 0;
 
 	// prepare delayed playback thread
 	delayedPlayer = [&]()
@@ -459,11 +458,15 @@ void toolbox::testStepWindow2(std::string args)
 		}
 	};
 
-	// select delay from case
-	;
+	// parse delay from arguments
+	if (args != "")
+	{
+		std::stoi(args);
+	}
 
+	// print
 	std::cout << "Step Window Analysis (v2), " << delay << "ms playback delay\n";
-	Sleep(1000);
+	std::this_thread::sleep_for(milliseconds(500));	
 
 	// prepare sampler
 	sampler.prepare();
@@ -498,6 +501,7 @@ void toolbox::testStepWindow2(std::string args)
 
 	// data here
 	goertzel3;
+	toolbox::plotMap(goertzel3);
 	toolbox::exportMap(goertzel3);
 }
 

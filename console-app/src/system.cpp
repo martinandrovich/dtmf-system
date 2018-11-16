@@ -41,12 +41,11 @@ void executeCommand(std::string input)
 	if (input.find(' ') != -1)
 	{
 		args = input.substr(cmd.length() + 1);
-		commandMap[cmd](args);
+
 	}
-	else
-	{
-		commandMap[cmd](args);
-	}
+	
+	//Call function
+	commandMap[cmd](args);
 }
 
 void help(std::string args)
