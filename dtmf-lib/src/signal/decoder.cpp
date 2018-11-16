@@ -231,7 +231,7 @@ void decoder::decode2(std::vector<short> &samples)
 	auto goertzelArray = processor::goertzelArray(samples);
 
 	// check if any values surpass thresholds
-	bool thresholdBroken = tresholdTest(goertzelArray);
+	bool thresholdBroken = thresholdTest(goertzelArray);
 
 	// check if previous treshold was surpassed and current was not
 	if (previousThresholdBroken && !thresholdBroken)
