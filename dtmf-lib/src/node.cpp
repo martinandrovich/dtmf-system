@@ -44,7 +44,7 @@ namespace dtmf
 
 		// Private Methods
 		void send(Message msg); // msg struct
-		void process(int toneID);
+		void process(uint toneID);
 		void recieved(Message msg);
 		
 		void testCurrentState();
@@ -76,7 +76,7 @@ void dtmf::node::send(Message msg)
 }
 
 // ...
-void dtmf::node::process(int toneID)
+void dtmf::node::process(uint toneID)
 {
 	messageMutex.lock();
 
@@ -285,12 +285,17 @@ void dtmf::node::initializeClient(void(*callback)(int payload, int id))
 		State("setId",
 			{
 				StateAction([] { clientID = currentMessage.id; }),
+				StateAction([] {send(Message((int)isServer,clientID,var1)); }),
 			},{
 				StateTransition("base",
 					{
-
+						StateCondition([] {return currentMessage.command == var1; }),
+						StateCondition([] {return currentMessage.id == clientID; }),
 					}),
-
+				StateTransition("start",
+					{
+						StateCondition([] {return currentMessage.command != var1 || currentMessage.id != clientID; }),
+					}),
 			}),
 		State("base",
 			{
@@ -316,7 +321,8 @@ void dtmf::node::initializeClient(void(*callback)(int payload, int id))
 
 			}),
 	};
-	
+	decoder::init(&process);
+	decoder::run();
 	// start thread
 	stateMachine = std::thread(&dtmf::node::stateMachineThread);
 }
@@ -348,8 +354,19 @@ void dtmf::node::initializeServer(void(*callback)(int payload, int id))
 
 		}),
 		State("newClient",{
-			StateAction([] { numClients++; }),
+			StateAction([] { var1 = currentMessage.command; }),
 			StateAction([] { send(Message((int)isServer, numClients, currentMessage.command)); })
+		},{
+			StateTransition("newClientReceived",{
+				StateCondition([] {return currentMessage.command == var1; }),
+				StateCondition([] {return currentMessage.id == numClients; }),
+				}),
+			StateTransition("start",{
+				StateCondition([] {return currentMessage.command != var1 || currentMessage.id != numClients; }),
+				})
+		}),
+		State("newClientReceived",{
+			StateAction([] { numClients++; }),
 		},{
 			StateTransition("start",{
 
@@ -391,6 +408,9 @@ void dtmf::node::initializeServer(void(*callback)(int payload, int id))
 			}),
 
 	};
+
+	decoder::init(&process);
+	decoder::run();
 
 	// start thread
 	stateMachine = std::thread(&dtmf::node::stateMachineThread);
