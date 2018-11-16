@@ -8,10 +8,10 @@ using			uchar				= unsigned char;
 
 constexpr auto	PI					= 3.141592653589732;
 constexpr auto	AMPLITUDE_MAX		= 16384;						// Maximum possible signal amplitude (100%) (SIGNED INT16 -> 2^15 / 2)
-constexpr auto	DURATION			= 50;							// Default signal duration [ms]
-constexpr auto	PAUSE				= 20;							// Default signal pause [ms]
+constexpr auto	DURATION			= 20;							// Default signal duration [ms]
+constexpr auto	PAUSE				= 50;							// Default signal pause [ms]
 constexpr auto	FADE				= 0.15f;						// Default signal fade percentage [decimal] (0.1 = 10%)
-constexpr auto	SAMPLE_RATE			= 44100;						// Default signal sample rate in [Hz] (default = 44100)
+constexpr auto	SAMPLE_RATE			= 88200;						// Default signal sample rate in [Hz] (default = 44100)
 constexpr auto	SAMPLE_INTERVAL		= 10;							// Default interval of sample processing [ms]
 constexpr auto	STEP_WINDOW_SIZE	= 5;							// Number of minimum samples in queue (signal duration / sample interval)
 constexpr int 	NUMPTS				= SAMPLE_RATE * (SAMPLE_INTERVAL / 1000.);	// Number of samples (size of array for sampler2)
