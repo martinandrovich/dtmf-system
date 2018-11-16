@@ -452,7 +452,7 @@ void toolbox::testStepWindow2(std::string args)
 
 			if (timeElapsed > delay)
 			{
-				generator::playback(0, toneDuration);
+				generator::playback(3, toneDuration);
 				break;
 			}
 		}
@@ -502,7 +502,6 @@ void toolbox::testStepWindow2(std::string args)
 	// data here
 	goertzel3;
 	toolbox::plotMap(goertzel3);
-	toolbox::exportMap(goertzel3);
 }
 
 // ...
