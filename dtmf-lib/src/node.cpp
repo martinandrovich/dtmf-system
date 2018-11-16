@@ -295,7 +295,24 @@ void dtmf::node::initializeClient(void(*callback)(int payload, int id))
 		State("base",
 			{
 			},{
+				StateTransition("start",
+					{
+						StateCondition([] { return currentMessage.command == 9; }),
+						StateCondition([] { return currentMessage.id == clientID; })
+					}),
 
+			}),
+		State("sendAction",
+			{
+				StateAction([] { send(Message((int)isServer, clientID, currentAction)); }),
+				StateAction([] { currentAction=0; }),
+				StateAction([] { newActionFlag = false; }),
+				StateAction([] { currentActionPriority = 0; })
+			},{
+				StateTransition("base",
+					{
+
+					}),
 
 			}),
 	};
