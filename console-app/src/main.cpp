@@ -5,11 +5,20 @@
 
 #include "system.h"
 
+void someFunction(int payload, int id);
+void someFunction(int payload, int id)
+{
+	LOG("HELLO!");
+	LOG(payload);
+	LOG(id);
+}
+
 // initialize function
 void init()
 {
 	system("cls");
 	std::cout << "Ear Rape Simulator 1.0.4\n\n";
+	dtmf::node::initializeServer(&someFunction);
 }
 
 // commands map
