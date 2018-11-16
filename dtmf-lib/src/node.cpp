@@ -23,9 +23,13 @@ namespace dtmf
 		bool				isServer;
 		bool				isQuickState = false;
 
+		void(*callbackFunction)(int payload, int id);
+
 		bool				newMessageFlag, newActionFlag;
 		int					clientID = -1;
 		int					numClients = 0;
+		int					idCounter = 1;
+
 		int					currentState = 0;
 		int					currentErrorState; //state to return to upon error signal
 		int					currentAction;
@@ -310,6 +314,8 @@ void dtmf::node::initializeServer(void(*callback)(int payload, int id))
 	isInitialized = true;
 	isServer = true;
 
+	//callbackFunction
+
 	// state definitions for SERVER node
 	states = {
 		State("start",{
@@ -336,8 +342,36 @@ void dtmf::node::initializeServer(void(*callback)(int payload, int id))
 		State("base",{
 		},{
 
+			StateTransition("standardSend",{
+
+				}),
+		}),
+		State("standardSend",{
+		StateAction([] { send(Message((int)isServer, idCounter, 9)); })
+
+		},{
+			StateTransition("standardRecieve",{
+				StateCondition([] { return currentMessage.id == idCounter; })
+				}),
 
 		}),
+		State("standardRecieve",{ 
+			StateAction([] {callbackFunction(currentMessage.command,currentMessage.id);  })
+		},{
+			StateTransition("standardNext",{
+
+				}),
+
+			}),
+		State("standardNext",{
+			StateAction([] { idCounter++; }),
+			StateAction([] { if (idCounter > numClients) idCounter = 1; })
+			},{
+				StateTransition("standardSend",{
+
+					}),
+
+			}),
 
 	};
 
