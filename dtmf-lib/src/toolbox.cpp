@@ -498,6 +498,7 @@ void toolbox::testStepWindow2(std::string args)
 
 	// data here
 	goertzel3;
+	toolbox::plotMap(goertzel3);
 	toolbox::exportMap(goertzel3);
 }
 
