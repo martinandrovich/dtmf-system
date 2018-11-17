@@ -4,8 +4,10 @@
 #include <cmath>
 #include <vector>
 #include <string>
-#include <windows.h>
+#include <chrono>
+#include <thread>
 #include <atomic>
+#include <windows.h>
 
 #include "generator.h"
 
@@ -112,7 +114,7 @@ void generator::playbackSequence(std::vector<int> &sequence, int duration, int p
 	for (const auto &tone : sequence)
 	{
 		generator::playback(tone, duration);
-		Sleep(pause); // BAD IMPLEMENTATION !!!!
+		std::this_thread::sleep_for(std::chrono::milliseconds(pause));
 	}
 }
 
