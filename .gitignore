@@ -13,6 +13,9 @@ bld/
 [Oo]bj/
 [Ll]og/
 
+# Data export
+dat/
+
 # User-specific files
 *.suo
 *.user
