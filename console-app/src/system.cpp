@@ -1,6 +1,8 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <thread>
+#include <chrono>
 #include <unordered_map>
 
 #include <dtmf/node.h>
@@ -26,6 +28,8 @@ void initSystem(std::string args)
 // ...
 void CLI()
 {
+	// show >
+	std::this_thread::sleep_for(std::chrono::milliseconds(200));
 	std::cout << "> ";
 
 	//	receive input
@@ -38,7 +42,7 @@ void CLI()
 		return;
 	}
 
-	// execute command
+	// execute input command
 	executeCommand(input);
 }
 
