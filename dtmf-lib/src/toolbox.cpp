@@ -31,6 +31,7 @@ namespace toolbox
 	void logPayload(uint toneId);
 	void executePayload(uint toneId);
 	void pressKey(int key, int pause);
+	void makeDataDirectory();
 }
 
 //// Method Definitions ///////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -124,6 +125,13 @@ std::string toolbox::getWorkingDirectory()
 }
 
 // ...
+void toolbox::makeDataDirectory()
+{
+	//system(std::string("mkdir \"" + std::string(DATA_PATH) + "\"").c_str());
+	CreateDirectory(DATA_PATH, NULL);
+}
+
+// ...
 std::map<double, short> toolbox::convertLatencyMap(std::map< double, std::vector<short>> map, double startTime)
 {
 	std::vector<double> time;
@@ -167,6 +175,10 @@ std::map<double, short> toolbox::convertLatencyMap(std::map< double, std::vector
 // ...
 void toolbox::exportSamples(std::vector<short> &samples, std::string filename)
 {
+	// create data directory & update filename
+	toolbox::makeDataDirectory();
+	filename = DATA_PATH + filename;
+
 	std::ofstream outputStream(filename);
 
 	for (const auto &sample : samples)
@@ -183,6 +195,10 @@ void toolbox::exportSamples(std::vector<short> &samples, std::string filename)
 template <class key, class value>
 void toolbox::exportMap(std::map<key, value> map, std::string filename)
 {
+	// create data directory & update filename
+	toolbox::makeDataDirectory();
+	filename = DATA_PATH + filename;
+
 	std::ofstream outputStream(filename);
 
 	/* C++ 17
@@ -205,6 +221,10 @@ void toolbox::exportMap(std::map<key, value> map, std::string filename)
 // ...
 void toolbox::exportAudio(std::vector<short> &samples, std::string filename)
 {
+	// create data directory & update filename
+	toolbox::makeDataDirectory();
+	filename = DATA_PATH + filename;
+
 	sf::SoundBuffer buffer;
 	buffer.loadFromSamples(&samples[0], samples.size(), 1, SAMPLE_RATE);
 
@@ -225,7 +245,7 @@ void toolbox::plotSamples(std::vector<short> &samples, std::string filename, std
 
 	// run MATLAB script/function
 	// needs to be changed to cd "/script"
-	std::string cmd = "matlab -nodesktop -r \"plot_samples('" + filename + "', '" + labels[0] + "', '" + labels[1] + "', '" + labels[2] + "')\"";
+	std::string cmd = "matlab -nodesktop -r \"plot_samples('" + std::string(DATA_PATH) + filename + "', '" + labels[0] + "', '" + labels[1] + "', '" + labels[2] + "')\"";
 	system(cmd.c_str());
 }
 
@@ -244,7 +264,7 @@ void toolbox::plotMap(std::map<key, value> &map, std::string filename, std::arra
 
 	// run MATLAB script/function
 	// needs to be changed to cd "/script"
-	std::string cmd = "matlab -nodesktop -r \"plot_map('" + filename + "', '" + labels[0] + "', '" + labels[1] + "', '" + labels[2] + "')\"";
+	std::string cmd = "matlab -nodesktop -r \"plot_map('" + std::string(DATA_PATH) + filename + "', '" + labels[0] + "', '" + labels[1] + "', '" + labels[2] + "')\"";
 	system(cmd.c_str());
 }
 
