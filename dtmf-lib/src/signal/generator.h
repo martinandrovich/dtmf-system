@@ -20,7 +20,7 @@ namespace generator
 	std::vector<short>		convertBuffer(sf::SoundBuffer& buffer);
 	void					exportBuffer(sf::SoundBuffer& buffer, std::string filename);
 	
-	void					playback(uint tone, uint duration, bool parallel = false);
+	void					playback(uint tone, uint duration = DURATION, bool parallel = false);
 	void					playbackSequence(std::vector<int> &sequence, int duration = DURATION, int pause = PAUSE);
 
 	state					getState();
