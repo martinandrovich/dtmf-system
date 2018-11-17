@@ -14,7 +14,7 @@
 
 // Constructor
 sampler2::sampler2(std::function<void(std::vector<short>)> callback, bool allowPlayback )
-	: callback(callback), allowPlayback(allowPlayback), sampling(false)
+	: callback(callback), allowPlayback(allowPlayback), running(false)
 {
 	// sampling properties
 	pFormat.wFormatTag		= WAVE_FORMAT_PCM;			// simple, uncompressed format
@@ -40,7 +40,7 @@ sampler2::sampler2(std::function<void(std::vector<short>)> callback, bool allowP
 // Destructor
 sampler2::~sampler2()
 {
-	if (this->sampling)
+	if (this->running)
 	{
 		this->stop();
 	}	
@@ -53,8 +53,8 @@ void sampler2::start()
 	this->prepare();
 
 	// update variables
-	this->status = state::sampling;
-	sampling = true;	
+	this->status	= state::sampling;
+	this->running	= true;	
 
 	// start thread
 	this->worker = new std::thread(&sampler2::thread, this);
@@ -65,7 +65,7 @@ void sampler2::stop()
 {
 	// update variables
 	this->status	= state::idle;
-	sampling		= false;
+	this->running	= false;
 	
 	// thread cleanup
 	if (this->worker != nullptr)
@@ -88,10 +88,16 @@ void sampler2::stop()
 // The callback sampler thread; initiated by .start()
 void sampler2::thread()
 {
-	while (sampling)
+	using namespace std::chrono;
+
+	while (running)
 	{
 		// continue sampling
 		this->status = state::sampling;
+
+		// timing
+		//high_resolution_clock				clock;
+		//time_point<high_resolution_clock>	timeStart;
 
 		// std::cout << "PROCESSING SAMPLES [" << NUMPTS << "] ...\n";
 
@@ -107,8 +113,12 @@ void sampler2::thread()
 			std::fill(samples.begin(), samples.end(), 0);
 		}
 
+		//timeStart = clock.now();
+
 		// callback with copy of samples chunk
 		this->callback(samples);
+
+		//std::cout << "Callback took: " << static_cast<duration<double, std::milli>>(clock.now() - timeStart).count() << " ms\n";
 	}
 }
 
@@ -140,7 +150,7 @@ void sampler2::prepare()
 	}
 }
 
-// Perform a single samplign; return sample chunk (array)
+// Perform a single sampling; return sample chunk (array)
 std::vector<short> sampler2::sample()
 {
 	using namespace std::chrono;

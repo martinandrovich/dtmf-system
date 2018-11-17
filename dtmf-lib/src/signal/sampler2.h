@@ -51,7 +51,7 @@ private:
 	std::thread*			worker;
 	state					status;
 	bool					allowPlayback;
-	std::atomic<bool>		sampling;
+	std::atomic<bool>		running;
 
 	short int				waveIn[NUMPTS];   
 };
