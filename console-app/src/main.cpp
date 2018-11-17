@@ -15,6 +15,7 @@ std::unordered_map<std::string, void(*)(std::string args)> commandMap =
 	{ "exit",	[](std::string args) { exit(0);									} },
 	{ "cls",	[](std::string args) { initCLI();								} },
 	{ "log",	[](std::string args) { dtmf::toolbox::testDecoderLog();			} },
+	{ "seq",	[](std::string args) { dtmf::toolbox::testGeneratorSequence();	} },
 	{ "lat",	[](std::string args) { dtmf::toolbox::testLatency();			} },
 	{ "step",	[](std::string args) { dtmf::toolbox::testStepWindow2(args);	} },
 	{ "sam",	[](std::string args) { dtmf::toolbox::testSampler2();			} },
