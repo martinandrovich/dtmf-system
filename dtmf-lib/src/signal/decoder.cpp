@@ -39,6 +39,7 @@ namespace decoder
 
 	// Private Methods
 	void								thread();
+	void								thread2();
 	void								decode(std::vector<short> &samples);
 	void								decode2(std::vector<short> &samples);
 	void								appendQueue(std::vector<short> samples);
@@ -64,7 +65,7 @@ void decoder::run(std::function<void(uint toneId)> callback)
 	// start worker thread
 	decoder::debounce	= dclock.now();
 	decoder::running	= true;
-	decoder::worker		= std::thread(&decoder::thread);	
+	decoder::worker		= std::thread(&decoder::thread2);	
 }
 
 // End the decoder
@@ -102,7 +103,7 @@ void decoder::thread()
 			
 			decoder::buffer.clear();
 
-			for (auto sampleChunks : queue)
+			for (const auto& sampleChunks : queue)
 			{  
 				decoder::buffer.insert(decoder::buffer.end(), sampleChunks.begin(), sampleChunks.end());
 			}
@@ -112,7 +113,40 @@ void decoder::thread()
 		decoder::queueMutex.unlock();
 		
 		// decode the copied samples
-		decoder::decode2(buffer);
+		decoder::decode(buffer);
+	}
+}
+
+// Thread function (v2)
+void decoder::thread2()
+{
+	while (running)
+	{
+		// check status
+		if (decoder::status != state::running)
+		{
+			continue;
+		}
+
+		// critical section
+		decoder::queueMutex.lock();
+
+			if (decoder::queue.empty())
+			{
+				decoder::queueMutex.unlock();
+				continue;
+			}
+
+			// make copy of first element in queue
+			auto samplesCopy = queue.front();
+
+			// pop the element
+			decoder::queue.pop_front();
+
+		decoder::queueMutex.unlock();
+
+		// decode the copied samples
+		decoder::decode(samplesCopy);
 	}
 }
 
@@ -199,6 +233,16 @@ void decoder::decode(std::vector<short> &samples)
 	// decode
 	//std::cout << "[DECODER] Decoding [" << samples.size() << "] samples...\n\n";
 
+	// check debounce
+	if ((int)static_cast<duration<double, std::milli>>(dclock.now() - debounce).count() < DEBOUNCE)
+	{
+		decoder::status = state::running;
+		return;
+	}
+
+	// apply hanning window to samples
+	processor::hanningWindow(samples);
+
 	// compile goertzelArray for all DTMF frequencies
 	auto goertzelArray = processor::goertzelArray(samples);
 
@@ -211,6 +255,7 @@ void decoder::decode(std::vector<short> &samples)
 	// callback
 	if (toneId >= 0)
 	{
+		debounce = dclock.now();
 		callback(toneId);
 	}
 	
@@ -232,11 +277,21 @@ void decoder::decode2(std::vector<short> &samples)
 		return;
 	}
 
+	// apply hanning window to samples
+	processor::hanningWindow(samples);
+
 	// compile goertzelArray for all DTMF frequencies
 	auto goertzelArray = processor::goertzelArray(samples);
 
 	// check if any values surpass thresholds
 	bool thresholdBroken = thresholdTest(goertzelArray);
+
+	/*
+
+	A surpassed boolean is needed for every DTMF frequency!	Also update
+	thresholdTest so only DTMF tones pass through (>4).
+	
+	*/
 
 	// check if previous treshold was surpassed and current was not
 	if (previousThresholdBroken && !thresholdBroken)
