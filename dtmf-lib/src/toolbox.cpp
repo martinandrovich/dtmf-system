@@ -310,15 +310,13 @@ void toolbox::testGeneratorSequence()
 // Initialize decoder and log the payload (toneId) of percieved DTMF tones
 void toolbox::testDecoderLog()
 {
-	decoder::init(&dtmf::toolbox::logPayload);
-	decoder::run();
+	decoder::run(&dtmf::toolbox::logPayload);
 }
 
 // Initialize decoder and execute keypress according to the payload (toneId) of percieved DTMF tones
 void toolbox::testDecoderKeyboardReciever()
 {
-	decoder::init(&dtmf::toolbox::executePayload);
-	decoder::run();
+	decoder::run(&dtmf::toolbox::executePayload);
 }
 
 // ...
@@ -450,8 +448,8 @@ void toolbox::testStepWindow2(std::string args)
 	const int							latency				= 100;	// ms
 	long long							delay				= 0;
 	const int							windowSize			= SAMPLE_INTERVAL;
-	const int							desiredWindows		= 2 * (DURATION / SAMPLE_INTERVAL);
-	const int							latencyWindows		= 2 * (latency / SAMPLE_INTERVAL);
+	const int							desiredWindows		= 0 + 2 * (DURATION / SAMPLE_INTERVAL);
+	const int							latencyWindows		= 1 + 1 * (latency / SAMPLE_INTERVAL);
 
 	const int							testToneId			= 0;
 	const int							testFreq			= freq[testToneId / 4];
