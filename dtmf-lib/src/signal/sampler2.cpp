@@ -39,7 +39,7 @@ sampler2::sampler2(std::function<void(std::vector<short>)> callback, bool allowP
 	// log
 	std::cout << "\nInitialized sampler2 with:\n";
 	std::cout << "SAMPLE RATE:\t\t"			<< SAMPLE_RATE << " Hz \n";
-	std::cout << "SAMPLE INTERVAL:\t"		<< SAMPLE_INTERVAL << " mys \n";
+	std::cout << "SAMPLE INTERVAL:\t"		<< SAMPLE_INTERVAL << " ms \n";
 	std::cout << "BG PLAYBACK:\t\t"			<< (allowPlayback ? "true" : "false") << "\n\n";
 }
 
