@@ -3,10 +3,27 @@
 #include <vector>
 #include <unordered_map>
 
+#include <dtmf/node.h>
+#include <dtmf/toolbox.h>
+
 #include "system.h"
 
 //// Definitions //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+// initialize the CLI
+void initCLI()
+{
+	system("cls");
+	std::cout << "Ear Rape Simulator 1.0.5\n\n";
+}
+
+// initialize the System
+void initSystem(std::string args)
+{
+	dtmf::node::initializeServer(&someFunction);
+}
+
+// ...
 void CLI()
 {
 	std::cout << "> ";
@@ -25,8 +42,10 @@ void CLI()
 	executeCommand(input);
 }
 
+// ...
 void executeCommand(std::string input)
 {
+	// parse cmd
 	std::string cmd = input.substr(0, input.find(' '));
 	std::string args = "";
 
@@ -37,17 +56,17 @@ void executeCommand(std::string input)
 		return;
 	}
 
-	// check whether command has arguments
+	// check whether command has arguments; parse args if true
 	if (input.find(' ') != -1)
 	{
 		args = input.substr(cmd.length() + 1);
-
 	}
 	
-	//Call function
+	// call appropriate function from map
 	commandMap[cmd](args);
 }
 
+// ...
 void help(std::string args)
 {
 	if (args == "help")
@@ -69,4 +88,12 @@ void help(std::string args)
 	{
 		LOG("That's an invalid fucking argument, you bitch.");
 	}
+}
+
+// ...
+void someFunction(int payload, int id)
+{
+	LOG("HELLO!");
+	LOG(payload);
+	LOG(id);
 }

@@ -13,6 +13,10 @@
 extern std::unordered_map<std::string, void(*)(std::string args)> commandMap;
 
 // Functions
+void	initCLI();
+void	initSystem(std::string args);
+
 void	CLI();
 void	executeCommand(std::string input);
 void	help(std::string args);
+void	someFunction(int payload, int id);
