@@ -1,73 +1,70 @@
 #include <iostream>
 #include <thread>
 #include <mutex>
+#include <atomic>
 #include <vector>
 #include <queue>
 #include <array>
 #include <stdlib.h>
+#include <functional>
 #include <windows.h>
 
 #include "decoder.h"
 #include "sampler.h"
+#include "sampler2.h"
 #include "processor.h"
 
 //// Private Declarations /////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 namespace decoder
 {
+	using namespace std::chrono;
+
 	// Private Members
-	state							status = state::unitialized;
-	std::deque<std::vector<short>>	queue;
-	std::vector<short>				buffer;
-	std::mutex						queueMutex;
-	std::thread						worker;
-	sampler*						rec;
+	state								status = state::unitialized;
+	std::deque<std::vector<short>>		queue;
+	std::vector<short>					buffer;
+	std::mutex							queueMutex;
+	std::thread							worker;
+	sampler2*							rec;
+	std::atomic<bool>					running;
 	
-	std::array<float, 8>			previousGoertzelArray;
-	bool							previousThresholdBroken;
+	std::array<float, 8>				previousGoertzelArray;
+	bool								previousThresholdBroken;
+
+	high_resolution_clock				dclock;
+	time_point<high_resolution_clock>	debounce;
 	
-	void(*callback)(uint tone);
+	std::function<void(uint)>			callback;
 
 	// Private Methods
-	void							thread();
-	void							decode(std::vector<short> &samples);
-	void							decode2(std::vector<short> &samples);
-	void							appendQueue(std::vector<short> samples);
+	void								thread();
+	void								decode(std::vector<short> &samples);
+	void								decode2(std::vector<short> &samples);
+	void								appendQueue(std::vector<short> samples);
 	
-	bool							thresholdTest(std::array<float, 8> goertzelArray);
-	std::array<int, 2>				extractIndexes(std::array<float, 8> &goertzelArray);
-	int								extractToneId(std::array<int, 2> &indexes);
+	bool								thresholdTest(std::array<float, 8> goertzelArray);
+	std::array<int, 2>					extractIndexes(std::array<float, 8> &goertzelArray);
+	int									extractToneId(std::array<int, 2> &indexes);
 }
 
 //// Method Definitions ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-// Initialize the decoder
-void decoder::init(void(*callback)(uint toneID))
+// Initialize & run the decoder
+void decoder::run(std::function<void(uint toneId)> callback)
 {
-	decoder::callback = callback;
-	decoder::worker = std::thread(&decoder::thread);
+	// initialize variables
+	decoder::callback	= callback;
+	decoder::rec		= new sampler2(&decoder::appendQueue, true);
 
-	// init sampler
-	if (sampler::isAvailable())
-	{
-		rec = new sampler(&decoder::appendQueue);
-	}
-		
+	// start sampler
+	decoder::rec->start();
+	decoder::status		= state::running;
 	
-	decoder::status = state::idle;
-}
-
-// Start the decoder
-void decoder::run()
-{
-	if (decoder::status == state::unitialized)
-	{
-		return;
-	}
-
-	// start sampler & update status
-	decoder::rec->start(SAMPLE_RATE);
-	decoder::status = state::running;
+	// start worker thread
+	decoder::debounce	= dclock.now();
+	decoder::running	= true;
+	decoder::worker		= std::thread(&decoder::thread);	
 }
 
 // End the decoder
@@ -78,14 +75,15 @@ void decoder::end()
 	delete decoder::rec;
 
 	// update state + join thread
-	decoder::status = state::unitialized;
+	decoder::status		= state::unitialized;
+	decoder::running	= false;
 	decoder::worker.join();
 }
 
 // Thread function
 void decoder::thread()
 {
-	while (true)
+	while (running)
 	{		
 		// check status
 		if (decoder::status != state::running)
@@ -208,12 +206,12 @@ void decoder::decode(std::vector<short> &samples)
 	auto indexes = decoder::extractIndexes(goertzelArray);
 
 	// convert indexes to DTMF toneID
-	auto toneID = decoder::extractToneId(indexes);
+	auto toneId = decoder::extractToneId(indexes);
 
 	// callback
-	if (toneID >= 0)
+	if (toneId >= 0)
 	{
-		callback(toneID);
+		callback(toneId);
 	}
 	
 	decoder::status = state::running;
@@ -226,6 +224,13 @@ void decoder::decode2(std::vector<short> &samples)
 
 	// decode
 	//std::cout << "[DECODER] Decoding [" << samples.size() << "] samples...\n\n";
+
+	// check debounce
+	if ((int)static_cast<duration<double, std::milli>>(dclock.now() - debounce).count() < DEBOUNCE)
+	{
+		decoder::status = state::running;
+		return;
+	}
 
 	// compile goertzelArray for all DTMF frequencies
 	auto goertzelArray = processor::goertzelArray(samples);
@@ -245,6 +250,7 @@ void decoder::decode2(std::vector<short> &samples)
 		// callback
 		if (toneID >= 0)
 		{
+			debounce = dclock.now();
 			callback(toneID);
 		}
 	}
