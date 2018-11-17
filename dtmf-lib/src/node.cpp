@@ -321,8 +321,10 @@ void dtmf::node::initializeClient(void(*callback)(int payload, int id))
 
 			}),
 	};
-	decoder::init(&process);
-	decoder::run();
+	
+	// start decoder
+	decoder::run(&process);
+
 	// start thread
 	stateMachine = std::thread(&dtmf::node::stateMachineThread);
 }
@@ -409,8 +411,8 @@ void dtmf::node::initializeServer(void(*callback)(int payload, int id))
 
 	};
 
-	decoder::init(&process);
-	decoder::run();
+	// start decoder
+	decoder::run(&process);
 
 	// start thread
 	stateMachine = std::thread(&dtmf::node::stateMachineThread);
