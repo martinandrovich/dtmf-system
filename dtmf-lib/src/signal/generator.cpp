@@ -40,8 +40,8 @@ sf::SoundBuffer* generator::generateSamples(uint f1, uint f2, uint duration, uin
 		// linear fade function on amplitude
 		if (i < fadeSize)
 		{
-			//amplitudeFinal = (i / (fadeSize * 1.f)) * amplitude;
-			amplitudeFinal = amplitude;
+			amplitudeFinal = (i / (fadeSize * 1.f)) * amplitude;
+			//amplitudeFinal = amplitude;
 		}
 		else if (i > sampleSize - fadeSize)
 		{
@@ -87,7 +87,7 @@ void generator::playback(uint toneID, uint duration, bool parallel)
 	generator::player->setBuffer(*buffer);
 	generator::player->play();
 	
-	std::cout << "Playing tone [" << toneID << "]\n";
+	std::cout << "Playing tone [" << toneID << " | " << duration << "ms]\n";
 
 	// escape function if parellel enabled			!!! BAD FOR MEMORY
 	if (parallel)
