@@ -303,8 +303,9 @@ void toolbox::testGenerator()
 // Playback some DTMF tone sequence for 50ms each
 void toolbox::testGeneratorSequence()
 {
-	std::vector<int> test = { 2, 0, 13, 7, 4 };
-	generator::playbackSequence(test, 50);
+	//std::vector<int> test = { 2, 0, 13, 7, 4 };
+	std::vector<int> test = { 3, 7, 11, 15};
+	generator::playbackSequence(test);
 }
 
 // Initialize decoder and log the payload (toneId) of percieved DTMF tones
@@ -431,8 +432,6 @@ void toolbox::testStepWindow(std::string args)
 	recorder->stop();
 	
 	// data here
-	toolbox::plotSamples(samples, "g1.dat");
-	toolbox::plotSamples(goertzel2, "g2.dat");
 	//toolbox::exportAudio(samples);
 
 	// clean up
@@ -516,14 +515,8 @@ void toolbox::testStepWindow2(std::string args)
 	// datalogging loop
 	for (int i = 0; i < (desiredWindows + latencyWindows); i++)
 	{
-		//samplesChunk = sampler.sample();
-		//float	magnitude = processor::goertzel2(samplesChunk, 697, 205);
 		timeElapsed = static_cast<duration<double, std::milli>>(clock.now() - timeStart).count();
-
-		//std::cout << "Logging datapoint[" << i << "][" << magnitude << "] after " << timeElapsed << "ms.\n";
 		chunks[timeElapsed] = sampler.sample();
-
-		//samples.insert(samples.end(), samplesChunk.begin(), samplesChunk.end());
 	}
 
 	std::cout << "Finished sampling [" << static_cast<duration<double, std::milli>>(clock.now() - timeStart).count() << "ms]\n";
@@ -546,8 +539,8 @@ void toolbox::testStepWindow2(std::string args)
 
 	// data here
 	toolbox::exportAudio(samples);
-	//toolbox::exportSamples(samples);
-	toolbox::plotMap(goertzel);
+	toolbox::exportSamples(samples);
+	toolbox::plotMap(goertzel, "map_plot.dat", { "Goertzel Response", "Time [ms]", "Magnitude" });
 }
 
 // ...
