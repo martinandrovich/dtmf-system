@@ -65,7 +65,7 @@ void decoder::run(std::function<void(uint toneId)> callback)
 	// start worker thread
 	decoder::debounce	= dclock.now();
 	decoder::running	= true;
-	decoder::worker		= std::thread(&decoder::thread2);	
+	decoder::worker		= std::thread(&decoder::thread);	
 }
 
 // End the decoder
