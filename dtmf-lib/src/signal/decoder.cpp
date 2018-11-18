@@ -32,7 +32,7 @@ namespace decoder
 	std::array<float, 8>				previousGoertzelArray;
 	bool								previousThresholdBroken;
 
-	high_resolution_clock				dclock;
+	high_resolution_clock				clock;
 	time_point<high_resolution_clock>	debounce;
 	
 	std::function<void(uint)>			callback;
@@ -63,7 +63,7 @@ void decoder::run(std::function<void(uint toneId)> callback)
 	decoder::status		= state::running;
 	
 	// start worker thread
-	decoder::debounce	= dclock.now();
+	decoder::debounce	= decoder::clock.now();
 	decoder::running	= true;
 	decoder::worker		= std::thread(&decoder::thread);	
 }
@@ -75,16 +75,16 @@ void decoder::end()
 	decoder::rec->stop();
 	delete decoder::rec;
 
-	// update state + join thread
+	// stop worker thread
 	decoder::status		= state::unitialized;
 	decoder::running	= false;
 	decoder::worker.join();
 }
 
-// Thread function
+// Thread function (step buffered decode)
 void decoder::thread()
 {
-	while (running)
+	while (decoder::running)
 	{		
 		// check status
 		if (decoder::status != state::running)
@@ -103,7 +103,7 @@ void decoder::thread()
 			
 			decoder::buffer.clear();
 
-			for (const auto& sampleChunks : queue)
+			for (const auto& sampleChunks : decoder::queue)
 			{  
 				decoder::buffer.insert(decoder::buffer.end(), sampleChunks.begin(), sampleChunks.end());
 			}
@@ -117,10 +117,10 @@ void decoder::thread()
 	}
 }
 
-// Thread function (v2)
+// Thread function (instant decode)
 void decoder::thread2()
 {
-	while (running)
+	while (decoder::running)
 	{
 		// check status
 		if (decoder::status != state::running)
@@ -138,7 +138,7 @@ void decoder::thread2()
 			}
 
 			// make copy of first element in queue
-			auto samplesCopy = queue.front();
+			auto samplesCopy = decoder::queue.front();
 
 			// pop the element
 			decoder::queue.pop_front();
@@ -234,7 +234,7 @@ void decoder::decode(std::vector<short> &samples)
 	//std::cout << "[DECODER] Decoding [" << samples.size() << "] samples...\n\n";
 
 	// check debounce
-	if ((int)static_cast<duration<double, std::milli>>(dclock.now() - debounce).count() < DEBOUNCE)
+	if ((int)static_cast<duration<double, std::milli>>(decoder::clock.now() - decoder::debounce).count() < DEBOUNCE)
 	{
 		decoder::status = state::running;
 		return;
@@ -255,8 +255,8 @@ void decoder::decode(std::vector<short> &samples)
 	// callback
 	if (toneId >= 0)
 	{
-		debounce = dclock.now();
-		callback(toneId);
+		decoder::debounce = decoder::clock.now();
+		decoder::callback(toneId);
 	}
 	
 	decoder::status = state::running;
@@ -271,7 +271,7 @@ void decoder::decode2(std::vector<short> &samples)
 	//std::cout << "[DECODER] Decoding [" << samples.size() << "] samples...\n\n";
 
 	// check debounce
-	if ((int)static_cast<duration<double, std::milli>>(dclock.now() - debounce).count() < DEBOUNCE)
+	if ((int)static_cast<duration<double, std::milli>>(decoder::clock.now() - decoder::debounce).count() < DEBOUNCE)
 	{
 		decoder::status = state::running;
 		return;
@@ -284,7 +284,7 @@ void decoder::decode2(std::vector<short> &samples)
 	auto goertzelArray = processor::goertzelArray(samples);
 
 	// check if any values surpass thresholds
-	bool thresholdBroken = thresholdTest(goertzelArray);
+	bool thresholdBroken = decoder::thresholdTest(goertzelArray);
 
 	/*
 
@@ -300,13 +300,13 @@ void decoder::decode2(std::vector<short> &samples)
 		auto indexes = decoder::extractIndexes(previousGoertzelArray);
 
 		// convert indexes to DTMF toneID
-		auto toneID = decoder::extractToneId(indexes);
+		auto toneId = decoder::extractToneId(indexes);
 
 		// callback
-		if (toneID >= 0)
+		if (toneId >= 0)
 		{
-			debounce = dclock.now();
-			callback(toneID);
+			decoder::debounce = decoder::clock.now();
+			decoder::callback(toneId);
 		}
 	}
 
