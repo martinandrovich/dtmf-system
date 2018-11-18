@@ -7,6 +7,7 @@
 #include <functional>
 #include <atomic>
 #include <windows.h>
+#include <SFML/Audio.hpp>
 
 #include "dtmf/toolbox.h"
 
@@ -31,7 +32,9 @@ namespace toolbox
 	void logPayload(uint toneId);
 	void executePayload(uint toneId);
 	void pressKey(int key, int pause);
+	
 	void makeDataDirectory();
+	std::vector<short>	convertSFBuffer(sf::SoundBuffer& buffer);
 }
 
 //// Method Definitions ///////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -285,6 +288,16 @@ std::vector<short> toolbox::convertAudio(std::string filename)
 
 	std::vector<short> samples(data, data + size);
 
+	return samples;
+}
+
+// Convert SFML SoundBuffer to Vector
+std::vector<short> toolbox::convertSFBuffer(sf::SoundBuffer& buffer)
+{
+	const short* data = &buffer.getSamples()[0];
+	const int size = buffer.getSampleCount();
+
+	std::vector<short> samples(data, data + size);
 	return samples;
 }
 
