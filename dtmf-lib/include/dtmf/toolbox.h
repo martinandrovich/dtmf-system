@@ -19,8 +19,8 @@ namespace dtmf
 
 		// Public Methods
 		void									testGenerator();
-		void									testGeneratorSequence();
-		void									testDecoderLog();
+		void									playbackSequence(std::string args);
+		void									logDecoder();
 
 		void									testSampler2();
 
@@ -32,6 +32,7 @@ namespace dtmf
 		void									testStepWindow(std::string args);
 		void									testStepWindow2(std::string args);
 		void									testLatency();
+		void									logGoertzel(std::string args);
 		void									testGeneratorGoertzel(std::string args);
 		
 		void									exportSamples(std::vector<short> &samples, std::string filename = "output_samples.dat");

@@ -314,16 +314,44 @@ void toolbox::testGenerator()
 	}
 }
 
-// Playback some DTMF tone sequence for 50ms each
-void toolbox::testGeneratorSequence()
+// Playback some DTMF tone sequence for 50ms each; sequence can be passed as argument (e.g. "1234")
+void toolbox::playbackSequence(std::string args)
 {
-	//std::vector<int> test = { 2, 0, 13, 7, 4 };
-	std::vector<int> test = { 3, 7, 11, 15};
-	generator::playbackSequence(test);
+	// define default sequence
+	std::vector<int> sequence	= { 3, 7, 11, 15 };
+	int duration				= DURATION;
+	int pause					= PAUSE;
+
+	// check arguments
+	if (args != "")
+	{
+		// parse arguments
+		std::istringstream			iss(args);
+		std::vector<std::string>	splitArgs((std::istream_iterator<std::string>(iss)), std::istream_iterator<std::string>());
+
+		// reset sequence
+		sequence.clear();
+
+		// extract sequence from args
+		for (const auto& c : splitArgs[0])
+		{
+			sequence.push_back(c - '0');
+		}
+
+		// extra duration and pause from args
+		if (splitArgs.size() == 3)
+		{
+			duration	= std::stoi(splitArgs[1]);
+			pause		= std::stoi(splitArgs[2]);
+		}
+	}	
+	
+	// playback
+	generator::playbackSequence(sequence, duration, pause);
 }
 
-// Initialize decoder and log the payload (toneId) of percieved DTMF tones
-void toolbox::testDecoderLog()
+// Initialize decoder and log the payload (toneId) of decoded DTMF tones
+void toolbox::logDecoder()
 {
 	decoder::run(&dtmf::toolbox::logPayload);
 }
@@ -697,6 +725,106 @@ void toolbox::testGeneratorGoertzel(std::string args)
 		<< "S1 -HW:\t\t" << magnitude1 << "\n"
 		<< "S2 +HW:\t\t" << magnitude2 << "\n"
 		<< "\n";
+}
+
+// ...
+void toolbox::logGoertzel(std::string args)
+{
+	using namespace std::chrono;
+	
+	// parse arguments
+	std::istringstream			iss(args);
+	std::vector<std::string>	splitArgs((std::istream_iterator<std::string>(iss)), std::istream_iterator<std::string>());
+
+	if (splitArgs.size() < 4)
+	{
+		std::cout << "Invalid arguments. Use \"glog toneId(int) windowSize(int) thresholdSize(int) hanning(bool)\"; e.g. \"glog 0 5 500 1\".\n";
+		return;
+	}
+
+	// determine test values from arguments
+	const int		testToneId		= std::stoi(splitArgs[0]);
+	const int		testWindows		= std::stoi(splitArgs[1]);
+	const int		testThreshold	= std::stoi(splitArgs[2]);
+	const bool		useHanning		= std::stoi(splitArgs[3]);
+	const int		testFreqL		= freq[testToneId / 4];
+	const int		testFreqH		= freq[(testToneId % 4) + 4];	
+
+	// variables
+	sampler2							sampler([](std::vector<short> samples) {});
+	std::vector<std::vector<short>>		queue(testWindows);
+	std::vector<short>					buffer;
+	int									counter = 0;
+
+	high_resolution_clock				clock;
+	time_point<high_resolution_clock>	timeStart;
+
+	// print information
+	std::cout << "Goertzel Logging:\n";
+	std::cout << "TARGET FREQUENCIES:\t"		<< testFreqL << " Hz & " << testFreqH << " Hz\n";
+	std::cout << "WINDOW SIZE:\t\t"				<< testWindows << "\n";
+	std::cout << "MIN THRESHOLD:\t\t"			<< testThreshold << "\n";
+	std::cout << "HANNING:\t\t"					<< (useHanning ? "true" : "false") << "\n";
+	std::cout << "\nPress ESC to stop.\n\n";
+
+	// prepare sampler
+	sampler.prepare();
+
+	while (true)
+	{
+		// break if ESC
+		if (GetAsyncKeyState(VK_ESCAPE)) { break; }
+
+		// update timer
+		if (counter == 0)
+		{
+			timeStart = clock.now();
+		}
+
+		// get a sample
+		queue[counter++] = sampler.sample();
+
+		// wait until queue is full
+		if (counter < testWindows)	{ continue;	}
+
+		// clear buffer
+		buffer.clear();
+
+		// combine sample chunks
+		for (const auto& sampleChunks : queue)
+		{
+			buffer.insert(buffer.end(), sampleChunks.begin(), sampleChunks.end());
+		}
+		
+		// reset counter (clear queue)
+		counter = 0;
+
+		// apply hanning
+		if (useHanning)
+		{
+			processor::hanningWindow(buffer);
+		}		
+		
+		// perform goertzel
+		auto magnitudeL = processor::goertzel(buffer, testFreqL);
+		auto magnitudeH = processor::goertzel(buffer, testFreqH);
+
+		// check threshold
+		if (!(magnitudeL > testThreshold) || !(magnitudeH > testThreshold)) { continue; }
+
+		// data
+		std::cout << testFreqL << " Hz: " << magnitudeL << " | " << testFreqH << " Hz: " << magnitudeH
+			<< " | " << static_cast<duration<double, std::milli>>(clock.now() - timeStart).count() << "ms" << std::endl;
+	}
+
+	// stop
+	std::cout << "\nGoertzel Log stopped.\n\n";
+}
+
+// ...
+void testGoertzel()
+{
+
 }
 
 }
