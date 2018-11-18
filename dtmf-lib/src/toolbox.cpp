@@ -1,5 +1,6 @@
 #include <iostream>
 #include <fstream>
+#include <sstream>
 #include <string>
 #include <vector>
 #include <map>
@@ -652,6 +653,50 @@ void toolbox::testSampler2()
 	std::this_thread::sleep_for(std::chrono::milliseconds(100));
 	test->stop();
 	delete test;
+}
+
+// ...
+void toolbox::testGeneratorGoertzel(std::string args)
+{
+	// parse arguments
+	std::istringstream			iss(args);
+	std::vector<std::string>	splitArgs((std::istream_iterator<std::string>(iss)), std::istream_iterator<std::string>());
+
+	if (splitArgs.size() < 2)
+	{
+		std::cout << "Invalid arguments; please use \"gor toneId(int) duration(int)\"; e.g. \"gor 0 50\".\n";
+		return;
+	}
+
+	// determine test values from arguments
+	const int		testToneId		= std::stoi(splitArgs[0]);
+	const int		testFreq		= freq[testToneId / 4];
+	const int		testDuration	= std::stoi(splitArgs[1]);
+
+	// init log
+	std::cout << "Running Goertzel test [" << testToneId << " | " << testFreq << "Hz" << " | " << testDuration << "ms" << "] ...\n\n";
+
+	// generate buffer
+	auto buffer		= generator::generateDTMF(testToneId, testDuration);
+	auto samples1	= toolbox::convertSFBuffer(*buffer);
+	auto samples2	= samples1;
+
+	// perform tests
+	processor::hanningWindow(samples2);
+
+	auto magnitude1	= processor::goertzel(samples1, testFreq);
+	auto magnitude2 = processor::goertzel(samples2, testFreq);
+
+	// export
+	toolbox::plotSamples(samples1, "s1.dat", { "Samples1 Plot [-HW]", "Sample [N]", "Amplitude [dB]" });
+	toolbox::plotSamples(samples2, "s2.dat", { "Samples2 Plot [+HW]", "Sample [N]", "Amplitude [dB]" });
+	toolbox::exportAudio(samples1, "s1.wav");
+
+	// log
+	std::cout << "\nGoertzel Magnitude Response:\n"
+		<< "S1 -HW:\t\t" << magnitude1 << "\n"
+		<< "S2 +HW:\t\t" << magnitude2 << "\n"
+		<< "\n";
 }
 
 }

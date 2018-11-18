@@ -32,7 +32,7 @@ namespace dtmf
 		void									testStepWindow(std::string args);
 		void									testStepWindow2(std::string args);
 		void									testLatency();
-		
+		void									testGeneratorGoertzel(std::string args);
 		
 		void									exportSamples(std::vector<short> &samples, std::string filename = "output_samples.dat");
 		template <class key, class value> void	exportMap(std::map<key, value> map, std::string filename = "output_map.dat");
