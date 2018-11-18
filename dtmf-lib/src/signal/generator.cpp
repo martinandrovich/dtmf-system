@@ -26,7 +26,7 @@ namespace generator
 sf::SoundBuffer* generator::generateSamples(uint f1, uint f2, uint duration, uint amplitude, float fadePercentage, uint sampleRate)
 {
 	// variables
-	float					sampleSize = sampleRate * (duration / 1000.f);
+	int						sampleSize = sampleRate * (duration / 1000.f);
 	float					fadeSize = fadePercentage * sampleSize;
 	std::vector<sf::Int16>	temp(sampleSize);
 	uint					amplitudeFinal;
