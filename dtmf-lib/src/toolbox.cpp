@@ -3,6 +3,7 @@
 #include <sstream>
 #include <string>
 #include <vector>
+#include <deque>
 #include <map>
 #include <chrono>
 #include <functional>
@@ -332,10 +333,18 @@ void toolbox::playbackSequence(std::string args)
 		// reset sequence
 		sequence.clear();
 
-		// extract sequence from args
-		for (const auto& c : splitArgs[0])
+		// check sequence length to be even
+		if (splitArgs[0].size() % 2 != 0)
 		{
-			sequence.push_back(c - '0');
+			std::cout << "Invalid sequence length; must be an even number.\n";
+			return;
+		}
+		
+		// extract sequence from args
+		for (int i = 0; i < splitArgs[0].size(); i += 2)
+		{
+			std::string strnum = splitArgs[0].substr(i, 2);
+			sequence.push_back(std::stoi(strnum));
 		}
 
 		// extra duration and pause from args
@@ -821,10 +830,191 @@ void toolbox::logGoertzel(std::string args)
 	std::cout << "\nGoertzel Log stopped.\n\n";
 }
 
-// ...
-void testGoertzel()
+void toolbox::logGoertzelAverage(std::string args)
 {
+	using namespace std::chrono;
 
+	// parse arguments
+	std::istringstream			iss(args);
+	std::vector<std::string>	splitArgs((std::istream_iterator<std::string>(iss)), std::istream_iterator<std::string>());
+
+	if (splitArgs.size() < 4)
+	{
+		std::cout << "Invalid arguments. Use \"glogat toneId(int) windowSize(int) thresholdSize(int) hanning(bool)\"; e.g. \"glog 0 5 500 1\".\n";
+		return;
+	}
+
+	// determine test values from arguments
+	const int		testToneId = std::stoi(splitArgs[0]);
+	const int		testWindows = std::stoi(splitArgs[1]);
+	const int		testThreshold = std::stoi(splitArgs[2]);
+	const bool		useHanning = std::stoi(splitArgs[3]);
+	const int		testFreqL = freq[testToneId / 4];
+	const int		testFreqH = freq[(testToneId % 4) + 4];
+
+	// variables
+	sampler2							sampler([](std::vector<short> samples) {});
+	std::deque<std::vector<short>>		queue(testWindows);
+	std::vector<short>					buffer;
+
+	high_resolution_clock				clock;
+	time_point<high_resolution_clock>	timeStart;
+
+	// print information
+	std::cout << "Threaded Average Goertzel Logging:\n";
+	std::cout << "TARGET FREQUENCIES:\t" << testFreqL << " Hz & " << testFreqH << " Hz\n";
+	std::cout << "WINDOW SIZE:\t\t" << testWindows << "\n";
+	std::cout << "MIN THRESHOLD:\t\t" << testThreshold << "\n";
+	std::cout << "HANNING:\t\t" << (useHanning ? "true" : "false") << "\n";
+	std::cout << "\nPress ESC to stop.\n\n";
+
+	// prepare sampler
+	sampler.prepare();
+
+	while (true)
+	{
+		// break if ESC
+		if (GetAsyncKeyState(VK_ESCAPE)) { break; }
+
+		// get a sample
+		queue.push_back(sampler.sample());
+
+		// wait until queue is full
+		if (queue.size() < testWindows) { continue; }
+
+		// clear buffer
+		buffer.clear();
+
+		// combine sample chunks
+		for (const auto& sampleChunks : queue)
+		{
+			buffer.insert(buffer.end(), sampleChunks.begin(), sampleChunks.end());
+		}
+
+		// remove first element of queue
+		queue.pop_front();
+
+		// apply hanning
+		if (useHanning)
+		{
+			processor::hanningWindow(buffer);
+		}
+
+		// perform goertzel
+		auto magnitudeL = processor::goertzel(buffer, testFreqL);
+		auto magnitudeH = processor::goertzel(buffer, testFreqH);
+
+		// check threshold
+		if (!(magnitudeL > testThreshold) || !(magnitudeH > testThreshold)) { continue; }
+
+		// data
+		std::cout << testFreqL << " Hz:\t\t" << magnitudeL << " | " << testFreqH << " Hz:\t\t" << magnitudeH << std::endl;
+
+	}
+
+	// stop
+	std::cout << "\nGoertzel Log stopped.\n\n";
+}
+
+// ...
+void toolbox::testGoertzel(std::string args)
+{
+	using namespace std::chrono;
+	
+	// parse arguments
+	std::istringstream			iss(args);
+	std::vector<std::string>	splitArgs((std::istream_iterator<std::string>(iss)), std::istream_iterator<std::string>());
+
+	if (splitArgs.size() < 2)
+	{
+		std::cout << "Invalid arguments. Use \"gor2 duration(int) thresholdSize(int)\"; e.g. \"glog 50 500\".\n";
+		return;
+	}
+
+	// determine test values from arguments
+	const int		testDuration	= std::stoi(splitArgs[0]);
+	const int		testThreshold	= std::stoi(splitArgs[1]);
+	const bool		useHanning		= true;
+
+	// print information
+	std::cout << "Goertzel DTMF Test:\n";
+	std::cout << "DURATION:\t\t" << testDuration << "\n";
+	std::cout << "THRESHOLD:\t\t" << testThreshold << "\n";
+	std::cout << "HANNING:\t\t" << (useHanning ? "true" : "false") << "\n";
+
+	// variables
+	std::vector<int>					sequence	= { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15 };
+
+	int									counter;
+	bool								triggered;
+	sampler2							sampler([](std::vector<short> samples) {});
+
+	std::vector<short>					samples;
+
+	high_resolution_clock				clock;
+	time_point<high_resolution_clock>	timeStart;
+	double								timeElapsed = 0.f;	// ms
+
+	// test loop
+	for (const auto& testToneId : sequence)
+	{
+		// reset counter
+		counter = 0;
+
+		// safety sleep
+		std::this_thread::sleep_for(milliseconds(500));
+		
+		// set test frequencies
+		int		testFreqL = freq[testToneId / 4];
+		int		testFreqH = freq[(testToneId % 4) + 4];
+
+		// timing
+		timeStart		= clock.now();
+		timeElapsed		= 0;
+
+		// play sound
+		generator::playback(testToneId, testDuration, true);
+
+		// latency sleep
+		//std::this_thread::sleep_for(milliseconds(50));
+
+		// sample and analyze
+		while ((timeElapsed < ((testDuration*2) + LATENCY)))
+		{
+			// get sample chunk
+			auto chunk = sampler.sample();
+			samples.insert(samples.end(), chunk.begin(), chunk.end());
+
+			// update timer
+			timeElapsed = static_cast<duration<double, std::milli>>(clock.now() - timeStart).count();
+
+			// apply hanning window
+			processor::hanningWindow(chunk);
+
+			// perform goertzel
+			auto magnitudeL = processor::goertzel(chunk, testFreqL);
+			auto magnitudeH = processor::goertzel(chunk, testFreqH);
+
+			// check threshold
+			if (!((magnitudeL > testThreshold) && (magnitudeH > testThreshold)))
+			{
+				continue;
+			}
+
+			// update counter
+			counter++;
+
+			// data
+			std::cout << "ID: " << testToneId << " | " << testFreqL << " Hz: " << magnitudeL << " | " << testFreqH << " Hz: " << magnitudeH << std::endl;
+		}
+
+		// finished for a toneId
+		std::cout << "Finished processing [" << timeElapsed << "ms]\n";
+	}
+
+	// data
+	//toolbox::exportAudio(samples);
+	//toolbox::plotSamples(samples);
 }
 
 }
