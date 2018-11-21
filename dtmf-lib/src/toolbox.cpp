@@ -701,7 +701,7 @@ void toolbox::testGeneratorGoertzel(std::string args)
 
 	if (splitArgs.size() < 2)
 	{
-		std::cout << "Invalid arguments; please use \"gor toneId(int) duration(int)\"; e.g. \"gor 0 50\".\n";
+		std::cout << "Invalid arguments. Use \"gor toneId(int) duration(int)\"; e.g. \"gor 0 50\".\n";
 		return;
 	}
 
@@ -711,7 +711,7 @@ void toolbox::testGeneratorGoertzel(std::string args)
 	const int		testDuration	= std::stoi(splitArgs[1]);
 
 	// init log
-	std::cout << "Running Goertzel test [" << testToneId << " | " << testFreq << "Hz" << " | " << testDuration << "ms" << "] ...\n\n";
+	std::cout << "Running Single Goertzel Test [" << testToneId << " | " << testFreq << "Hz" << " | " << testDuration << "ms" << "] ...\n\n";
 
 	// generate buffer
 	auto buffer		= generator::generateDTMF(testToneId, testDuration);
@@ -830,6 +830,7 @@ void toolbox::logGoertzel(std::string args)
 	std::cout << "\nGoertzel Log stopped.\n\n";
 }
 
+// ...
 void toolbox::logGoertzelAverage(std::string args)
 {
 	using namespace std::chrono;
@@ -845,12 +846,12 @@ void toolbox::logGoertzelAverage(std::string args)
 	}
 
 	// determine test values from arguments
-	const int		testToneId = std::stoi(splitArgs[0]);
-	const int		testWindows = std::stoi(splitArgs[1]);
-	const int		testThreshold = std::stoi(splitArgs[2]);
-	const bool		useHanning = std::stoi(splitArgs[3]);
-	const int		testFreqL = freq[testToneId / 4];
-	const int		testFreqH = freq[(testToneId % 4) + 4];
+	const int		testToneId			= std::stoi(splitArgs[0]);
+	const int		testWindows			= std::stoi(splitArgs[1]);
+	const int		testThreshold		= std::stoi(splitArgs[2]);
+	const bool		useHanning			= std::stoi(splitArgs[3]);
+	const int		testFreqL			= freq[testToneId / 4];
+	const int		testFreqH			= freq[(testToneId % 4) + 4];
 
 	// variables
 	sampler2							sampler([](std::vector<short> samples) {});
@@ -861,7 +862,7 @@ void toolbox::logGoertzelAverage(std::string args)
 	time_point<high_resolution_clock>	timeStart;
 
 	// print information
-	std::cout << "Threaded Average Goertzel Logging:\n";
+	std::cout << "Average Goertzel Logging:\n";
 	std::cout << "TARGET FREQUENCIES:\t" << testFreqL << " Hz & " << testFreqH << " Hz\n";
 	std::cout << "WINDOW SIZE:\t\t" << testWindows << "\n";
 	std::cout << "MIN THRESHOLD:\t\t" << testThreshold << "\n";
@@ -913,7 +914,7 @@ void toolbox::logGoertzelAverage(std::string args)
 	}
 
 	// stop
-	std::cout << "\nGoertzel Log stopped.\n\n";
+	std::cout << "\nAverage Goertzel Log stopped.\n\n";
 }
 
 // ...
@@ -932,9 +933,10 @@ void toolbox::testGoertzel(std::string args)
 	}
 
 	// determine test values from arguments
-	const int		testDuration	= std::stoi(splitArgs[0]);
-	const int		testThreshold	= std::stoi(splitArgs[1]);
-	const bool		useHanning		= true;
+	const int					testDuration	= std::stoi(splitArgs[0]);
+	const int					testThreshold	= std::stoi(splitArgs[1]);
+	const bool					useHanning		= true;
+	const std::vector<int>		testSequence	= { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15 };
 
 	// print information
 	std::cout << "Goertzel DTMF Test:\n";
@@ -943,40 +945,30 @@ void toolbox::testGoertzel(std::string args)
 	std::cout << "HANNING:\t\t" << (useHanning ? "true" : "false") << "\n";
 
 	// variables
-	std::vector<int>					sequence	= { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15 };
+	sampler2									sampler([](std::vector<short> samples) {});
 
-	int									counter;
-	bool								triggered;
-	sampler2							sampler([](std::vector<short> samples) {});
+	std::vector<short>							samples;
 
-	std::vector<short>					samples;
-
-	high_resolution_clock				clock;
-	time_point<high_resolution_clock>	timeStart;
-	double								timeElapsed = 0.f;	// ms
+	high_resolution_clock						clock;
+	time_point<high_resolution_clock>			timeStart;
+	double										timeElapsed = 0.f;	// ms
 
 	// test loop
-	for (const auto& testToneId : sequence)
+	for (const auto& testToneId : testSequence)
 	{
-		// reset counter
-		counter = 0;
-
 		// safety sleep
 		std::this_thread::sleep_for(milliseconds(500));
 		
 		// set test frequencies
-		int		testFreqL = freq[testToneId / 4];
-		int		testFreqH = freq[(testToneId % 4) + 4];
+		int	testFreqL	= freq[testToneId / 4];
+		int	testFreqH	= freq[(testToneId % 4) + 4];
 
 		// timing
-		timeStart		= clock.now();
 		timeElapsed		= 0;
+		timeStart		= clock.now();
 
-		// play sound
+		// play sound (no thread blocking)
 		generator::playback(testToneId, testDuration, true);
-
-		// latency sleep
-		//std::this_thread::sleep_for(milliseconds(50));
 
 		// sample and analyze
 		while ((timeElapsed < ((testDuration*2) + LATENCY)))
@@ -1000,9 +992,6 @@ void toolbox::testGoertzel(std::string args)
 			{
 				continue;
 			}
-
-			// update counter
-			counter++;
 
 			// data
 			std::cout << "ID: " << testToneId << " | " << testFreqL << " Hz: " << magnitudeL << " | " << testFreqH << " Hz: " << magnitudeH << std::endl;
