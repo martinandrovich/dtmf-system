@@ -31,7 +31,7 @@ namespace toolbox
 	// Private Members
 	
 	// Private Methods
-	void logPayload(uint toneId);
+	void printPayload(uint toneId);
 	void executePayload(uint toneId);
 	void pressKey(int key, int pause);
 	
@@ -44,7 +44,7 @@ namespace toolbox
 ///  Helper Methods ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 // Log a toneId
-void toolbox::logPayload(uint toneId)
+void toolbox::printPayload(uint toneId)
 {
 	std::cout << "[Payload]: " << toneId << "\n";
 }
@@ -56,7 +56,7 @@ void toolbox::executePayload(uint toneId)
 	int keyMoveDuration			= 50;
 	int keyPlantDuration		= 25;
 
-	toolbox::logPayload(toneId);
+	toolbox::printPayload(toneId);
 
 	// LEFT		= 0x25
 	// UP		= 0x26
@@ -177,7 +177,7 @@ std::map<double, short> toolbox::convertLatencyMap(std::map< double, std::vector
 	return output;
 }
 
-// ...
+// Export a vector of shorts as a data file
 void toolbox::exportSamples(std::vector<short> &samples, std::string filename)
 {
 	// create data directory & update filename
@@ -196,7 +196,7 @@ void toolbox::exportSamples(std::vector<short> &samples, std::string filename)
 	std::cout << "Samples array[" << samples.size() << "] exported as \"" << filename << "\" ...\n";
 }
 
-// ...
+// Export a templated map as a data file
 template <class key, class value>
 void toolbox::exportMap(std::map<key, value> map, std::string filename)
 {
@@ -223,7 +223,7 @@ void toolbox::exportMap(std::map<key, value> map, std::string filename)
 	std::cout << "The map[" << map.size() << "] exported as \"" << filename << "\" ...\n";
 }
 
-// ...
+// Export a vector of shorts as an audio file
 void toolbox::exportAudio(std::vector<short> &samples, std::string filename)
 {
 	// create data directory & update filename
@@ -236,7 +236,7 @@ void toolbox::exportAudio(std::vector<short> &samples, std::string filename)
 	buffer.saveToFile(filename);
 }
 
-// ...
+// Plot vector of shorts using MATLAB
 void toolbox::plotSamples(std::vector<short> &samples, std::string filename, std::array<std::string, 3> labels)
 {
 	// export samples
@@ -254,7 +254,7 @@ void toolbox::plotSamples(std::vector<short> &samples, std::string filename, std
 	system(cmd.c_str());
 }
 
-// ...
+// Plot templated map using MATLAB
 template <class key, class value>
 void toolbox::plotMap(std::map<key, value> &map, std::string filename, std::array<std::string, 3> labels)
 {
@@ -303,18 +303,6 @@ std::vector<short> toolbox::convertSFBuffer(sf::SoundBuffer& buffer)
 	return samples;
 }
 
-///  Test Methods /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-// Playback all DTMF tones for 200ms
-void toolbox::testGenerator()
-{
-	for (int i = 0; i <= 16; i++)
-	{
-		i = i % 16;
-		generator::playback(i, 200);
-	}
-}
-
 // Playback some DTMF tone sequence for 50ms each; sequence can be passed as argument (e.g. "1234")
 void toolbox::playbackSequence(std::string args)
 {
@@ -359,394 +347,25 @@ void toolbox::playbackSequence(std::string args)
 	generator::playbackSequence(sequence, duration, pause);
 }
 
+///  Log Methods //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 // Initialize decoder and log the payload (toneId) of decoded DTMF tones (allow self-messaging)
 void toolbox::logDecoder()
 {
-	decoder::run(&dtmf::toolbox::logPayload, true);
+	decoder::run(&dtmf::toolbox::printPayload, true);
 }
 
 // Initialize decoder and log the payload (toneId) of decoded DTMF tones (disallow self-messaging)
 void toolbox::logDecoderQuiet()
 {
-	decoder::run(&dtmf::toolbox::logPayload, false);
-}
-
-// Initialize decoder and execute keypress according to the payload (toneId) of percieved DTMF tones
-void toolbox::testDecoderKeyboardReciever()
-{
-	decoder::run(&dtmf::toolbox::executePayload);
-}
-
-// ...
-void toolbox::testDecoderKeyboardSender()
-{
-	generator::playback(0, 50);
-}
-
-// ...
-void toolbox::testStepWindow(std::string args)
-{
-	using namespace std::chrono;
-
-	// variables
-	steady_clock				clock;
-	time_point<steady_clock>	timeStart;
-	long long					timeElapsed		= 0;		// ms
-
-	int							frequency		= 697;
-	int							delay			= 0;
-
-	int							numToDiscard	= STEP_WINDOW_SIZE * 5;
-	int							numToStore		= STEP_WINDOW_SIZE * 2;
-	int							counter			= 0;
-
-	std::vector<short>			samples;
-	std::map<int, float>		goertzel;
-	std::vector<short>			goertzel2(numToStore);
-	sampler*					recorder;
-
-	std::atomic<bool>			logging(false);
-
-	// parse delay from arguments
-	if (args != "")
-	{
-		delay = std::stoi(args);
-	}
-
-	// brief pause
-	Sleep(1000);
-
-	// begin
-	std::cout << "Step Window Analysis, " << delay << "ms playback delay\n";
-
-	// initialize recoder w/ lambda
-	recorder = new sampler([&](std::vector<short> samplesChunk)
-	{
-		// check counter
-		if (counter >= (numToStore + numToDiscard))
-		{
-			return;
-		}
-		
-		// increment counter
-		counter++;
-
-		// discard first sample chunks
-		if (counter < numToDiscard + 1)
-		{
-			return;
-		}
-
-		// initialize timer if sampling is beginning
-		if (counter == numToDiscard + 1)
-		{
-			std::cout << "Timer started.\n";
-			timeStart = clock.now();
-			logging = true;
-		}
-
-		// log
-		int		datapoint		= counter - numToDiscard -1;
-		float	magnitude		= processor::goertzel(samplesChunk, frequency);
-
-		std::cout << "Logging datapoint[" << datapoint << "][" << magnitude <<"] after " << static_cast<duration<double, std::milli>>(clock.now() - timeStart).count() << "ms.\n";
-				
-		goertzel[datapoint]		= magnitude;
-		goertzel2[datapoint]	= magnitude;
-		samples.insert(samples.end(), samplesChunk.begin(), samplesChunk.end());	
-
-		// end
-		if (counter == numToStore + numToDiscard)
-		{
-			logging = false;
-		}
-
-	}, true);
-
-	// start recorder
-	recorder->start(SAMPLE_RATE);
-
-	// wait of logging start
-	while (!logging) {}
-
-	// update timer
-	while (true)
-	{
-		timeElapsed = static_cast<duration<double, std::milli>>(clock.now() - timeStart).count();
-
-		if (timeElapsed >= delay)
-		{
-			std::cout << "Playing tone after " << static_cast<duration<double, std::milli>>(clock.now() - timeStart).count() << "ms \n";
-			generator::playback(0, 50);
-			break;
-		}
-	 }
-
-	// wait until logging done
-	while (logging) {}
-
-	// stop recorder
-	recorder->stop();
-	
-	// data here
-	//toolbox::exportAudio(samples);
-
-	// clean up
-	delete recorder;
-}
-
-// ...
-void toolbox::testStepWindow2(std::string args)
-{
-	using namespace std::chrono;
-
-	// constants
-	const int							latency				= 100;	// ms
-	long long							delay				= 0;
-	const int							windowSize			= SAMPLE_INTERVAL;
-	const int							desiredWindows		= 0 + 2 * (DURATION / SAMPLE_INTERVAL);
-	const int							latencyWindows		= 1 + 1 * (latency / SAMPLE_INTERVAL);
-
-	const int							testToneId			= 0;
-	const int							testFreq			= freq[testToneId / 4];
-
-	// variables
-	sampler2							sampler([](std::vector<short> samples) {});
-	std::thread							player;
-	std::function<void()>				delayedPlayer;
-
-	std::vector<short>					samples;
-	std::map<double, short>				goertzel;
-	std::map<double, std::vector<short>>chunks;
-
-	high_resolution_clock				clock;
-	time_point<high_resolution_clock>	timeStart;
-	std::atomic<long long>				timeElapsed			= 0;	// ms
-
-	unsigned int						counter				= 0;
-
-	// prepare delayed playback thread
-	delayedPlayer = [&]()
-	{
-		while (true)
-		{
-			timeElapsed = static_cast<duration<double, std::milli>>(clock.now() - timeStart).count();
-
-			if (timeElapsed > delay)
-			{
-				generator::playback(testToneId, DURATION);
-				break;
-			}
-		}
-	};
-
-	// parse delay from arguments
-	if (args != "")
-	{
-		delay = std::stoi(args);
-	}
-
-	// print information
-	std::cout << "Step Window Analysis (v2): ["
-		<< "freq: "			<< testFreq			<< " Hz | "
-		<< "tone: "			<< DURATION			<< " ms | "
-		<< "delay: "		<< delay			<< " ms | "
-		<< "interval: "		<< SAMPLE_INTERVAL	<< " ms | "
-		<< "sample rate: "	<< SAMPLE_RATE		<< " Hz "
-	<< "]\n";
-
-	// goodnight
-	std::this_thread::sleep_for(milliseconds(500));	
-
-	// prepare sampler
-	sampler.prepare();
-	std::vector<short>	samplesChunk(NUMPTS);
-
-	// start clock
-	std::cout << "Started sampling [0.00ms]\n";
-	timeStart = clock.now();
-
-	// start delayed playback thread
-	player = std::thread(delayedPlayer);
-
-	// datalogging loop
-	for (int i = 0; i < (desiredWindows + latencyWindows); i++)
-	{
-		timeElapsed = static_cast<duration<double, std::milli>>(clock.now() - timeStart).count();
-		chunks[timeElapsed] = sampler.sample();
-	}
-
-	std::cout << "Finished sampling [" << static_cast<duration<double, std::milli>>(clock.now() - timeStart).count() << "ms]\n";
-
-	// perform goertzel
-	for (auto pair : chunks)
-	{
-		auto samplesChunk = pair.second;
-
-		samples.insert(samples.end(), samplesChunk.begin(), samplesChunk.end());
-
-		processor::hanningWindow(samplesChunk);
-		goertzel[pair.first] = processor::goertzel(samplesChunk, testFreq);
-	}
-
-	std::cout << "Finished processing [" << static_cast<duration<double, std::milli>>(clock.now() - timeStart).count() << "ms]\n";
-
-	// cleanup
-	player.join();
-
-	// data here
-	toolbox::exportAudio(samples);
-	toolbox::exportSamples(samples);
-	toolbox::plotMap(goertzel, "map_plot.dat", { "Goertzel Response", "Time [ms]", "Magnitude" });
-}
-
-// ...
-void toolbox::testLatency()
-{
-	using namespace std::chrono;
-
-	const int							delay			= 10;				// number of chunks to trash
-	const int							dur				= delay + 100;		// number of chunks to log
-
-	// variables
-	high_resolution_clock				clock;
-	time_point<high_resolution_clock>	timeStart;
-	long long							timeElapsed		= 0;		// ms
-
-	bool								initialized		= false;
-	bool								playing			= false;
-	std::atomic<bool>					logging			= false;
-	std::atomic<int>					counter			= 0;
-	double								begin;
-
-	std::map<double, short>				logEvents;
-	std::map<double, std::vector<short>>logChunks;
-	std::vector<short>					samples;
-
-	sampler2	recorder([&](std::vector<short> samplesChunk)
-	{
-		logging = true;
-
-		counter++;
-
-		// trash until delay is reached
-		if (counter < delay)
-		{
-			return;
-		}
-		else if (!playing)
-		{
-			logEvents[timeElapsed] = 5000;
-			playing = true;
-			begin = timeElapsed;
-			generator::playback(0, 100, true);
-			logEvents[timeElapsed] = 5001;
-			return;
-		}
-
-		logEvents[timeElapsed] = 500;
-		logChunks[timeElapsed] = samplesChunk;
-
-		samples.insert(samples.end(), samplesChunk.begin(), samplesChunk.end());
-		
-		logging = false;
-	}, true);
-
-	// init clock
-	timeStart = clock.now();
-
-	// loop
-	while (true)
-	{
-		timeElapsed = static_cast<duration<double, std::milli>>(clock.now() - timeStart).count();
-
-		if (counter > dur) { break; }
-
-		if (!initialized)
-		{
-			logEvents[timeElapsed] = 1000;
-			initialized = true;
-			recorder.start();
-		}
-		else if (!logging && logEvents.count(timeElapsed) == 0)
-		{
-			logEvents[timeElapsed] = 0;
-		}
-	}
-
-	// stop recorder
-	recorder.stop();
-
-	// data here
-	auto logFinal = toolbox::convertLatencyMap(logChunks, begin);
-	toolbox::exportAudio(samples);
-	toolbox::plotSamples(samples, "latency_samples.dat", { "Samples Plot", "Sample [N]", "Amplitude [dB]" });
-	toolbox::plotMap(logFinal, "latency_map.dat", { "Map Plot", "Time [ms]", "Amplitude [dB]" });
-}
-
-// Test sampler2 class; record a single chunk using callback
-void toolbox::testSampler2()
-{
-	sampler2* test = new sampler2([](std::vector<short> samples) {std::cout << "Got chunk [" << samples.size() << "]\n"; });
-	test->prepare();
-
-	auto chunk = test->sample();
-	//toolbox::exportAudio(chunk);
-	test->start();
-	std::this_thread::sleep_for(std::chrono::milliseconds(100));
-	test->stop();
-	delete test;
-}
-
-// ...
-void toolbox::testGeneratorGoertzel(std::string args)
-{
-	// parse arguments
-	std::istringstream			iss(args);
-	std::vector<std::string>	splitArgs((std::istream_iterator<std::string>(iss)), std::istream_iterator<std::string>());
-
-	if (splitArgs.size() < 2)
-	{
-		std::cout << "Invalid arguments. Use \"gor toneId(int) duration(int)\"; e.g. \"gor 0 50\".\n";
-		return;
-	}
-
-	// determine test values from arguments
-	const int		testToneId		= std::stoi(splitArgs[0]);
-	const int		testFreq		= freq[testToneId / 4];
-	const int		testDuration	= std::stoi(splitArgs[1]);
-
-	// init log
-	std::cout << "Running Single Goertzel Test [" << testToneId << " | " << testFreq << "Hz" << " | " << testDuration << "ms" << "] ...\n\n";
-
-	// generate buffer
-	auto buffer		= generator::generateDTMF(testToneId, testDuration);
-	auto samples1	= toolbox::convertSFBuffer(*buffer);
-	auto samples2	= samples1;
-
-	// perform tests
-	processor::hanningWindow(samples2);
-
-	auto magnitude1	= processor::goertzel(samples1, testFreq);
-	auto magnitude2 = processor::goertzel(samples2, testFreq);
-
-	// export
-	toolbox::plotSamples(samples1, "s1.dat", { "Samples1 Plot [-HW]", "Sample [N]", "Amplitude [dB]" });
-	toolbox::plotSamples(samples2, "s2.dat", { "Samples2 Plot [+HW]", "Sample [N]", "Amplitude [dB]" });
-	toolbox::exportAudio(samples1, "s1.wav");
-
-	// log
-	std::cout << "\nGoertzel Magnitude Response:\n"
-		<< "S1 -HW:\t\t" << magnitude1 << "\n"
-		<< "S2 +HW:\t\t" << magnitude2 << "\n"
-		<< "\n";
+	decoder::run(&dtmf::toolbox::printPayload, false);
 }
 
 // ...
 void toolbox::logGoertzel(std::string args)
 {
 	using namespace std::chrono;
-	
+
 	// parse arguments
 	std::istringstream			iss(args);
 	std::vector<std::string>	splitArgs((std::istream_iterator<std::string>(iss)), std::istream_iterator<std::string>());
@@ -758,12 +377,12 @@ void toolbox::logGoertzel(std::string args)
 	}
 
 	// determine test values from arguments
-	const int		testToneId		= std::stoi(splitArgs[0]);
-	const int		testWindows		= std::stoi(splitArgs[1]);
-	const int		testThreshold	= std::stoi(splitArgs[2]);
-	const bool		useHanning		= std::stoi(splitArgs[3]);
-	const int		testFreqL		= freq[testToneId / 4];
-	const int		testFreqH		= freq[(testToneId % 4) + 4];	
+	const int		testToneId = std::stoi(splitArgs[0]);
+	const int		testWindows = std::stoi(splitArgs[1]);
+	const int		testThreshold = std::stoi(splitArgs[2]);
+	const bool		useHanning = std::stoi(splitArgs[3]);
+	const int		testFreqL = freq[testToneId / 4];
+	const int		testFreqH = freq[(testToneId % 4) + 4];
 
 	// variables
 	sampler2							sampler([](std::vector<short> samples) {});
@@ -776,10 +395,10 @@ void toolbox::logGoertzel(std::string args)
 
 	// print information
 	std::cout << "Goertzel Logging:\n";
-	std::cout << "TARGET FREQUENCIES:\t"		<< testFreqL << " Hz & " << testFreqH << " Hz\n";
-	std::cout << "WINDOW SIZE:\t\t"				<< testWindows << "\n";
-	std::cout << "MIN THRESHOLD:\t\t"			<< testThreshold << "\n";
-	std::cout << "HANNING:\t\t"					<< (useHanning ? "true" : "false") << "\n";
+	std::cout << "TARGET FREQUENCIES:\t" << testFreqL << " Hz & " << testFreqH << " Hz\n";
+	std::cout << "WINDOW SIZE:\t\t" << testWindows << "\n";
+	std::cout << "MIN THRESHOLD:\t\t" << testThreshold << "\n";
+	std::cout << "HANNING:\t\t" << (useHanning ? "true" : "false") << "\n";
 	std::cout << "\nPress ESC to stop.\n\n";
 
 	// prepare sampler
@@ -800,7 +419,7 @@ void toolbox::logGoertzel(std::string args)
 		queue[counter++] = sampler.sample();
 
 		// wait until queue is full
-		if (counter < testWindows)	{ continue;	}
+		if (counter < testWindows) { continue; }
 
 		// clear buffer
 		buffer.clear();
@@ -810,7 +429,7 @@ void toolbox::logGoertzel(std::string args)
 		{
 			buffer.insert(buffer.end(), sampleChunks.begin(), sampleChunks.end());
 		}
-		
+
 		// reset counter (clear queue)
 		counter = 0;
 
@@ -818,8 +437,8 @@ void toolbox::logGoertzel(std::string args)
 		if (useHanning)
 		{
 			processor::hanningWindow(buffer);
-		}		
-		
+		}
+
 		// perform goertzel
 		auto magnitudeL = processor::goertzel(buffer, testFreqL);
 		auto magnitudeH = processor::goertzel(buffer, testFreqH);
@@ -923,6 +542,286 @@ void toolbox::logGoertzelAverage(std::string args)
 	std::cout << "\nAverage Goertzel Log stopped.\n\n";
 }
 
+///  Test Methods /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+// Playback all DTMF tones for 200ms
+void toolbox::testGenerator()
+{
+	for (int i = 0; i <= 16; i++)
+	{
+		i = i % 16;
+		generator::playback(i, 200);
+	}
+}
+
+// Test sampler2 class; record a single chunk + 100ms chunks using callback
+void toolbox::testSampler()
+{
+	sampler2* test = new sampler2([](std::vector<short> samples) {std::cout << "Got chunk [" << samples.size() << "]\n"; });
+	test->prepare();
+
+	auto chunk = test->sample();
+
+	test->start();
+	std::this_thread::sleep_for(std::chrono::milliseconds(100));
+	test->stop();
+
+	delete test;
+}
+
+// Initialize decoder and execute keypress according to the payload (toneId) of percieved DTMF tones
+void toolbox::testDecoderKeyboardReciever()
+{
+	decoder::run(&dtmf::toolbox::executePayload);
+}
+
+// ...
+void toolbox::testDecoderKeyboardSender()
+{
+	generator::playback(0, 50);
+}
+
+// ...
+void toolbox::testStepWindow(std::string args)
+{
+	using namespace std::chrono;
+
+	// constants
+	const int							latency = LATENCY;
+	long long							delay = 0;
+	const int							windowSize = SAMPLE_INTERVAL;
+	const int							desiredWindows = 0 + 2 * (DURATION / SAMPLE_INTERVAL);
+	const int							latencyWindows = STEP_WINDOW_SIZE + 1 * (latency / SAMPLE_INTERVAL);
+	const bool							useHanning = true;
+
+	const int							testToneId = 0;
+	const int							testFreqL = freq[testToneId / 4];
+
+	// variables
+	sampler2							sampler([](std::vector<short> samples) {});
+	std::thread							player;
+	std::function<void()>				delayedPlayer;
+
+	std::vector<short>					samples;
+	std::map<double, short>				goertzelSingle;
+	std::map<double, short>				goertzelAverage;
+	std::map<double, std::vector<short>>chunks;
+
+	high_resolution_clock				clock;
+	time_point<high_resolution_clock>	timeStart;
+	std::atomic<long long>				timeElapsed = 0;	// ms
+
+	unsigned int						counter = 0;
+
+	// prepare delayed playback thread
+	delayedPlayer = [&]()
+	{
+		while (true)
+		{
+			timeElapsed = static_cast<duration<double, std::milli>>(clock.now() - timeStart).count();
+
+			if (timeElapsed > delay)
+			{
+				generator::playback(testToneId, DURATION);
+				break;
+			}
+		}
+	};
+
+	// parse delay from arguments
+	if (args != "")
+	{
+		delay = std::stoi(args);
+	}
+
+	// print information
+	std::cout << "Step Window Test:\n";
+	std::cout << "TARGET FREQUENCIES:\t"	<< testFreqL						<< " Hz\n";
+	std::cout << "TARGET WINDOWS:\t\t"		<< desiredWindows					<< "\n";
+	std::cout << "LATENCY WINDOWS:\t"		<< latencyWindows					<< "\n";
+	std::cout << "DELAY:\t\t\t"				<< delay							<< " ms \n";
+	std::cout << "SAMPLING RATE:\t\t"		<< SAMPLE_RATE						<< " Hz \n";
+	std::cout << "SAMPLING INTERVAL:\t"		<< SAMPLE_INTERVAL					<< " ms \n";
+	std::cout << "STEP WINDOW SIZE:\t"		<< STEP_WINDOW_SIZE					<< "\n";
+	std::cout << "HANNING:\t\t"				<< (useHanning ? "true" : "false")	<< "\n\n";
+
+	// goodnight
+	std::this_thread::sleep_for(milliseconds(500));
+
+	// prepare sampler
+	sampler.prepare();
+	std::vector<short>	samplesChunk(NUMPTS);
+
+	// start clock
+	std::cout << "Starting sampling ...\n";
+	timeStart = clock.now();
+
+	// start delayed playback thread
+	player = std::thread(delayedPlayer);
+
+	// datalogging loop
+	for (int i = 0; i < (desiredWindows + latencyWindows); i++)
+	{
+		timeElapsed = static_cast<duration<double, std::milli>>(clock.now() - timeStart).count();
+		chunks[timeElapsed] = sampler.sample();
+	}
+
+	// print info
+	std::cout << "Finished sampling [" << static_cast<duration<double, std::milli>>(clock.now() - timeStart).count() << "ms]\n";
+
+	// perform single goertzel
+	for (auto pair : chunks)
+	{
+		auto samplesChunk = pair.second;
+
+		samples.insert(samples.end(), samplesChunk.begin(), samplesChunk.end());
+
+		if (useHanning)
+		{
+			processor::hanningWindow(samplesChunk);
+		}
+
+		goertzelSingle[pair.first] = processor::goertzel(samplesChunk, testFreqL);
+	}
+
+	// print info
+	std::cout << "Finished processing single [" << static_cast<duration<double, std::milli>>(clock.now() - timeStart).count() << "ms]\n";
+
+	// buffer & queue
+	std::deque<std::vector<short>>		queue;
+	std::vector<short>					buffer;
+
+	// perform average goertzel
+	for (auto pair : chunks)
+	{
+		// get chunk
+		auto samplesChunk = pair.second;
+
+		// fill samples vector
+		samples.insert(samples.end(), samplesChunk.begin(), samplesChunk.end());
+
+		// apply hanning
+		if (useHanning)
+		{
+			processor::hanningWindow(samplesChunk);
+		}
+
+		// add to queue
+		queue.push_back(samplesChunk);
+
+		// check queue size
+		if (queue.size() < STEP_WINDOW_SIZE) { continue; }
+
+		// combine sample chunks into buffer
+		for (const auto& chunk : queue)
+		{
+			buffer.insert(buffer.end(), chunk.begin(), chunk.end());
+		}
+
+		// pop front of queue
+		queue.pop_front();
+
+		// perform goertzel on buffer at "current time"
+		goertzelAverage[pair.first] = processor::goertzel(buffer, testFreqL);
+	}
+
+	// print info
+	std::cout << "Finished processing average [" << static_cast<duration<double, std::milli>>(clock.now() - timeStart).count() << "ms]\n";
+
+	// cleanup
+	player.join();
+
+	// data here
+	//toolbox::exportAudio(samples);
+	//toolbox::exportSamples(samples);
+	toolbox::plotMap(goertzelSingle, "step_single.dat", { "Single Step Goertzel Response", "Time [ms]", "Magnitude" });
+	toolbox::plotMap(goertzelAverage, "step_average.dat", { "Average Step Goertzel Response", "Time [ms]", "Magnitude" });
+}
+
+// ...
+void toolbox::testLatency()
+{
+	using namespace std::chrono;
+
+	const int							delay			= 10;				// number of chunks to trash
+	const int							dur				= delay + 100;		// number of chunks to log
+
+	// variables
+	high_resolution_clock				clock;
+	time_point<high_resolution_clock>	timeStart;
+	long long							timeElapsed		= 0;		// ms
+
+	bool								initialized		= false;
+	bool								playing			= false;
+	std::atomic<bool>					logging			= false;
+	std::atomic<int>					counter			= 0;
+	double								begin;
+
+	std::map<double, short>				logEvents;
+	std::map<double, std::vector<short>>logChunks;
+	std::vector<short>					samples;
+
+	sampler2	recorder([&](std::vector<short> samplesChunk)
+	{
+		logging = true;
+
+		counter++;
+
+		// trash until delay is reached
+		if (counter < delay)
+		{
+			return;
+		}
+		else if (!playing)
+		{
+			logEvents[timeElapsed] = 5000;
+			playing = true;
+			begin = timeElapsed;
+			generator::playback(0, 100, true);
+			logEvents[timeElapsed] = 5001;
+			return;
+		}
+
+		logEvents[timeElapsed] = 500;
+		logChunks[timeElapsed] = samplesChunk;
+
+		samples.insert(samples.end(), samplesChunk.begin(), samplesChunk.end());
+		
+		logging = false;
+	}, true);
+
+	// init clock
+	timeStart = clock.now();
+
+	// loop
+	while (true)
+	{
+		timeElapsed = static_cast<duration<double, std::milli>>(clock.now() - timeStart).count();
+
+		if (counter > dur) { break; }
+
+		if (!initialized)
+		{
+			logEvents[timeElapsed] = 1000;
+			initialized = true;
+			recorder.start();
+		}
+		else if (!logging && logEvents.count(timeElapsed) == 0)
+		{
+			logEvents[timeElapsed] = 0;
+		}
+	}
+
+	// stop recorder
+	recorder.stop();
+
+	// data here
+	auto logFinal = toolbox::convertLatencyMap(logChunks, begin);
+	toolbox::exportAudio(samples);
+	toolbox::plotSamples(samples, "latency_samples.dat", { "Samples Plot", "Sample [N]", "Amplitude [dB]" });
+	toolbox::plotMap(logFinal, "latency_map.dat", { "Map Plot", "Time [ms]", "Amplitude [dB]" });
+}
+
 // ...
 void toolbox::testGoertzel(std::string args)
 {
@@ -1010,6 +909,55 @@ void toolbox::testGoertzel(std::string args)
 	// data
 	//toolbox::exportAudio(samples);
 	//toolbox::plotSamples(samples);
+}
+
+// Test Goertzel on generated samples of a specified toneId and duration
+void toolbox::testGeneratorGoertzel(std::string args)
+{
+	// parse arguments
+	std::istringstream			iss(args);
+	std::vector<std::string>	splitArgs((std::istream_iterator<std::string>(iss)), std::istream_iterator<std::string>());
+
+	if (splitArgs.size() < 2)
+	{
+		std::cout << "Invalid arguments. Use \"gor toneId(int) duration(int)\"; e.g. \"gor 0 50\".\n";
+		return;
+	}
+
+	// determine test values from arguments
+	const int		testToneId		= std::stoi(splitArgs[0]);
+	const int		testDuration	= std::stoi(splitArgs[1]);
+	const int		testFreqL		= freq[testToneId / 4];
+	const int		testFreqH		= freq[(testToneId % 4) + 4];
+
+	// print information
+	std::cout << "Generator Goertzel Test:\n";
+	std::cout << "TARGET TONEID:\t"			<< testToneId							<< "\n";
+	std::cout << "TARGET FREQUENCIES:\t"	<< testFreqL << " Hz & " << testFreqH	<< " Hz\n";
+	std::cout << "DURATION:\t\t"			<< testDuration							<< "ms\n";
+
+	// generate buffer
+	auto buffer = generator::generateDTMF(testToneId, testDuration);
+	auto samples1 = toolbox::convertSFBuffer(*buffer);
+	auto samples2 = samples1;
+
+	// apply hanning window
+	processor::hanningWindow(samples2);
+
+	// perform tests
+	auto magnitude1 = processor::goertzel(samples1, testFreqL);
+	auto magnitude2 = processor::goertzel(samples2, testFreqH);
+
+	// export
+	toolbox::plotSamples(samples1, "s1.dat", { "Samples1 Plot [-HW][" + std::to_string(testFreqL) + "Hz]", "Sample [N]", "Amplitude [dB]" });
+	toolbox::plotSamples(samples2, "s2.dat", { "Samples2 Plot [+HW][" + std::to_string(testFreqL) + "Hz]", "Sample [N]", "Amplitude [dB]" });
+	//toolbox::exportAudio(samples1, "s1.wav");
+
+	// log
+	std::cout << "\nGoertzel Magnitude Response:\n"
+		<< "S1 -HW:\t\t" << magnitude1 << "\n"
+		<< "S2 +HW:\t\t" << magnitude2 << "\n"
+		<< "\n";
 }
 
 }

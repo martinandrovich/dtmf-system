@@ -21,20 +21,19 @@ namespace dtmf
 		
 		void									playbackSequence(std::string args);
 
+		void									testGenerator();
+		void									testSampler();
+
 		void									logDecoder();
 		void									logDecoderQuiet();
 		void									logGoertzel(std::string args);
 		void									logGoertzelAverage(std::string args);
 
-		void									testSampler2();
-
-		void									testGenerator();
-
 		void									testDecoderKeyboardReciever();
 		void									testDecoderKeyboardSender();
 
 		void									testStepWindow(std::string args);
-		void									testStepWindow2(std::string args);
+
 		void									testLatency();
 		
 		void									testGeneratorGoertzel(std::string args);
