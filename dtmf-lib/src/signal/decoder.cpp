@@ -12,6 +12,7 @@
 #include "decoder.h"
 #include "sampler.h"
 #include "sampler2.h"
+#include "generator.h"
 #include "processor.h"
 
 //// Private Declarations /////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -27,6 +28,8 @@ namespace decoder
 	std::mutex							queueMutex;
 	std::thread							worker;
 	sampler2*							rec;
+
+	bool								allowPlayback = false;
 	std::atomic<bool>					running;
 	
 	std::array<float, 8>				previousGoertzelArray;
@@ -55,18 +58,19 @@ namespace decoder
 void decoder::run(std::function<void(uint toneId)> callback, bool allowPlayback)
 {
 	// initialize variables
-	decoder::callback	= callback;
-	decoder::rec		= new sampler2(&decoder::appendQueue, allowPlayback);
+	decoder::callback		= callback;
+	decoder::rec			= new sampler2(&decoder::appendQueue, allowPlayback);
+	decoder::allowPlayback	= allowPlayback;
 
 	// start sampler
 	decoder::rec->start();
-	decoder::status		= state::running;
+	decoder::status			= state::running;
 	
 	// start worker thread
-	decoder::debounce	= decoder::clock.now();
-	decoder::running	= true;
-	decoder::worker		= std::thread(&decoder::threadBuffered);	
-}
+	decoder::debounce		= decoder::clock.now();
+	decoder::running		= true;
+	decoder::worker			= std::thread(&decoder::threadBuffered);	
+}	
 
 // End the decoder
 void decoder::end()
@@ -238,6 +242,22 @@ void decoder::decode(std::vector<short> &samples)
 	// decode
 	//std::cout << "[DECODER] Decoding [" << samples.size() << "] samples...\n\n";
 
+	// check generator overlapping
+	if (!decoder::allowPlayback)
+	{
+		// define time since last generator playback
+		auto timeSincePlayback = (int)static_cast<duration<double, std::milli>>(decoder::clock.now() - generator::getTimestamp()).count();
+		
+		// return if overlapping
+		// VALUES NEED TO BE CHANGED WHEN NOT LOOKING AT AVERAGE GOERTZEL
+		if (timeSincePlayback > (LATENCY - DURATION * 2) && timeSincePlayback < (LATENCY + LATENCY_BUFFER + DURATION * 2))
+		{
+			//std::cout << "OVERLAP! [" << timeSincePlayback << "ms]" << std::endl;
+			decoder::status = state::running;
+			return;
+		}
+	}
+	
 	// check debounce
 	if ((int)static_cast<duration<double, std::milli>>(decoder::clock.now() - decoder::debounce).count() < DEBOUNCE)
 	{

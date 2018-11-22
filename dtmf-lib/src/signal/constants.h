@@ -12,6 +12,7 @@ constexpr auto	DURATION			= 50;											// Default signal duration [ms]
 constexpr auto	PAUSE				= 50;											// Default signal pause [ms]
 constexpr int	DEBOUNCE			= (DURATION + 20) * 1;							// Default debounce value [ms] (default = 90% of DURATION + PAUSE)
 constexpr int	LATENCY				= 100;											// It's the fucking latency, bitch
+constexpr int	LATENCY_BUFFER		= 20;											// It's the fucking latency buffer, bitch
 constexpr auto	FADE				= 0.10f;										// Default signal fade percentage [decimal] (0.1 = 10%)
 constexpr auto	SAMPLE_RATE			= 88200;										// Default signal sample rate in [Hz] (default = 44100)
 constexpr auto	SAMPLE_INTERVAL		= 10;											// Default interval of sample processing [ms]

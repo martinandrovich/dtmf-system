@@ -16,11 +16,11 @@
 namespace generator
 {
 	// Private Members
-	sf::Sound*							player = new sf::Sound;
-	std::atomic<state>					status;
+	sf::Sound*										player = new sf::Sound;
+	std::atomic<state>								status;
 
-	high_resolution_clock				clock;
-	time_point<high_resolution_clock>	lastPlayed;
+	high_resolution_clock							clock;
+	std::atomic<time_point<high_resolution_clock>>	lastPlayed;
 }
 
 //// Method Definitions ///////////////////////////////////////////////////////////////////////////////////////////////////////////
