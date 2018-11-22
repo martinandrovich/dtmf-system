@@ -18,13 +18,17 @@ namespace dtmf
 		;
 
 		// Public Methods
-		void									testGenerator();
+		
 		void									playbackSequence(std::string args);
+
 		void									logDecoder();
+		void									logDecoderQuiet();
+		void									logGoertzel(std::string args);
+		void									logGoertzelAverage(std::string args);
 
 		void									testSampler2();
 
-		std::map<double, short>					convertLatencyMap(std::map< double, std::vector<short>> map, double startTime);
+		void									testGenerator();
 
 		void									testDecoderKeyboardReciever();
 		void									testDecoderKeyboardSender();
@@ -32,8 +36,7 @@ namespace dtmf
 		void									testStepWindow(std::string args);
 		void									testStepWindow2(std::string args);
 		void									testLatency();
-		void									logGoertzel(std::string args);
-		void									logGoertzelAverage(std::string args);
+		
 		void									testGeneratorGoertzel(std::string args);
 		void									testGoertzel(std::string args);
 		
@@ -44,6 +47,7 @@ namespace dtmf
 		template <class key, class value> void	plotMap(std::map<key, value> &map, std::string filename = "map_plot.dat", std::array<std::string, 3> labels = { "Map Plot", "x-axis", "y-axis" });
 		
 		std::vector<short>						convertAudio(std::string filename);
+		std::map<double, short>					convertLatencyMap(std::map< double, std::vector<short>> map, double startTime);
 
 		std::string								getWorkingDirectory();
 	}

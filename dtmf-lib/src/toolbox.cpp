@@ -359,10 +359,16 @@ void toolbox::playbackSequence(std::string args)
 	generator::playbackSequence(sequence, duration, pause);
 }
 
-// Initialize decoder and log the payload (toneId) of decoded DTMF tones
+// Initialize decoder and log the payload (toneId) of decoded DTMF tones (allow self-messaging)
 void toolbox::logDecoder()
 {
-	decoder::run(&dtmf::toolbox::logPayload);
+	decoder::run(&dtmf::toolbox::logPayload, true);
+}
+
+// Initialize decoder and log the payload (toneId) of decoded DTMF tones (disallow self-messaging)
+void toolbox::logDecoderQuiet()
+{
+	decoder::run(&dtmf::toolbox::logPayload, false);
 }
 
 // Initialize decoder and execute keypress according to the payload (toneId) of percieved DTMF tones
