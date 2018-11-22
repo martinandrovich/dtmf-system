@@ -10,20 +10,23 @@
 // commands map
 std::unordered_map<std::string, void(*)(std::string args)> commandMap = 
 {
-	{ "init",	[](std::string args) { initSystem(args);															} },
-	{ "help",	[](std::string args) { help(args);																	} },
-	{ "exit",	[](std::string args) { exit(0);																		} },
-	{ "cls",	[](std::string args) { initCLI();																	} },
-	{ "log",	[](std::string args) { dtmf::toolbox::logDecoder();													} },
-	{ "seq",	[](std::string args) { dtmf::toolbox::playbackSequence(args);										} },
-	{ "glog",	[](std::string args) { dtmf::toolbox::logGoertzel(args);											} },
-	{ "glogt",	[](std::string args) { auto glog = new std::thread(dtmf::toolbox::logGoertzel, args);				} },
-	{ "glogat",	[](std::string args) { auto glog = new std::thread(dtmf::toolbox::logGoertzelAverage, args);		} },
-	{ "lat",	[](std::string args) { dtmf::toolbox::testLatency();												} },
-	{ "step",	[](std::string args) { dtmf::toolbox::testStepWindow2(args);										} },
-	{ "sam",	[](std::string args) { dtmf::toolbox::testSampler2();												} },
-	{ "gor",	[](std::string args) { dtmf::toolbox::testGeneratorGoertzel(args);									} },
-	{ "gor2",	[](std::string args) { dtmf::toolbox::testGoertzel(args);											} },
+	{ "init",		[](std::string args) { initSystem(args);															} },
+	{ "help",		[](std::string args) { help(args);																	} },
+	{ "exit",		[](std::string args) { exit(0);																		} },
+	{ "cls",		[](std::string args) { initCLI();																	} },
+	{ "seq",		[](std::string args) { dtmf::toolbox::playbackSequence(args);										} },
+	{ "log",		[](std::string args) { dtmf::toolbox::logDecoder();													} },
+	{ "qlog",		[](std::string args) { dtmf::toolbox::logDecoderQuiet();											} },
+	{ "glog",		[](std::string args) { dtmf::toolbox::logGoertzel(args);											} },
+	{ "glog_t",		[](std::string args) { auto t = new std::thread(dtmf::toolbox::logGoertzel, args);					} },
+	{ "aglog",		[](std::string args) { auto t = new std::thread(dtmf::toolbox::logGoertzelAverage, args);			} },
+	{ "aglog_t",	[](std::string args) { auto t = new std::thread(dtmf::toolbox::logGoertzelAverage, args);			} },
+	{ "lat",		[](std::string args) { dtmf::toolbox::testLatency();												} },
+	{ "step",		[](std::string args) { dtmf::toolbox::testStepWindow(args);											} },
+	{ "sam",		[](std::string args) { dtmf::toolbox::testSampler();												} },
+	{ "gor",		[](std::string args) { dtmf::toolbox::testGoertzel(args);											} },
+	{ "ggor",		[](std::string args) { dtmf::toolbox::testGeneratorGoertzel(args);									} },
+	
 };
 
 // main function
