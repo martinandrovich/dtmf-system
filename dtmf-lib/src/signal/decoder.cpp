@@ -38,8 +38,8 @@ namespace decoder
 	std::function<void(uint)>			callback;
 
 	// Private Methods
-	void								thread();
-	void								thread2();
+	void								threadBuffered();
+	void								threadInstant();
 	void								decode(std::vector<short> &samples);
 	void								decode2(std::vector<short> &samples);
 	void								appendQueue(std::vector<short> samples);
@@ -65,7 +65,7 @@ void decoder::run(std::function<void(uint toneId)> callback, bool allowPlayback)
 	// start worker thread
 	decoder::debounce	= decoder::clock.now();
 	decoder::running	= true;
-	decoder::worker		= std::thread(&decoder::thread);	
+	decoder::worker		= std::thread(&decoder::threadBuffered);	
 }
 
 // End the decoder
@@ -82,7 +82,7 @@ void decoder::end()
 }
 
 // Thread function (step buffered decode)
-void decoder::thread()
+void decoder::threadBuffered()
 {
 	while (decoder::running)
 	{		
@@ -92,22 +92,26 @@ void decoder::thread()
 			continue;
 		}
 
-		// critical section
+		// queue critical section
 		decoder::queueMutex.lock();
 
+			// check that queue has enough elements
 			if (decoder::queue.size() < STEP_WINDOW_SIZE)
 			{
 				decoder::queueMutex.unlock();
 				continue;
 			}
 			
+			// clear buffer
 			decoder::buffer.clear();
 
+			// compose buffer from queue
 			for (const auto& sampleChunks : decoder::queue)
 			{  
 				decoder::buffer.insert(decoder::buffer.end(), sampleChunks.begin(), sampleChunks.end());
 			}
 
+			// pop first element of queue
 			decoder::queue.pop_front();
 
 		decoder::queueMutex.unlock();
@@ -118,7 +122,7 @@ void decoder::thread()
 }
 
 // Thread function (instant decode)
-void decoder::thread2()
+void decoder::threadInstant()
 {
 	while (decoder::running)
 	{
@@ -128,9 +132,10 @@ void decoder::thread2()
 			continue;
 		}
 
-		// critical section
+		// queue critical section
 		decoder::queueMutex.lock();
 
+			// check queue size
 			if (decoder::queue.empty())
 			{
 				decoder::queueMutex.unlock();
