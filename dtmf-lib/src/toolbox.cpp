@@ -901,7 +901,9 @@ void toolbox::testLatency2()
 	}
 
 	// detect latency
-	;
+	//short s = 0;
+	//auto pos = std::any_of(samples.begin() + 10, samples.end(), [&](short sample) { s = sample; return abs(sample) > 500; });
+	//auto f = std::find_if(samples.begin(), samples.end(), [&](short sample) { s = sample; return abs(sample) > 500; });
 
 	// data here
 	toolbox::plotSamples(samples);
