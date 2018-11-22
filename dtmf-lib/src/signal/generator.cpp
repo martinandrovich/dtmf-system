@@ -16,8 +16,11 @@
 namespace generator
 {
 	// Private Members
-	sf::Sound*					player = new sf::Sound;
-	std::atomic<state>			status;
+	sf::Sound*							player = new sf::Sound;
+	std::atomic<state>					status;
+
+	high_resolution_clock				clock;
+	time_point<high_resolution_clock>	lastPlayed;
 }
 
 //// Method Definitions ///////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -81,15 +84,20 @@ void generator::playback(uint toneID, uint duration, bool parallel)
 	// create buffer
 	auto buffer = generateDTMF(toneID, duration);
 
+	// update status
 	generator::status = generator::state::playing;
 
 	// set buffer and play
 	generator::player->setBuffer(*buffer);
 	generator::player->play();
+
+	// update timestamp
+	generator::lastPlayed = generator::clock.now();
 	
+	// log
 	std::cout << "Playing tone [" << toneID << " | " << duration << "ms]\n";
 
-	// escape function if parellel enabled			!!! BAD FOR MEMORY
+	// escape function if parellel enabled			!!! BAD FOR MEMORY // ONLY FOR DEBUGGING
 	if (parallel)
 	{
 		generator::status = generator::state::idle;
@@ -102,6 +110,7 @@ void generator::playback(uint toneID, uint duration, bool parallel)
 		;
 	}
 	
+	// update status
 	generator::status = generator::state::idle;
 
 	// cleanup
@@ -122,4 +131,10 @@ void generator::playbackSequence(std::vector<int> &sequence, int duration, int p
 generator::state generator::getState()
 {
 	return generator::status;
+}
+
+// Return timestamp of lastPlayed
+generator::time_point<generator::high_resolution_clock>	generator::getTimestamp()
+{
+	return generator::lastPlayed;
 }
