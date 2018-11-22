@@ -52,11 +52,11 @@ namespace decoder
 //// Method Definitions ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 // Initialize & run the decoder
-void decoder::run(std::function<void(uint toneId)> callback)
+void decoder::run(std::function<void(uint toneId)> callback, bool allowPlayback)
 {
 	// initialize variables
 	decoder::callback	= callback;
-	decoder::rec		= new sampler2(&decoder::appendQueue, true);
+	decoder::rec		= new sampler2(&decoder::appendQueue, allowPlayback);
 
 	// start sampler
 	decoder::rec->start();

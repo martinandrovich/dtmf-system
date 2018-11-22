@@ -15,6 +15,6 @@ namespace decoder
 	};
 
 	// Public Methods
-	void run(std::function<void(uint toneId)>);
+	void run(std::function<void(uint toneId)>, bool allowPlayback = false);
 	void end();
 }
