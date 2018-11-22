@@ -139,25 +139,21 @@ void toolbox::makeDataDirectory()
 // ...
 std::map<double, short> toolbox::convertLatencyMap(std::map< double, std::vector<short>> map, double startTime)
 {
-	std::vector<double> time;
-	std::vector<short> samples;
-
-
-	std::map<double, short> output;
-
-
-	double lastTime = startTime;
-
-
+	std::vector<double>			time;
+	std::vector<short>			samples;
+	std::map<double, short>		output;
+	double						lastTime = startTime;
+	
+	// split map into time & samples
 	for (auto const& x : map)
 	{
-
 		// vector of all samples
 		for (int i = 0; i < x.second.size(); i++)
 		{
 			samples.push_back(x.second[i]);
 		}
 
+		// update deltaTime
 		double deltatime = (x.first - lastTime) / double(x.second.size());
 
 		// vector of all time
@@ -166,9 +162,9 @@ std::map<double, short> toolbox::convertLatencyMap(std::map< double, std::vector
 			time.push_back(lastTime);
 			lastTime += deltatime;
 		}
-
 	}
 
+	// create output map
 	for (int i = 0; i < samples.size(); i++)
 	{
 		output[time[i]] = samples[i];
@@ -820,6 +816,96 @@ void toolbox::testLatency()
 	toolbox::exportAudio(samples);
 	toolbox::plotSamples(samples, "latency_samples.dat", { "Samples Plot", "Sample [N]", "Amplitude [dB]" });
 	toolbox::plotMap(logFinal, "latency_map.dat", { "Map Plot", "Time [ms]", "Amplitude [dB]" });
+}
+
+// ..
+void toolbox::testLatency2()
+{
+	using namespace std::chrono;
+
+	// constants
+	const int desiredChunks				= (SAMPLE_INTERVAL/10) + (DURATION/SAMPLE_INTERVAL) + (LATENCY / SAMPLE_INTERVAL);
+	const int delayChunks				= 0;
+	const int totalChunks				= desiredChunks + delayChunks;
+
+	// variables
+	high_resolution_clock				clock;
+	time_point<high_resolution_clock>	timeStart;
+	double								timeElapsed = 0;		// ms
+
+	sampler2							sampler([](std::vector<short> samples) {});
+	
+	std::map<double, std::vector<short>>log;
+
+	bool								hasPlayed = false;
+	double								beginTime;
+
+	// print information
+	std::cout << "Latency Test:\n\n";
+
+	// prepare sampler
+	sampler.prepare();
+
+	// start timer
+	timeStart = clock.now();
+
+	// sample loop
+	for (int counter = 0; counter < totalChunks; counter++)
+	{
+		// play sound
+		if (counter > delayChunks && !hasPlayed)
+		{
+			hasPlayed = true;
+			beginTime = static_cast<duration<double, std::milli>>(clock.now() - timeStart).count();
+			generator::playback(0, DURATION, true);
+			log[beginTime] = { 10000 };
+		}
+		
+		// get samples chunk
+		auto chunk = sampler.sample();
+
+		// log chunk
+		log[static_cast<duration<double, std::milli>>(clock.now() - timeStart).count()] = chunk;
+	}
+
+	// process data
+	std::vector<double>			time;
+	std::vector<short>			samples;
+	std::map<double, short>		output;
+	double						lastTime = beginTime;
+
+	// split logged data map into time & samples
+	for (auto const& x : log)
+	{
+		// vector of all samples
+		for (int i = 0; i < x.second.size(); i++)
+		{
+			samples.push_back(x.second[i]);
+		}
+
+		// update deltaTime
+		double deltatime = (x.first - lastTime) / double(x.second.size());
+
+		// vector of all time
+		for (int i = 0; i < x.second.size(); i++)
+		{
+			time.push_back(lastTime);
+			lastTime += deltatime;
+		}
+	}
+
+	// create output map
+	for (int i = 0; i < samples.size(); i++)
+	{
+		output[time[i]] = samples[i];
+	}
+
+	// detect latency
+	;
+
+	// data here
+	toolbox::plotSamples(samples);
+	toolbox::plotMap(output, "latency_map.dat", { "Map Plot", "Time [ms]", "Amplitude [dB]" });
 }
 
 // ...
