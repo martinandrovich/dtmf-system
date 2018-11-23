@@ -881,7 +881,7 @@ void toolbox::testLatency2()
 			hasPlayed = true;
 			beginTime = static_cast<duration<double, std::milli>>(clock.now() - timeStart).count();
 			generator::playback(0, DURATION, true, false);
-			log[beginTime] = { AMPLITUDE_MAX };
+			log[beginTime] = { (int)AMPLITUDE_MAX };
 		}
 		
 		// get samples chunk
