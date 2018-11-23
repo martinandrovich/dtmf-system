@@ -93,7 +93,7 @@ void dtmf::node::sync()
 void dtmf::node::process(uint toneID)
 {
 	messageMutex.lock();
-
+	node::timestamp = node::clock.now();
 	std::cout << "Got tone [" << toneID << "]\n";
 		if (toneID == 15) {
 			hasRecievedDirID = false;
