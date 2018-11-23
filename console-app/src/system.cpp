@@ -4,7 +4,7 @@
 #include <thread>
 #include <chrono>
 #include <unordered_map>
-
+#include <windows.h> //Tjek for fejl senere
 #include <dtmf/node.h>
 #include <dtmf/toolbox.h>
 
@@ -31,6 +31,8 @@ void initSystem(std::string args)
 	{
 		std::cout << "Initializing client ...\n";
 		dtmf::node::initializeClient(&someFunction);
+		while (true)
+			clientWork();
 	}
 }
 
@@ -54,7 +56,46 @@ void CLI()
 	// execute input command
 	executeCommand(input);
 }
+int listenForKey()
+{
+	int key = 0;
+	if (GetKeyState('S') < 0)
+		LOG("s down")
+		if (GetKeyState(VK_LEFT) < 0)
+			key = 1;
+	if (GetKeyState(VK_UP) < 0)
+		key = 2;
+	if (GetKeyState(VK_DOWN) < 0)
+		key = 3;
+	if (GetKeyState(VK_RIGHT) < 0)
+		key = 4;
+	if (GetKeyState(VK_SPACE) < 0)
+		key = 5;
+	if (GetKeyState(VK_CONTROL) < 0)
+		key = 6;
+	if (GetKeyState(VK_ESCAPE) < 0)
+		key = 7;
 
+	return key;
+}
+void clientWork()
+{
+	while (true)
+	{
+		//Implementering af prioritetsliste: esc>actions>movement
+		int payload = listenForKey();
+		int priority;
+		if (payload < 5)
+			priority = 0;
+		else if (payload < 7)
+			priority = 1;
+		else priority = 2;
+		dtmf::node::sendPayload(payload, priority);
+		//if (keydown != 0)
+			//LOG(keydown);
+		std::this_thread::sleep_for(std::chrono::milliseconds(30));
+	}
+}
 // ...
 void executeCommand(std::string input)
 {
