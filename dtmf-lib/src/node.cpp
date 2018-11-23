@@ -263,6 +263,7 @@ void dtmf::node::initializeClient(void(*callback)(int payload, int id))
 	isInitialized = true;
 	isServer = false;
 
+	callbackFunction = callback;
 	// state definitions for CLIENT node
 	states = {
 		State("start",
@@ -314,7 +315,7 @@ void dtmf::node::initializeClient(void(*callback)(int payload, int id))
 		State("base",
 			{
 			},{
-				StateTransition("start",
+				StateTransition("sendAction",
 					{
 						StateCondition([] { return newMessageFlag; }),
 						StateCondition([] { return currentMessage.command == 9; }),
@@ -356,7 +357,7 @@ void dtmf::node::initializeServer(void(*callback)(int payload, int id))
 	isServer = true;
 
 	//callbackFunction
-
+	callbackFunction = callback;
 	// state definitions for SERVER node
 	states = {
 		State("start",{
