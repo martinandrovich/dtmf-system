@@ -5,10 +5,15 @@
 #include <chrono>
 #include <unordered_map>
 #include <windows.h> //Tjek for fejl senere
+
 #include <dtmf/node.h>
 #include <dtmf/toolbox.h>
 
 #include "system.h"
+
+//// Constants __//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+constexpr int 	KEY_WAIT = 50;											// Duration between key presses
 
 //// Definitions //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -31,8 +36,7 @@ void initSystem(std::string args)
 	{
 		std::cout << "Initializing client ...\n";
 		dtmf::node::initializeClient(&someFunction);
-		while (true)
-			clientWork();
+		clientWork();
 	}
 }
 
@@ -93,7 +97,7 @@ void clientWork()
 		dtmf::node::sendPayload(payload, priority);
 		//if (keydown != 0)
 			//LOG(keydown);
-		std::this_thread::sleep_for(std::chrono::milliseconds(30));
+		std::this_thread::sleep_for(std::chrono::milliseconds(KEY_WAIT));
 	}
 }
 // ...

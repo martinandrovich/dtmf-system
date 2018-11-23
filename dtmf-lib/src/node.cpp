@@ -2,6 +2,7 @@
 #include <string>
 #include <vector>
 #include <mutex>
+#include <chrono>
 
 #include "dtmf/node.h"
 #include "signal/generator.h"
@@ -12,6 +13,8 @@
 namespace dtmf
 {
 	namespace node {
+
+		using namespace std::chrono;
 
 		// Private Members
 		std::vector<State>	states;
@@ -24,6 +27,9 @@ namespace dtmf
 		bool				isQuickState = false;
 
 		void(*callbackFunction)(int payload, int id);
+
+		high_resolution_clock				clock;
+		time_point<high_resolution_clock>	timestamp;
 
 		bool				newMessageFlag, newActionFlag;
 		int					clientID = -1;
@@ -44,6 +50,7 @@ namespace dtmf
 
 		// Private Methods
 		void send(Message msg); // msg struct
+		void sync();
 		void process(uint toneID);
 		void recieved(Message msg);
 		
@@ -57,6 +64,7 @@ namespace dtmf
 		void checkMessage();
 		void checkTimeOut();
 		void checkTriggers();
+		bool checkTimeout();
 
 		void stateMachineThread();
 	}
@@ -74,12 +82,18 @@ void dtmf::node::send(Message msg)
 	currentAction = null;
 	currentActionPriority = 0;
 }
+void dtmf::node::sync()
+{
+	std::vector<int> sequence = {15 };
+	generator::playbackSequence(sequence);
 
+}
 // ...
 void dtmf::node::process(uint toneID)
 {
 	messageMutex.lock();
 
+	//std::cout << "Got tone [" << toneID << "]\n";
 		if (toneID == 15) {
 			hasRecievedDirID = false;
 		}
@@ -136,7 +150,8 @@ void dtmf::node::testCurrentState()
 		{
 			currentState = getStateId(transition);
 			isQuickState = states[currentState].isQuickState;
-			
+			//timeoutTimer = 0;
+			node::timestamp = node::clock.now();
 			runStateActions();
 			return;
 		}
@@ -187,6 +202,7 @@ void dtmf::node::runStateActions()
 		action.function();
 	}
 	currentMessage = Message();
+	newMessageFlag = false;
 	testCurrentState();
 }
 
@@ -234,6 +250,12 @@ void dtmf::node::checkTriggers()
 }
 
 // ...
+bool dtmf::node::checkTimeout()
+{
+	return ((int)static_cast<duration<double, std::milli>>(node::clock.now() - node::timestamp).count() > TIMEOUT);
+}
+
+// ...
 void dtmf::node::stateMachineThread()
 {
 	while (true)
@@ -255,6 +277,11 @@ void dtmf::node::initializeClient(void(*callback)(int payload, int id))
 	isInitialized = true;
 	isServer = false;
 
+	callbackFunction = callback;
+
+	// timestamp
+	node::timestamp = node::clock.now();
+
 	// state definitions for CLIENT node
 	states = {
 		State("start",
@@ -269,16 +296,19 @@ void dtmf::node::initializeClient(void(*callback)(int payload, int id))
 			}),
 		State("connect",
 			{
+				StateAction([] { sync(); }),
 				StateAction([] { var1 = currentAction; }),
 				StateAction([] { send(Message((int)isServer, 0, var1)); })
 			},{
 				StateTransition("setId",
 					{
+						StateCondition([] { return newMessageFlag; }),
 						StateCondition([] { return currentMessage.command == var1; }),
 						StateCondition([] { return currentMessage.id != 0; })
 					}),
 				StateTransition("start",
 					{
+						StateCondition([] { return newMessageFlag; }),
 						StateCondition([] { return currentMessage.command != var1; })
 					}),
 
@@ -290,19 +320,22 @@ void dtmf::node::initializeClient(void(*callback)(int payload, int id))
 			},{
 				StateTransition("base",
 					{
+						StateCondition([] { return newMessageFlag; }),
 						StateCondition([] {return currentMessage.command == var1; }),
 						StateCondition([] {return currentMessage.id == clientID; }),
 					}),
 				StateTransition("start",
 					{
+						StateCondition([] { return newMessageFlag; }),
 						StateCondition([] {return currentMessage.command != var1 || currentMessage.id != clientID; }),
 					}),
 			}),
 		State("base",
 			{
 			},{
-				StateTransition("start",
+				StateTransition("sendAction",
 					{
+						StateCondition([] { return newMessageFlag; }),
 						StateCondition([] { return currentMessage.command == 9; }),
 						StateCondition([] { return currentMessage.direction != isServer; }),
 						StateCondition([] { return currentMessage.id == clientID; })
@@ -342,35 +375,44 @@ void dtmf::node::initializeServer(void(*callback)(int payload, int id))
 	isServer = true;
 
 	//callbackFunction
-
+	callbackFunction = callback;
 	// state definitions for SERVER node
 	states = {
 		State("start",{
 
 		},{
 			StateTransition("newClient",{
+				StateCondition([] { return newMessageFlag; }),
 				StateCondition([] { return currentMessage.id == 0; })
 			}),
 			StateTransition("base",{
+				StateCondition([] { return newMessageFlag; }),
 				StateCondition([] { return currentMessage.command == menu; }),
 				StateCondition([] { return currentMessage.id != 0; })
-			})
+			}),
+			StateTransition("base",{
+				StateCondition([] { return numClients>=1; })
+				})
 
 		}),
 		State("newClient",{
 			StateAction([] { var1 = currentMessage.command; }),
-			StateAction([] { send(Message((int)isServer, numClients, currentMessage.command)); })
+			StateAction([] { send(Message((int)isServer, numClients+1, currentMessage.command)); })
 		},{
 			StateTransition("newClientReceived",{
+				StateCondition([] { return newMessageFlag; }),
 				StateCondition([] {return currentMessage.command == var1; }),
-				StateCondition([] {return currentMessage.id == numClients; }),
+				StateCondition([] {return currentMessage.id == numClients+1; }),
 				}),
 			StateTransition("start",{
-				StateCondition([] {return currentMessage.command != var1 || currentMessage.id != numClients; }),
+				StateCondition([] { return newMessageFlag; }),
+				StateCondition([] {return currentMessage.command != var1 || currentMessage.id != numClients+1; }),
 				})
 		}),
 		State("newClientReceived",{
+			StateAction([] { send(Message((int)isServer, numClients + 1, var1)); }),
 			StateAction([] { numClients++; }),
+			StateAction([] { sync(); }),
 		},{
 			StateTransition("start",{
 
@@ -378,6 +420,7 @@ void dtmf::node::initializeServer(void(*callback)(int payload, int id))
 
 		}),
 		State("base",{
+			StateAction([] { sync(); })
 		},{
 
 			StateTransition("standardSend",{
@@ -385,10 +428,12 @@ void dtmf::node::initializeServer(void(*callback)(int payload, int id))
 				}),
 		}),
 		State("standardSend",{
+		//StateAction([] { sync(); }),
 		StateAction([] { send(Message((int)isServer, idCounter, 9)); })
 
 		},{
 			StateTransition("standardRecieve",{
+				StateCondition([] { return newMessageFlag; }),
 				StateCondition([] { return currentMessage.id == idCounter; })
 				}),
 
