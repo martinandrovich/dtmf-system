@@ -303,6 +303,7 @@ void dtmf::node::initializeClient(void(*callback)(int payload, int id))
 				StateTransition("start",
 					{
 						StateCondition([] { return currentMessage.command == 9; }),
+						StateCondition([] { return currentMessage.direction != isServer; }),
 						StateCondition([] { return currentMessage.id == clientID; })
 					}),
 
@@ -323,7 +324,7 @@ void dtmf::node::initializeClient(void(*callback)(int payload, int id))
 	};
 	
 	// start decoder
-	decoder::run(&process);
+	decoder::run(&process, false);
 
 	// start thread
 	stateMachine = std::thread(&dtmf::node::stateMachineThread);
@@ -412,7 +413,7 @@ void dtmf::node::initializeServer(void(*callback)(int payload, int id))
 	};
 
 	// start decoder
-	decoder::run(&process);
+	decoder::run(&process, false);
 
 	// start thread
 	stateMachine = std::thread(&dtmf::node::stateMachineThread);
