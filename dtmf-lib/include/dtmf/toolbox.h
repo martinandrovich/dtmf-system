@@ -26,6 +26,7 @@ namespace dtmf
 
 		void									logDecoder();
 		void									logDecoderQuiet();
+		void									logSequence();
 		void									logGoertzel(std::string args);
 		void									logGoertzelAverage(std::string args);
 
