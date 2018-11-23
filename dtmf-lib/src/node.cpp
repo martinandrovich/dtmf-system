@@ -188,6 +188,7 @@ void dtmf::node::runStateActions()
 		action.function();
 	}
 	currentMessage = Message();
+	newMessageFlag = false;
 	testCurrentState();
 }
 
@@ -275,11 +276,13 @@ void dtmf::node::initializeClient(void(*callback)(int payload, int id))
 			},{
 				StateTransition("setId",
 					{
+						StateCondition([] { return newMessageFlag; }),
 						StateCondition([] { return currentMessage.command == var1; }),
 						StateCondition([] { return currentMessage.id != 0; })
 					}),
 				StateTransition("start",
 					{
+						StateCondition([] { return newMessageFlag; }),
 						StateCondition([] { return currentMessage.command != var1; })
 					}),
 
@@ -291,11 +294,13 @@ void dtmf::node::initializeClient(void(*callback)(int payload, int id))
 			},{
 				StateTransition("base",
 					{
+						StateCondition([] { return newMessageFlag; }),
 						StateCondition([] {return currentMessage.command == var1; }),
 						StateCondition([] {return currentMessage.id == clientID; }),
 					}),
 				StateTransition("start",
 					{
+						StateCondition([] { return newMessageFlag; }),
 						StateCondition([] {return currentMessage.command != var1 || currentMessage.id != clientID; }),
 					}),
 			}),
@@ -304,6 +309,7 @@ void dtmf::node::initializeClient(void(*callback)(int payload, int id))
 			},{
 				StateTransition("start",
 					{
+						StateCondition([] { return newMessageFlag; }),
 						StateCondition([] { return currentMessage.command == 9; }),
 						StateCondition([] { return currentMessage.direction != isServer; }),
 						StateCondition([] { return currentMessage.id == clientID; })
@@ -350,9 +356,11 @@ void dtmf::node::initializeServer(void(*callback)(int payload, int id))
 
 		},{
 			StateTransition("newClient",{
+				StateCondition([] { return newMessageFlag; }),
 				StateCondition([] { return currentMessage.id == 0; })
 			}),
 			StateTransition("base",{
+				StateCondition([] { return newMessageFlag; }),
 				StateCondition([] { return currentMessage.command == menu; }),
 				StateCondition([] { return currentMessage.id != 0; })
 			})
@@ -363,10 +371,12 @@ void dtmf::node::initializeServer(void(*callback)(int payload, int id))
 			StateAction([] { send(Message((int)isServer, numClients+1, currentMessage.command)); })
 		},{
 			StateTransition("newClientReceived",{
+				StateCondition([] { return newMessageFlag; }),
 				StateCondition([] {return currentMessage.command == var1; }),
 				StateCondition([] {return currentMessage.id == numClients+1; }),
 				}),
 			StateTransition("start",{
+				StateCondition([] { return newMessageFlag; }),
 				StateCondition([] {return currentMessage.command != var1 || currentMessage.id != numClients+1; }),
 				})
 		}),
@@ -390,6 +400,7 @@ void dtmf::node::initializeServer(void(*callback)(int payload, int id))
 
 		},{
 			StateTransition("standardRecieve",{
+				StateCondition([] { return newMessageFlag; }),
 				StateCondition([] { return currentMessage.id == idCounter; })
 				}),
 
