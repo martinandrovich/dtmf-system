@@ -358,6 +358,28 @@ void toolbox::logDecoderQuiet()
 }
 
 // ...
+void toolbox::logSequence()
+{
+	// sequence definition
+	std::vector<int> sequence = { 3, 7, 11, 15 };
+
+	// lambda definition
+	auto lambda = [](int toneId)
+	{
+		return;
+	};
+	
+	// start decoder
+	decoder::run(lambda, true);
+
+	// playback sequence
+	generator::playbackSequence(sequence);
+
+	// cleanup
+	decoder::end();
+}
+
+// ...
 void toolbox::logGoertzel(std::string args)
 {
 	using namespace std::chrono;
@@ -900,15 +922,12 @@ void toolbox::testLatency2()
 		output[time[i]] = samples[i];
 	}
 
-
-
 	float latencyBegin;
 	float latencyEnd;
 	bool  toneStart = false;
 
 	for (auto const& x : output)
 	{
-
 		if ((x.second > 2000 || x.second < -2000) && toneStart)
 		{
 			latencyEnd = x.first;
@@ -920,17 +939,16 @@ void toolbox::testLatency2()
 			latencyBegin= x.first;
 			toneStart = true;
 		}
-
 	}
 
 	float latency = latencyEnd - latencyBegin;
 
-
-	std::cout <<"latency start: "<< latencyBegin << "  Latency end: " << latencyEnd <<"  latency: " << latency << std::endl;
-
 	// data here
-	toolbox::plotSamples(samples);
+	//toolbox::plotSamples(samples);
 	toolbox::plotMap(output, "latency_map.dat", { "Map Plot", "Time [ms]", "Amplitude [dB]" });
+
+	// log result
+	std::cout << "Latency start: " << latencyBegin << "ms | Latency end: " << latencyEnd << " ms | Latency: " << latency << " ms\n";
 }
 
 // ...
