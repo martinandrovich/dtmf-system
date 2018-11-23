@@ -303,7 +303,8 @@ std::vector<short> toolbox::convertSFBuffer(sf::SoundBuffer& buffer)
 void toolbox::playbackSequence(std::string args)
 {
 	// define default sequence
-	std::vector<int> sequence	= { 3, 7, 11, 15 };
+	//std::vector<int> sequence	= { 3, 7, 11, 15 };
+	std::vector<int>   sequence = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15 };
 	int duration				= DURATION;
 	int pause					= PAUSE;
 
@@ -880,7 +881,7 @@ void toolbox::testLatency2()
 			hasPlayed = true;
 			beginTime = static_cast<duration<double, std::milli>>(clock.now() - timeStart).count();
 			generator::playback(0, DURATION, true, false);
-			log[beginTime] = { 16384 };
+			log[beginTime] = { AMPLITUDE_MAX };
 		}
 		
 		// get samples chunk
@@ -928,13 +929,13 @@ void toolbox::testLatency2()
 
 	for (auto const& x : output)
 	{
-		if ((x.second > 2000 || x.second < -2000) && toneStart)
+		if (abs(x.second) > 5000 && toneStart)
 		{
 			latencyEnd = x.first;
 			break;
 		}
 
-		if (x.second == 16384 && !toneStart)
+		if (x.second == AMPLITUDE_MAX && !toneStart)
 		{
 			latencyBegin= x.first;
 			toneStart = true;
