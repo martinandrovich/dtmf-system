@@ -2,6 +2,7 @@
 #include <thread>
 #include <mutex>
 #include <atomic>
+#include <condition_variable>
 #include <vector>
 #include <queue>
 #include <array>
@@ -22,10 +23,11 @@ namespace decoder
 	using namespace std::chrono;
 
 	// Private Members
-	state								status = state::unitialized;
+	std::atomic<state>					status = state::unitialized;
 	std::deque<std::vector<short>>		queue;
 	std::vector<short>					buffer;
 	std::mutex							queueMutex;
+	std::condition_variable				queueCondition;
 	std::thread							worker;
 	sampler2*							rec;
 
@@ -43,8 +45,12 @@ namespace decoder
 	// Private Methods
 	void								threadBuffered();
 	void								threadInstant();
+	void								threadContinuous();
+
 	void								decode(std::vector<short> &samples);
 	void								decode2(std::vector<short> &samples);
+	void								decode3(std::vector<short> &samples);
+
 	void								appendQueue(std::vector<short> samples);
 	
 	bool								thresholdTest(std::array<float, 8> goertzelArray);
@@ -69,7 +75,7 @@ void decoder::run(std::function<void(uint toneId)> callback, bool allowPlayback)
 	// start worker thread
 	decoder::debounce		= decoder::clock.now();
 	decoder::running		= true;
-	decoder::worker			= std::thread(&decoder::threadBuffered);	
+	decoder::worker			= std::thread(&decoder::threadContinuous);
 }	
 
 // End the decoder
@@ -159,6 +165,42 @@ void decoder::threadInstant()
 	}
 }
 
+// ...
+void decoder::threadContinuous()
+{
+	while (decoder::running)
+	{
+		/*
+		The method is protected by a mutex, which is locked using scope guard std::unique_lock. If the queue is empty,
+		we wait on the condition variable cond_. This releases the lock to other threads and blocks until we are
+		notified that the condition has been met.
+
+		https://juanchopanzacpp.wordpress.com/2013/02/26/concurrent-queue-c11/
+		*/
+
+		// aqcuire queue mutex
+		std::unique_lock<std::mutex> queueLock(decoder::queueMutex);
+
+		// check if queue empty; wait for conditional variable if false
+		while (queue.empty())
+		{
+			decoder::queueCondition.wait(queueLock);
+		}
+
+		// make copy of first element in queue
+		auto samplesCopy = decoder::queue.front();
+
+		// pop the element
+		decoder::queue.pop_front();
+
+		// unclock queue
+		queueLock.unlock();
+
+		// decode the copied samples
+		decoder::decode3(samplesCopy);
+	}
+}
+
 // Add a (copy of) vector of samples to decoding queue
 void decoder::appendQueue(std::vector<short> samples)
 {	
@@ -168,6 +210,8 @@ void decoder::appendQueue(std::vector<short> samples)
 	decoder::queue.push_back(samples);
 
 	decoder::queueMutex.unlock();
+
+	decoder::queueCondition.notify_one();
 }
 
 // Test whether two of magnitudes surpass their according thresholds; return boolean
@@ -199,7 +243,7 @@ std::array<int, 2> decoder::extractIndexes(std::array<float, 8> &goertzelArray)
 	{
 		// define magnitude & threshold for current frequency index (i)
 		auto magnitude = goertzelArray[i];
-		auto threshold = freqThresholds[i];
+		auto threshold = freqThresholds[i] * TH_MULTIPLIER;
 
 		// low frequencies
 		if (i < 4 && magnitude > threshold && magnitude > magnitudeLowMax)
@@ -340,4 +384,59 @@ void decoder::decode2(std::vector<short> &samples)
 	previousThresholdBroken		= thresholdBroken;
 
 	decoder::status = state::running;
+}
+
+// ...
+void decoder::decode3(std::vector<short> &samples)
+{
+	// check debounce
+	if (static_cast<duration<double, std::milli>>(decoder::clock.now() - decoder::debounce).count() < DEBOUNCE2)
+	{
+		return;
+	}
+
+	// check generator overlap
+	if (!decoder::allowPlayback)
+	{
+		// calculate time since last generator playback
+		auto timeSincePlayback = static_cast<duration<double, std::milli>>(decoder::clock.now() - generator::getTimestamp()).count();
+
+		// return if overlapping
+		if (timeSincePlayback > (LATENCY) && timeSincePlayback < (LATENCY + DURATION))
+		{
+			return;
+		}
+	}
+
+	// log
+	//std::cout << "[DECODER] Decoding [" << samples.size() << "] samples...\n\n";
+
+	// update status
+	decoder::status = state::working;
+
+	// apply hanning window
+	//processor::hanningWindow(samples);
+
+	// compile goertzelArray for all DTMF frequencies
+	auto goertzelArray = processor::goertzelArray(samples);
+
+	// extract indexes (row & column) of most prominent frequencies
+	auto indexes = decoder::extractIndexes(goertzelArray);
+
+	// check harmonies
+	;
+
+	// convert indexes to DTMF toneId
+	auto toneId = decoder::extractToneId(indexes);
+
+	// callback
+	if (toneId >= 0)
+	{
+		decoder::debounce = decoder::clock.now();
+		decoder::callback(toneId);
+	}
+
+	// update status
+	decoder::status = state::running;
+
 }
