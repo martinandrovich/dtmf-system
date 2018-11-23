@@ -19,6 +19,8 @@ constexpr auto	SAMPLE_INTERVAL		= 10;											// Default interval of sample pr
 constexpr auto	STEP_WINDOW_SIZE	= 5;											// Number of minimum samples in queue (signal duration / sample interval)
 constexpr int 	NUMPTS				= SAMPLE_RATE * (SAMPLE_INTERVAL / 1000.f);		// Number of samples (size of array for sampler2)
 
+constexpr int 	KEY_WAIT			= 50;											// Duration between key presses
+
 //const int		freqLow[4]			= {  697,  770,  852,  941 };
 //const int		freqHigh[4]			= { 1209, 1336, 1477, 1633 };
 const int		freq[8]				= { 697,  770,  852,  941, 1209, 1336, 1477, 1633 };
