@@ -94,7 +94,7 @@ void dtmf::node::process(uint toneID)
 {
 	messageMutex.lock();
 
-	//std::cout << "Got tone [" << toneID << "]\n";
+	std::cout << "Got tone [" << toneID << "]\n";
 		if (toneID == 15) {
 			hasRecievedDirID = false;
 		}
