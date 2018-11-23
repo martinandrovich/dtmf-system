@@ -18,6 +18,7 @@ std::unordered_map<std::string, void(*)(std::string args)> commandMap =
 	{ "seq",		[](std::string args) { dtmf::toolbox::playbackSequence(args);										} },
 	{ "log",		[](std::string args) { dtmf::toolbox::logDecoder();													} },
 	{ "qlog",		[](std::string args) { dtmf::toolbox::logDecoderQuiet();											} },
+	{ "slog",		[](std::string args) { dtmf::toolbox::logSequence();												} },
 	{ "glog",		[](std::string args) { dtmf::toolbox::logGoertzel(args);											} },
 	{ "glog_t",		[](std::string args) { auto t = new std::thread(dtmf::toolbox::logGoertzel, args);					} },
 	{ "aglog",		[](std::string args) { auto t = new std::thread(dtmf::toolbox::logGoertzelAverage, args);			} },
