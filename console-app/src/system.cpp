@@ -100,8 +100,9 @@ void clientWork()
 		std::this_thread::sleep_for(std::chrono::milliseconds(KEY_WAIT));
 	}
 }
-void	runGame() {
-	ShellExecute(0, 0, "https://www.playing-with-fire-game.com/", 0, 0, SW_SHOW);
+void runGame() {
+	ShellExecute(NULL, "open", "game.exe", NULL, NULL, SW_MAXIMIZE);
+	//ShellExecute(0, 0, "https://www.playing-with-fire-game.com/", 0, 0, SW_SHOW);
 }
 // ...
 void executeCommand(std::string input)
