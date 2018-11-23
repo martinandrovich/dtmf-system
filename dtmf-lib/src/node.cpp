@@ -86,7 +86,7 @@ void dtmf::node::process(uint toneID)
 {
 	messageMutex.lock();
 
-	std::cout << "Got tone [" << toneID << "]\n";
+	//std::cout << "Got tone [" << toneID << "]\n";
 		if (toneID == 15) {
 			hasRecievedDirID = false;
 		}
@@ -410,7 +410,7 @@ void dtmf::node::initializeServer(void(*callback)(int payload, int id))
 				}),
 		}),
 		State("standardSend",{
-		StateAction([] { sync(); }),
+		//StateAction([] { sync(); }),
 		StateAction([] { send(Message((int)isServer, idCounter, 9)); })
 
 		},{
