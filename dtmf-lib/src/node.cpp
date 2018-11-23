@@ -136,7 +136,7 @@ void dtmf::node::testCurrentState()
 		{
 			currentState = getStateId(transition);
 			isQuickState = states[currentState].isQuickState;
-			currentMessage = Message();
+			
 			runStateActions();
 			return;
 		}
@@ -186,7 +186,7 @@ void dtmf::node::runStateActions()
 	{
 		action.function();
 	}
-
+	currentMessage = Message();
 	testCurrentState();
 }
 
