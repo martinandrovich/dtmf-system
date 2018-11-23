@@ -79,10 +79,17 @@ sf::SoundBuffer* generator::generateDTMF(uint toneID, uint duration, uint amplit
 }
 
 // Playback a tone for a duration; spinlock while playing
-void generator::playback(uint toneID, uint duration, bool parallel)
+void generator::playback(uint toneId, uint duration, bool parallel)
 {
+	// check toneId
+	if (toneId < 0 || toneId > 15)
+	{
+		std::cout << "Wrong toneId you dumb fucks.\n";
+		return;
+	}
+	
 	// create buffer
-	auto buffer = generateDTMF(toneID, duration);
+	auto buffer = generateDTMF(toneId, duration);
 
 	// update status
 	generator::status = generator::state::playing;
@@ -95,7 +102,7 @@ void generator::playback(uint toneID, uint duration, bool parallel)
 	generator::lastPlayed = generator::clock.now();
 	
 	// log
-	std::cout << "Playing tone [" << toneID << " | " << duration << "ms]\n";
+	std::cout << "Playing tone [" << toneId << " | " << duration << "ms]\n";
 
 	// escape function if parellel enabled			!!! BAD FOR MEMORY // ONLY FOR DEBUGGING
 	if (parallel)
