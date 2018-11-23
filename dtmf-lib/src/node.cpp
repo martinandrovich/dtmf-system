@@ -410,6 +410,7 @@ void dtmf::node::initializeServer(void(*callback)(int payload, int id))
 				}),
 		}),
 		State("standardSend",{
+		StateAction([] { sync(); }),
 		StateAction([] { send(Message((int)isServer, idCounter, 9)); })
 
 		},{
