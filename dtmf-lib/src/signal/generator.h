@@ -23,7 +23,7 @@ namespace generator
 	sf::SoundBuffer*					generateDTMF(uint tone, uint duration = DURATION,
 													 uint amplitude = AMPLITUDE_MAX, float fadePercentage = FADE, uint sampleRate = SAMPLE_RATE);
 		
-	void								playback(uint tone, uint duration = DURATION, bool parallel = false);
+	void								playback(uint tone, uint duration = DURATION, bool parallel = false , bool fade = true);
 	void								playbackSequence(std::vector<int> &sequence, int duration = DURATION, int pause = PAUSE);
 
 	state								getState();

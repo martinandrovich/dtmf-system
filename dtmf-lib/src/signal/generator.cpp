@@ -26,7 +26,7 @@ namespace generator
 //// Method Definitions ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 // Generate an array of samples from two given frequencies; return a pointer to a heap-allocated SFML SoundBuffer object
-sf::SoundBuffer* generator::generateSamples(uint f1, uint f2, uint duration, uint amplitude, float fadePercentage, uint sampleRate)
+sf::SoundBuffer* generator::generateSamples(uint f1, uint f2, uint duration, uint amplitude, float fadePercentage, uint sampleRate )
 {
 	// variables
 	int						sampleSize = sampleRate * (duration / 1000.f);
@@ -74,16 +74,23 @@ sf::SoundBuffer* generator::generateDTMF(uint toneID, uint duration, uint amplit
 	}		
 
 	// return buffer generated from an appropriate set of frequencies
-	return generator::generateSamples(freq[toneID / 4], freq[(toneID % 4) + 4], duration, amplitude);
+	return generator::generateSamples(freq[toneID / 4], freq[(toneID % 4) + 4], duration, amplitude, fadePercentage);
 	///return generator::generateSamples(freqLow[toneID / 4], freqHigh[toneID % 4], duration, amplitude);
 }
 
 // Playback a tone for a duration; spinlock while playing
-void generator::playback(uint toneID, uint duration, bool parallel)
+void generator::playback(uint toneID, uint duration, bool parallel , bool fade)
 {
 	// create buffer
-	auto buffer = generateDTMF(toneID, duration);
-
+	sf::SoundBuffer* buffer;
+	if (fade)
+	{
+		 buffer = generateDTMF(toneID, duration);
+	}
+	else
+	{
+		buffer = generateDTMF(toneID, duration, AMPLITUDE_MAX, 0.0);
+	}
 	// update status
 	generator::status = generator::state::playing;
 

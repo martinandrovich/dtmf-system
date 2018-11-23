@@ -857,8 +857,8 @@ void toolbox::testLatency2()
 		{
 			hasPlayed = true;
 			beginTime = static_cast<duration<double, std::milli>>(clock.now() - timeStart).count();
-			generator::playback(0, DURATION, true);
-			log[beginTime] = { 10000 };
+			generator::playback(0, DURATION, true, false);
+			log[beginTime] = { 16384 };
 		}
 		
 		// get samples chunk
@@ -900,10 +900,33 @@ void toolbox::testLatency2()
 		output[time[i]] = samples[i];
 	}
 
-	// detect latency
-	//short s = 0;
-	//auto pos = std::any_of(samples.begin() + 10, samples.end(), [&](short sample) { s = sample; return abs(sample) > 500; });
-	//auto f = std::find_if(samples.begin(), samples.end(), [&](short sample) { s = sample; return abs(sample) > 500; });
+
+
+	float latencyBegin;
+	float latencyEnd;
+	bool  toneStart = false;
+
+	for (auto const& x : output)
+	{
+
+		if ((x.second > 2000 || x.second < -2000) && toneStart)
+		{
+			latencyEnd = x.first;
+			break;
+		}
+
+		if (x.second == 16384 && !toneStart)
+		{
+			latencyBegin= x.first;
+			toneStart = true;
+		}
+
+	}
+
+	float latency = latencyEnd - latencyBegin;
+
+
+	std::cout <<"latency start: "<< latencyBegin << "  Latency end: " << latencyEnd <<"  latency: " << latency << std::endl;
 
 	// data here
 	toolbox::plotSamples(samples);
