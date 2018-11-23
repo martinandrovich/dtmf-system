@@ -136,6 +136,7 @@ void dtmf::node::testCurrentState()
 		{
 			currentState = getStateId(transition);
 			isQuickState = states[currentState].isQuickState;
+			currentMessage = Message();
 			runStateActions();
 			return;
 		}
@@ -212,7 +213,7 @@ void dtmf::node::checkMessage()
 			testCurrentState();
 
 			newMessageFlag = false;
-			currentMessage = Message(-1,-1,-1);
+			currentMessage = Message();
 		}
 
 	messageMutex.unlock();
