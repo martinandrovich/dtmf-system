@@ -2,6 +2,7 @@
 #include <string>
 #include <vector>
 #include <mutex>
+#include <chrono>
 
 #include "dtmf/node.h"
 #include "signal/generator.h"
@@ -12,6 +13,8 @@
 namespace dtmf
 {
 	namespace node {
+
+		using namespace std::chrono;
 
 		// Private Members
 		std::vector<State>	states;
@@ -24,6 +27,9 @@ namespace dtmf
 		bool				isQuickState = false;
 
 		void(*callbackFunction)(int payload, int id);
+
+		high_resolution_clock				clock;
+		time_point<high_resolution_clock>	timestamp;
 
 		bool				newMessageFlag, newActionFlag;
 		int					clientID = -1;
@@ -58,6 +64,7 @@ namespace dtmf
 		void checkMessage();
 		void checkTimeOut();
 		void checkTriggers();
+		bool checkTimeout();
 
 		void stateMachineThread();
 	}
@@ -143,7 +150,8 @@ void dtmf::node::testCurrentState()
 		{
 			currentState = getStateId(transition);
 			isQuickState = states[currentState].isQuickState;
-			timeoutTimer = 0;
+			//timeoutTimer = 0;
+			node::timestamp = node::clock.now();
 			runStateActions();
 			return;
 		}
@@ -242,6 +250,12 @@ void dtmf::node::checkTriggers()
 }
 
 // ...
+bool dtmf::node::checkTimeout()
+{
+	return ((int)static_cast<duration<double, std::milli>>(node::clock.now() - node::timestamp).count() > TIMEOUT);
+}
+
+// ...
 void dtmf::node::stateMachineThread()
 {
 	while (true)
@@ -264,6 +278,10 @@ void dtmf::node::initializeClient(void(*callback)(int payload, int id))
 	isServer = false;
 
 	callbackFunction = callback;
+
+	// timestamp
+	node::timestamp = node::clock.now();
+
 	// state definitions for CLIENT node
 	states = {
 		State("start",
