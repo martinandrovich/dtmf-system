@@ -18,6 +18,7 @@ void	initCLI();
 void	initSystem(std::string args);
 void	clientWork();
 int		listenForKey();
+void	runGame();
 
 void	CLI();
 void	executeCommand(std::string input);

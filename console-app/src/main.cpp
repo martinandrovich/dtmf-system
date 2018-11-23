@@ -14,6 +14,7 @@ std::unordered_map<std::string, void(*)(std::string args)> commandMap =
 	{ "help",		[](std::string args) { help(args);																	} },
 	{ "exit",		[](std::string args) { exit(0);																		} },
 	{ "cls",		[](std::string args) { initCLI();																	} },
+	{ "game",		[](std::string args) { runGame();																	} },
 	{ "seq",		[](std::string args) { dtmf::toolbox::playbackSequence(args);										} },
 	{ "log",		[](std::string args) { dtmf::toolbox::logDecoder();													} },
 	{ "qlog",		[](std::string args) { dtmf::toolbox::logDecoderQuiet();											} },
