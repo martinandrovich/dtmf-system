@@ -381,6 +381,7 @@ void dtmf::node::initializeServer(void(*callback)(int payload, int id))
 				})
 		}),
 		State("newClientReceived",{
+			StateAction([] { send(Message((int)isServer, numClients + 1, var1)); }),
 			StateAction([] { numClients++; }),
 		},{
 			StateTransition("start",{
