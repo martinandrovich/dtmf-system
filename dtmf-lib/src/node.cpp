@@ -44,6 +44,7 @@ namespace dtmf
 
 		// Private Methods
 		void send(Message msg); // msg struct
+		void sync();
 		void process(uint toneID);
 		void recieved(Message msg);
 		
@@ -74,7 +75,12 @@ void dtmf::node::send(Message msg)
 	currentAction = null;
 	currentActionPriority = 0;
 }
+void dtmf::node::sync()
+{
+	std::vector<int> sequence = {15 };
+	generator::playbackSequence(sequence);
 
+}
 // ...
 void dtmf::node::process(uint toneID)
 {
@@ -137,7 +143,7 @@ void dtmf::node::testCurrentState()
 		{
 			currentState = getStateId(transition);
 			isQuickState = states[currentState].isQuickState;
-			
+			timeoutTimer = 0;
 			runStateActions();
 			return;
 		}
@@ -271,6 +277,7 @@ void dtmf::node::initializeClient(void(*callback)(int payload, int id))
 			}),
 		State("connect",
 			{
+				StateAction([] { sync(); }),
 				StateAction([] { var1 = currentAction; }),
 				StateAction([] { send(Message((int)isServer, 0, var1)); })
 			},{
@@ -363,7 +370,10 @@ void dtmf::node::initializeServer(void(*callback)(int payload, int id))
 				StateCondition([] { return newMessageFlag; }),
 				StateCondition([] { return currentMessage.command == menu; }),
 				StateCondition([] { return currentMessage.id != 0; })
-			})
+			}),
+			StateTransition("base",{
+				StateCondition([] { return numClients>=1; })
+				})
 
 		}),
 		State("newClient",{
@@ -383,6 +393,7 @@ void dtmf::node::initializeServer(void(*callback)(int payload, int id))
 		State("newClientReceived",{
 			StateAction([] { send(Message((int)isServer, numClients + 1, var1)); }),
 			StateAction([] { numClients++; }),
+			StateAction([] { sync(); }),
 		},{
 			StateTransition("start",{
 
@@ -390,6 +401,7 @@ void dtmf::node::initializeServer(void(*callback)(int payload, int id))
 
 		}),
 		State("base",{
+			StateAction([] { sync(); })
 		},{
 
 			StateTransition("standardSend",{
