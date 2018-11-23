@@ -5,6 +5,7 @@
 #include <chrono>
 #include <unordered_map>
 #include <windows.h> //Tjek for fejl senere
+
 #include <dtmf/node.h>
 #include <dtmf/toolbox.h>
 
@@ -31,8 +32,7 @@ void initSystem(std::string args)
 	{
 		std::cout << "Initializing client ...\n";
 		dtmf::node::initializeClient(&someFunction);
-		while (true)
-			clientWork();
+		clientWork();
 	}
 }
 
@@ -80,6 +80,9 @@ int listenForKey()
 }
 void clientWork()
 {
+
+	constexpr int KEY_WAIT = 50; // ms
+
 	while (true)
 	{
 		//Implementering af prioritetsliste: esc>actions>movement
@@ -93,7 +96,7 @@ void clientWork()
 		dtmf::node::sendPayload(payload, priority);
 		//if (keydown != 0)
 			//LOG(keydown);
-		std::this_thread::sleep_for(std::chrono::milliseconds(30));
+		std::this_thread::sleep_for(std::chrono::milliseconds(KEY_WAIT));
 	}
 }
 // ...
