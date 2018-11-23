@@ -39,6 +39,7 @@ namespace dtmf
 
 		struct StateTransition
 		{
+			StateTransition() : targetName(""), targetId(-1), conditions() {};
 			StateTransition(std::string targetName, std::vector<StateCondition> conditions) : targetName(targetName), targetId(-1), conditions(conditions) {};
 			std::string targetName;
 			int targetId;

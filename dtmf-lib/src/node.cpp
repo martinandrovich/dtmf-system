@@ -18,6 +18,7 @@ namespace dtmf
 
 		// Private Members
 		std::vector<State>	states;
+		StateTransition		errorTransition;
 		
 		std::thread			stateMachine;
 		std::mutex			messageMutex;
@@ -62,7 +63,7 @@ namespace dtmf
 
 		void checkAction();
 		void checkMessage();
-		void checkTimeOut();
+		void checkIsTimeout();
 		void checkTriggers();
 		bool checkTimeout();
 
@@ -144,6 +145,15 @@ bool dtmf::node::payloadReady()
 // ...
 void dtmf::node::testCurrentState()
 {
+	if (testTransition(errorTransition))
+	{
+		currentState = getStateId(errorTransition);
+		isQuickState = states[currentState].isQuickState;
+		//timeoutTimer = 0;
+		node::timestamp = node::clock.now();
+		runStateActions();
+		return;
+	}
 	for (auto& transition : states[currentState].transitions)
 	{
 		if (testTransition(transition))
@@ -236,9 +246,13 @@ void dtmf::node::checkMessage()
 }
 
 // ...
-void dtmf::node::checkTimeOut()
+void dtmf::node::checkIsTimeout()
 {
-	;
+	messageMutex.lock();
+	if (checkTimeout()) {
+		testCurrentState();
+	}
+	messageMutex.unlock();
 }
 
 // ...
@@ -246,7 +260,7 @@ void dtmf::node::checkTriggers()
 {
 	checkAction();
 	checkMessage();
-	checkTimeOut();
+	checkIsTimeout();
 }
 
 // ...
@@ -283,6 +297,12 @@ void dtmf::node::initializeClient(void(*callback)(int payload, int id))
 	node::timestamp = node::clock.now();
 
 	// state definitions for CLIENT node
+
+	errorTransition = StateTransition("error",
+		{
+			StateCondition([] { return currentMessage.command == 14; }),
+		});
+
 	states = {
 		State("start",
 			{
@@ -292,6 +312,13 @@ void dtmf::node::initializeClient(void(*callback)(int payload, int id))
 						StateCondition([] { return currentAction != 0; }),
 						StateCondition([] { return newActionFlag; })
 					}),
+
+			}),
+		State("error",
+			{
+				StateAction([] { currentState = currentErrorState; })
+			},{
+				
 
 			}),
 		State("connect",
@@ -310,6 +337,10 @@ void dtmf::node::initializeClient(void(*callback)(int payload, int id))
 					{
 						StateCondition([] { return newMessageFlag; }),
 						StateCondition([] { return currentMessage.command != var1; })
+					}),
+				StateTransition("start",
+					{
+						StateCondition([] { return checkTimeout(); })
 					}),
 
 			}),
@@ -332,6 +363,7 @@ void dtmf::node::initializeClient(void(*callback)(int payload, int id))
 			}),
 		State("base",
 			{
+				StateAction([] { currentErrorState = currentState; })
 			},{
 				StateTransition("sendAction",
 					{
@@ -377,9 +409,15 @@ void dtmf::node::initializeServer(void(*callback)(int payload, int id))
 	//callbackFunction
 	callbackFunction = callback;
 	// state definitions for SERVER node
+
+	errorTransition = StateTransition("error",
+		{
+			StateCondition([] { return checkTimeout(); })
+		});
+
 	states = {
 		State("start",{
-
+			
 		},{
 			StateTransition("newClient",{
 				StateCondition([] { return newMessageFlag; }),
@@ -395,6 +433,15 @@ void dtmf::node::initializeServer(void(*callback)(int payload, int id))
 				})
 
 		}),
+		State("error",
+			{
+				StateAction([] { sync(); }),
+				StateAction([] { send(Message((int)isServer, 0, 14)); }),
+				StateAction([] { currentState=currentErrorState; })
+			},{
+
+
+			}),
 		State("newClient",{
 			StateAction([] { var1 = currentMessage.command; }),
 			StateAction([] { send(Message((int)isServer, numClients+1, currentMessage.command)); })
@@ -420,7 +467,8 @@ void dtmf::node::initializeServer(void(*callback)(int payload, int id))
 
 		}),
 		State("base",{
-			StateAction([] { sync(); })
+			StateAction([] { sync(); }),
+			StateAction([] { currentErrorState=currentState; })
 		},{
 
 			StateTransition("standardSend",{
