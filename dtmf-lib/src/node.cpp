@@ -212,7 +212,7 @@ void dtmf::node::checkMessage()
 			testCurrentState();
 
 			newMessageFlag = false;
-			currentMessage = Message();
+			currentMessage = Message(-1,-1,-1);
 		}
 
 	messageMutex.unlock();
