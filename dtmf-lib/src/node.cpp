@@ -410,7 +410,10 @@ void dtmf::node::initializeServer(void(*callback)(int payload, int id))
 	callbackFunction = callback;
 	// state definitions for SERVER node
 
-	
+	errorTransition = StateTransition("start",
+		{
+			StateCondition([] { return false; })
+		});
 
 	states = {
 		State("start",{
