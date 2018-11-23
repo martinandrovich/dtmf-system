@@ -53,10 +53,9 @@ float processor::goertzel(std::vector<short> &samples, int targetFrequency)
 		//N = numSamples
 		//k = (N*targetFreq)/sampleFreq
 	//w(n)=2cos(2*pi*k/N)*w(n-1)-w(n-2)+x(n)
-	
 
 	// variable definitions
-	int		numSamples			= samples.size(); //N[std::find(std::begin(freq), std::end(freq), frequency) - std::begin(freq)];
+	int		numSamples			= samples.size() * 2; //N[std::find(std::begin(freq), std::end(freq), frequency) - std::begin(freq)];
 	float   numSamplesFloat		= (float)numSamples;
 	float   scalingFactor		= numSamples / 2.f;
 	int		k					= (int)(0.5 + ((numSamplesFloat * targetFrequency) / SAMPLE_RATE));
