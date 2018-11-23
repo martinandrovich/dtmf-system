@@ -359,14 +359,14 @@ void dtmf::node::initializeServer(void(*callback)(int payload, int id))
 		}),
 		State("newClient",{
 			StateAction([] { var1 = currentMessage.command; }),
-			StateAction([] { send(Message((int)isServer, numClients, currentMessage.command)); })
+			StateAction([] { send(Message((int)isServer, numClients+1, currentMessage.command)); })
 		},{
 			StateTransition("newClientReceived",{
 				StateCondition([] {return currentMessage.command == var1; }),
-				StateCondition([] {return currentMessage.id == numClients; }),
+				StateCondition([] {return currentMessage.id == numClients+1; }),
 				}),
 			StateTransition("start",{
-				StateCondition([] {return currentMessage.command != var1 || currentMessage.id != numClients; }),
+				StateCondition([] {return currentMessage.command != var1 || currentMessage.id != numClients+1; }),
 				})
 		}),
 		State("newClientReceived",{
