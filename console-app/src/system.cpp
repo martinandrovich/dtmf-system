@@ -22,7 +22,16 @@ void initCLI()
 // initialize the System
 void initSystem(std::string args)
 {
-	dtmf::node::initializeServer(&someFunction);
+	if (args == "server")
+	{
+		std::cout << "Initializing server ...\n";
+		dtmf::node::initializeServer(&someFunction);
+	}
+	else if (args == "client")
+	{
+		std::cout << "Initializing client ...\n";
+		dtmf::node::initializeClient(&someFunction);
+	}
 }
 
 // ...
