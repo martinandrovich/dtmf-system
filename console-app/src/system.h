@@ -16,6 +16,8 @@ extern std::unordered_map<std::string, void(*)(std::string args)> commandMap;
 // Functions
 void	initCLI();
 void	initSystem(std::string args);
+void	clientWork();
+int		listenForKey();
 
 void	CLI();
 void	executeCommand(std::string input);
