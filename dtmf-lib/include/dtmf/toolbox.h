@@ -4,6 +4,8 @@
 #include <array>
 #include <map>
 
+#include "..\src\signal\constants.h"
+
 //// Public Declarations [Interface] //////////////////////////////////////////////////////////////////////////////////////////////
 
 namespace dtmf
@@ -19,6 +21,9 @@ namespace dtmf
 
 		// Public Methods
 		
+		void									printPayload(uint toneId);
+		void									executePayload(uint toneId);
+
 		void									playbackSequence(std::string args);
 
 		void									testGenerator();

@@ -31,8 +31,6 @@ namespace toolbox
 	// Private Members
 	
 	// Private Methods
-	void printPayload(uint toneId);
-	void executePayload(uint toneId);
 	void pressKey(int key, int pause);
 	
 	void makeDataDirectory();
@@ -53,7 +51,7 @@ void toolbox::printPayload(uint toneId)
 void toolbox::executePayload(uint toneId)
 {
 
-	int keyMoveDuration			= 50;
+	int keyMoveDuration			= 250;
 	int keyPlantDuration		= 25;
 
 	toolbox::printPayload(toneId);
@@ -64,17 +62,17 @@ void toolbox::executePayload(uint toneId)
 	// DOWN		= 0x28
 	// ;		= 0xBA
 
-	// execute key press in accordance with toneID
+	// execute key press in accordance with toneId
 
 	switch (toneId)
 	{
 		//Left
-	case 0:
+	case 1:
 		toolbox::pressKey(0x25, keyMoveDuration);
 		break;
 
 		// Right
-	case 1:
+	case 4:
 		toolbox::pressKey(0x27, keyMoveDuration);
 		break;
 
@@ -84,12 +82,12 @@ void toolbox::executePayload(uint toneId)
 		break;
 
 		// Down
-	case 4:
+	case 3:
 		toolbox::pressKey(0x28, keyMoveDuration);
 		break;
 
 		// Plant
-	case 14:
+	case 5:
 		toolbox::pressKey(0xBA, keyPlantDuration);
 		break;
 	}
