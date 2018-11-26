@@ -11,17 +11,18 @@
 
 #include "system.h"
 
-//// Constants __//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//// Constants ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-constexpr int 	KEY_WAIT = 50;											// Duration between key presses
+constexpr int 	KEY_WAIT			= 30;											// Duration between key presses
+constexpr int 	KEY_DURATION		= 250;											// Duration of a simulated key press (different for move or plant)
 
 //// Definitions //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-// initialize the CLI
+// Initialize the CLI
 void initCLI()
 {
 	system("cls");
-	std::cout << "Ear Rape Simulator 1.0.5\n\n";
+	std::cout << "Ear Rape Simulator 1.1.0\n\n";
 }
 
 // initialize the System
@@ -30,13 +31,20 @@ void initSystem(std::string args)
 	if (args == "server")
 	{
 		std::cout << "Initializing server ...\n";
+		runGame();
+		//std::this_thread::sleep_for(std::chrono::milliseconds(10000));
 		dtmf::node::initializeServer(&someFunction);
+		
 	}
 	else if (args == "client")
 	{
 		std::cout << "Initializing client ...\n";
 		dtmf::node::initializeClient(&someFunction);
 		clientWork();
+	}
+	else
+	{
+		std::cout << "Please specify type of node to initialize (e.g. init server).\n";
 	}
 }
 
@@ -60,6 +68,8 @@ void CLI()
 	// execute input command
 	executeCommand(input);
 }
+
+// ...
 int listenForKey()
 {
 	int key = 0;
@@ -82,6 +92,8 @@ int listenForKey()
 
 	return key;
 }
+
+// ...
 void clientWork()
 {
 	while (true)
@@ -100,10 +112,13 @@ void clientWork()
 		std::this_thread::sleep_for(std::chrono::milliseconds(KEY_WAIT));
 	}
 }
+
+// ...
 void runGame() {
 	ShellExecute(NULL, "open", "game.exe", NULL, NULL, SW_MAXIMIZE);
 	//ShellExecute(0, 0, "https://www.playing-with-fire-game.com/", 0, 0, SW_SHOW);
 }
+
 // ...
 void executeCommand(std::string input)
 {
@@ -155,7 +170,6 @@ void help(std::string args)
 // ...
 void someFunction(int payload, int id)
 {
-	LOG("HELLO!");
-	LOG(payload);
-	LOG(id);
+	std::cout << "##### ID: " << id << " | PAYLOAD: " << payload;
+	std::thread* executer = new std::thread(dtmf::toolbox::executePayload, payload);
 }
