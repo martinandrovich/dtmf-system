@@ -32,7 +32,9 @@ sf::SoundBuffer* generator::generateSamples(uint f1, uint f2, uint duration, uin
 	int						sampleSize = sampleRate * (duration / 1000.f);
 	float					fadeSize = fadePercentage * sampleSize;
 	std::vector<sf::Int16>	temp(sampleSize);
+
 	uint					amplitudeFinal;
+	uint					numberOfTerms = 2;
 
 	// create heap allocated sf::SoundBuffer
 	sf::SoundBuffer*		buffer = new sf::SoundBuffer;						// [NEEDS GARBAGE COLLECTION !!!]
@@ -56,7 +58,7 @@ sf::SoundBuffer* generator::generateSamples(uint f1, uint f2, uint duration, uin
 		}
 
 		// array entry
-		temp[i] = amplitudeFinal * (sin(f1 * 2 * PI * (i * 1.f / sampleRate)) + sin(f2 * 2 * PI * (i * 1.f / sampleRate)));
+		temp[i] = amplitudeFinal/numberOfTerms * (sin(f1 * 2 * PI * (i * 1.f / sampleRate)) + sin(f2 * 2 * PI * (i * 1.f / sampleRate)));
 	}
 
 	// load and return buffer
