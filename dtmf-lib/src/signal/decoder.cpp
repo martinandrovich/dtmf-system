@@ -402,7 +402,7 @@ void decoder::decode3(std::vector<short> &samples)
 		auto timeSincePlayback = static_cast<duration<double, std::milli>>(decoder::clock.now() - generator::getTimestamp()).count();
 
 		// return if overlapping
-		if (timeSincePlayback > (LATENCY - DURATION - LATENCY_BUFFER) && timeSincePlayback < (LATENCY + DURATION + LATENCY_BUFFER))
+		if (timeSincePlayback < (LATENCY + DURATION + LATENCY_BUFFER))
 		{
 			return;
 		}

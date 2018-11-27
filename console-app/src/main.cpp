@@ -28,12 +28,14 @@ std::unordered_map<std::string, void(*)(std::string args)> commandMap =
 	{ "sam",		[](std::string args) { dtmf::toolbox::testSampler();												} },
 	{ "gor",		[](std::string args) { dtmf::toolbox::testGoertzel(args);											} },
 	{ "ggor",		[](std::string args) { dtmf::toolbox::testGeneratorGoertzel(args);									} },
-	
 };
 
 // main function
 int main()
 {
+
+	std::cout << "Size of short: " << sizeof(signed short) << std::endl;
+
 	// initialize CLI
 	initCLI();
 
