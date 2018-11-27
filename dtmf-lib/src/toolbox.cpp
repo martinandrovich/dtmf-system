@@ -1039,6 +1039,32 @@ void toolbox::testGoertzel(std::string args)
 	//toolbox::plotSamples(samples);
 }
 
+void toolbox::testGoertzelVsFFT(){
+
+	using namespace std::chrono;
+
+	high_resolution_clock				clock;
+	time_point<high_resolution_clock>	timeStart;
+
+	auto buffer = generator::generateDTMF(0,10);
+	auto samples = toolbox::convertSFBuffer(*buffer);
+	auto samples2 = samples;
+
+	timeStart = clock.now();
+	processor::fft(samples);
+	std::cout <<"fft-duration: " << static_cast<duration<double, std::milli>>(clock.now() - timeStart).count() <<" ms\n";
+
+
+	timeStart = clock.now();
+	samples2.resize(512, 0);
+	processor::fft2(samples2);
+	std::cout << "fft2-duration: " << static_cast<duration<double, std::milli>>(clock.now() - timeStart).count() << " ms\n";
+
+	timeStart = clock.now();
+	processor::goertzelArray(samples);
+	std::cout << "Gor-duration: " << static_cast<duration<double, std::milli>>(clock.now() - timeStart).count() << " ms\n";
+};
+
 // Test Goertzel on generated samples of a specified toneId and duration
 void toolbox::testGeneratorGoertzel(std::string args)
 {

@@ -2,9 +2,11 @@
 #include <string>
 #include <vector>
 #include <array>
-
+#include <valarray>
+#include <ccomplex>
 #include "constants.h"
 
+using cArray = std::valarray<std::complex<double>>;
 //// Public Declarations [Interface] //////////////////////////////////////////////////////////////////////////////////////////////
 
 namespace processor
@@ -14,7 +16,10 @@ namespace processor
 
 	// Public Methods
 	void equalize();
-	void fft();
+	void fft(cArray& x);
+	void fft(std::vector<short>& samples);
+	void fft2(cArray& x);
+	void fft2(std::vector<short>& samples);
 
 	void					hanningWindow(std::vector<short> &samples);
 	float					goertzel(std::vector<short> &samples, int frequency);

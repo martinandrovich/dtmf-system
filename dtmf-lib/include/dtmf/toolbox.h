@@ -46,6 +46,7 @@ namespace dtmf
 		void									testGeneratorGoertzel(std::string args);
 		void									testGoertzel(std::string args);
 		
+		void									testGoertzelVsFFT();
 		void									exportSamples(std::vector<short> &samples, std::string filename = "output_samples.dat");
 		template <class key, class value> void	exportMap(std::map<key, value> map, std::string filename = "output_map.dat");
 		void									exportAudio(std::vector<short> &samples, std::string filename = "output_sound.wav");

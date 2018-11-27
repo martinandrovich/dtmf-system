@@ -28,6 +28,7 @@ std::unordered_map<std::string, void(*)(std::string args)> commandMap =
 	{ "sam",		[](std::string args) { dtmf::toolbox::testSampler();												} },
 	{ "gor",		[](std::string args) { dtmf::toolbox::testGoertzel(args);											} },
 	{ "ggor",		[](std::string args) { dtmf::toolbox::testGeneratorGoertzel(args);									} },
+	{ "gvsf",		[](std::string args) { dtmf::toolbox::testGoertzelVsFFT();											} },
 };
 
 // main function
