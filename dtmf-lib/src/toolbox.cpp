@@ -921,8 +921,8 @@ void toolbox::testLatency2()
 		output[time[i]] = samples[i];
 	}
 
-	float latencyBegin;
-	float latencyEnd;
+	float latencyBegin		= 0.f;
+	float latencyEnd		= 0.f;
 	bool  toneStart = false;
 
 	for (auto const& x : output)
@@ -943,8 +943,8 @@ void toolbox::testLatency2()
 	float latency = latencyEnd - latencyBegin;
 
 	// data here
-	//toolbox::plotSamples(samples);
-	toolbox::plotMap(output, "latency_map.dat", { "Map Plot", "Time [ms]", "Amplitude [dB]" });
+	toolbox::exportSamples(samples);
+	//toolbox::plotMap(output, "latency_map.dat", { "Map Plot", "Time [ms]", "Amplitude [dB]" });
 
 	// log result
 	std::cout << "Latency start: " << latencyBegin << "ms | Latency end: " << latencyEnd << " ms | Latency: " << latency << " ms\n";
