@@ -30,10 +30,10 @@ namespace dtmf
 namespace toolbox
 {
 	// Private Members
-	
+
 	// Private Methods
 	void pressKey(int key, int pause);
-	
+
 	void makeDataDirectory();
 	std::vector<short>	convertSFBuffer(sf::SoundBuffer& buffer);
 }
@@ -142,7 +142,7 @@ std::map<double, short> toolbox::convertLatencyMap(std::map< double, std::vector
 	std::vector<short>			samples;
 	std::map<double, short>		output;
 	double						lastTime = startTime;
-	
+
 	// split map into time & samples
 	for (auto const& x : map)
 	{
@@ -323,7 +323,7 @@ void toolbox::playbackSequence(std::string args)
 			std::cout << "Invalid sequence length; must be an even number.\n";
 			return;
 		}
-		
+
 		// extract sequence from args
 		for (int i = 0; i < splitArgs[0].size(); i += 2)
 		{
@@ -337,8 +337,8 @@ void toolbox::playbackSequence(std::string args)
 			duration	= std::stoi(splitArgs[1]);
 			pause		= std::stoi(splitArgs[2]);
 		}
-	}	
-	
+	}
+
 	// playback
 	generator::playbackSequence(sequence, duration, pause);
 }
@@ -368,7 +368,7 @@ void toolbox::logSequence()
 	{
 		return;
 	};
-	
+
 	// start decoder
 	decoder::run(lambda, true);
 
@@ -804,7 +804,7 @@ void toolbox::testLatency()
 		logChunks[timeElapsed] = samplesChunk;
 
 		samples.insert(samples.end(), samplesChunk.begin(), samplesChunk.end());
-		
+
 		logging = false;
 	}, true);
 
@@ -856,7 +856,7 @@ double toolbox::testLatency2()
 	double								timeElapsed = 0;		// mys
 
 	sampler2							sampler([](std::vector<short> samples) {});
-	
+
 	std::map<double, std::vector<short>>log;
 
 	bool								hasPlayed = false;
@@ -882,7 +882,7 @@ double toolbox::testLatency2()
 			generator::playback(0, DURATION, true, false);
 			log[beginTime] = { (int)AMPLITUDE_MAX };
 		}
-		
+
 		// get samples chunk
 		auto chunk = sampler.sample();
 
@@ -950,13 +950,13 @@ double toolbox::testLatency2()
 	// log result
 
 	return latency;
-	
+
 }
 
 // ...
 
 
-void toolbox::averageLatency() 
+void toolbox::averageLatency()
 {
 
 	double sum = 0;
@@ -975,7 +975,7 @@ void toolbox::averageLatency()
 void toolbox::testGoertzel(std::string args)
 {
 	using namespace std::chrono;
-	
+
 	// parse arguments
 	std::istringstream			iss(args);
 	std::vector<std::string>	splitArgs((std::istream_iterator<std::string>(iss)), std::istream_iterator<std::string>());
@@ -1012,7 +1012,7 @@ void toolbox::testGoertzel(std::string args)
 	{
 		// safety sleep
 		std::this_thread::sleep_for(milliseconds(500));
-		
+
 		// set test frequencies
 		int	testFreqL	= freq[testToneId / 4];
 		int	testFreqH	= freq[(testToneId % 4) + 4];
@@ -1064,8 +1064,8 @@ void toolbox::testGoertzelVsFFT(){
 
 	using namespace std::chrono;
 
-	steady_clock				clock;
-	time_point<steady_clock>	timeStart;
+	steady_clock				            clock;
+	time_point<steady_clock>				timeStart;
 
 	// generate samples
 	auto buffer			= generator::generateDTMF(0, 10);
