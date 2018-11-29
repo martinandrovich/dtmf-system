@@ -67,9 +67,9 @@ float processor::goertzel(std::vector<short> &samples, int targetFrequency)
 	//Difference equation with new omega:
 	//w(n)=2cos(omega)*w(n-1)-w(n-2)+x(n)
 
-	float	w0					= 0;
-	float	w1					= 0;
-	float	w2					= 0;
+	float	w0					= 0.f;
+	float	w1					= 0.f;
+	float	w2					= 0.f;
 
 	//w0 =w(n)
 	//w1 =w(n-1)
@@ -92,6 +92,7 @@ float processor::goertzel(std::vector<short> &samples, int targetFrequency)
 	return magnitude;
 }
 
+// ...
 void processor::fft(cArray& x)
 {
 
@@ -116,15 +117,16 @@ void processor::fft(cArray& x)
 
 };
 
-void processor::fft(std::vector<short> & samples)
+// ...
+cArray processor::fft(std::vector<short> & samples)
 {
-
 	cArray data(samples[0], samples.size());
-
 	processor::fft(data);
 
+	return data;
 };
 
+// ...
 void processor::fft2(cArray& x)
 {
 	// DFT
@@ -173,24 +175,23 @@ void processor::fft2(cArray& x)
 	//	x[i] *= f;
 };
 
-
-void processor::fft2(std::vector<short>& samples)
+// ...
+cArray processor::fft2(std::vector<short>& samples)
 {
-
 	cArray data(samples[0], samples.size());
-
 	processor::fft2(data);
 
+	return data;
 };
 
 // Run goertzel algorithm on chunk of samples for all DTMF frequncies; return array[8] of magnitudes (float)
 std::array<float, 8> processor::goertzelArray(std::vector<short> &samples)
 {
-	std::array<float, 8> tempArray;
+	std::array<float, 8> tempArray = {};
 
 	for (int i = 0; i < 8; i++)
 	{
-		tempArray[i] = goertzel(samples, freq[i]);
+		tempArray[i] = processor::goertzel(samples, freq[i]);
 	}
 
 	return tempArray;

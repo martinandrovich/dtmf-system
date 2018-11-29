@@ -15,13 +15,15 @@ namespace processor
 	;
 
 	// Public Methods
-	void equalize();
-	void fft(cArray& x);
-	void fft(std::vector<short>& samples);
-	void fft2(cArray& x);
-	void fft2(std::vector<short>& samples);
+	void					equalize();
+
+	void					fft(cArray& x);
+	cArray					fft(std::vector<short>& samples);
+	void					fft2(cArray& x);
+	cArray					fft2(std::vector<short>& samples);
 
 	void					hanningWindow(std::vector<short> &samples);
+
 	float					goertzel(std::vector<short> &samples, int frequency);
 	std::array<float, 8>	goertzelArray(std::vector<short> &samples);
 

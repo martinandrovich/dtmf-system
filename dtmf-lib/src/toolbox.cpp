@@ -1,3 +1,4 @@
+#pragma once
 #include <iostream>
 #include <fstream>
 #include <sstream>
@@ -1063,26 +1064,41 @@ void toolbox::testGoertzelVsFFT(){
 
 	using namespace std::chrono;
 
-	high_resolution_clock				clock;
-	time_point<high_resolution_clock>	timeStart;
+	steady_clock				clock;
+	time_point<steady_clock>	timeStart;
 
-	auto buffer = generator::generateDTMF(0,10);
-	auto samples = toolbox::convertSFBuffer(*buffer);
-	auto samples2 = samples;
+	// generate samples
+	auto buffer			= generator::generateDTMF(0, 10);
+	auto samples		= toolbox::convertSFBuffer(*buffer);
 
+	// prepare samples for tests
+	auto samples_fft	= samples;
+	auto samples_fft2	= samples;
+	auto samples_gor	= samples;
+
+	// fft test
 	timeStart = clock.now();
-	processor::fft(samples);
-	std::cout <<"fft-duration: " << static_cast<duration<double, std::micro>>(clock.now() - timeStart).count() <<" ms\n";
+	samples_fft.resize(512, 0);
+	auto output_fft = processor::fft(samples_fft);
+	std::cout << "fft-duration: " << duration_cast<nanoseconds>(clock.now() - timeStart).count() << " ns\n";
 
-
+	// fft2 test
 	timeStart = clock.now();
-	samples2.resize(512, 0);
-	processor::fft2(samples2);
-	std::cout << "fft2-duration: " << static_cast<duration<double, std::micro>>(clock.now() - timeStart).count() << " ms\n";
+	samples_fft2.resize(512, 0);
+	auto output_fft2 = processor::fft2(samples_fft2);
+	std::cout << "fft2-duration: " << duration_cast<nanoseconds>(clock.now() - timeStart).count() << " ns\n";
 
+	// goertzel test
 	timeStart = clock.now();
-	processor::goertzelArray(samples);
-	std::cout << "Gor-duration: " << static_cast<duration<double, std::micro>>(clock.now() - timeStart).count() << " ms\n";
+	auto ouput_gor = processor::goertzelArray(samples_gor);
+	std::cout << "gor-duration: " << duration_cast<nanoseconds>(clock.now() - timeStart).count() << " ns\n";
+
+	// use samples (so release mode doesn't discard it)
+	std::cout << "\n";
+	processor::printGoertzelArray(ouput_gor);
+	output_fft;
+	output_fft2;
+	std::cout << "\n";
 };
 
 // Test Goertzel on generated samples of a specified toneId and duration
