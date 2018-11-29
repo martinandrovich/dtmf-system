@@ -163,7 +163,24 @@ void help(std::string args)
 	
 	else
 	{
-		LOG(" init		: type (client/server) \n exit		: closes console \n cls		: clears console \n game		: opens game \n seq		: plays sequence (toneId1..toneIdn)\n log		: echoes resived payload \n qlog \n slog \n glog \n glog_t \n aglog \n aglog_t \n lat \n step \n sam \n gor \n ggor \n gvsf \n ");
+		LOG("\n init		: initializes type(client/server) \n "
+			"exit		: closes console \n "
+			"cls		: clears console \n "
+			"game		: opens game \n "
+			"seq		: plays sequence (toneId1..toneIdn)\n "
+			"log		: echoes resived payload \n "
+			"qlog		: quiet log \n "
+			"slog		: logs the sequence(0-15)\n "
+			"glog		: logs the Goertzel response \n "
+			"glog_t		: logs the Goertzel response on tread  \n "
+			"aglog		: logs the average Goertzel response \n "
+			"aglog_t	: logs the average Goertzel response on tread \n "
+			"lat		: Returns the latency \n "
+			"step		: tests stepwindow \n "
+			"sam		: tests sampler \n "
+			"gor \n "
+			"ggor \n "
+			"gvsf		: Returns duration of FFT and Goertzel \n ");
 	}
 }
 
