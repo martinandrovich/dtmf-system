@@ -163,7 +163,7 @@ void help(std::string args)
 	
 	else
 	{
-		LOG("That's an invalid fucking argument, you bitch.");
+		LOG(" init		: type (client/server) \n exit		: closes console \n cls		: clears console \n game		: opens game \n seq		: plays sequence (toneId1..toneIdn)\n log		: echoes resived payload \n qlog \n slog \n glog \n glog_t \n aglog \n aglog_t \n lat \n step \n sam \n gor \n ggor \n gvsf \n ");
 	}
 }
 
