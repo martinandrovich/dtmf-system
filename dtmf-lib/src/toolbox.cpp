@@ -840,7 +840,7 @@ void toolbox::testLatency()
 }
 
 // ..
-void toolbox::testLatency2()
+double toolbox::testLatency2()
 {
 	using namespace std::chrono;
 
@@ -921,8 +921,8 @@ void toolbox::testLatency2()
 		output[time[i]] = samples[i];
 	}
 
-	float latencyBegin		= 0.f;
-	float latencyEnd		= 0.f;
+	double latencyBegin		= 0;
+	double latencyEnd		= 0;
 	bool  toneStart = false;
 
 	for (auto const& x : output)
@@ -940,17 +940,37 @@ void toolbox::testLatency2()
 		}
 	}
 
-	float latency = latencyEnd - latencyBegin;
+	double latency = latencyEnd - latencyBegin;
 
 	// data here
-	toolbox::exportSamples(samples);
+	//toolbox::exportSamples(samples);
 	//toolbox::plotMap(output, "latency_map.dat", { "Map Plot", "Time [ms]", "Amplitude [dB]" });
 
 	// log result
-	std::cout << "Latency start: " << latencyBegin << "ms | Latency end: " << latencyEnd << " ms | Latency: " << latency << " ms\n";
+
+	return latency;
+	
 }
 
 // ...
+
+
+void toolbox::averageLatency() 
+{
+
+	double sum = 0;
+
+	for (int i = 0; i < 10; i++)
+	{
+		double value = toolbox::testLatency2();
+
+		sum += value;
+	}
+
+	std::cout << "Average latency: " << sum / 10 << std::endl;
+}
+
+
 void toolbox::testGoertzel(std::string args)
 {
 	using namespace std::chrono;

@@ -41,7 +41,8 @@ namespace dtmf
 		void									testStepWindow(std::string args);
 
 		void									testLatency();
-		void									testLatency2();
+		double									testLatency2();
+		void									averageLatency();
 		
 		void									testGeneratorGoertzel(std::string args);
 		void									testGoertzel(std::string args);
