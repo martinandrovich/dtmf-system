@@ -100,7 +100,7 @@ void processor::fft(cArray& x)
 	if (N <= 1) return;
 
 	// divide
-	cArray even = x[std::slice(0, N / 2, 2)];
+	cArray even = x[std::slice(0, N / 2, 2)]; 
 	cArray  odd = x[std::slice(1, N / 2, 2)];
 
 	// conquer
@@ -118,12 +118,25 @@ void processor::fft(cArray& x)
 };
 
 // ...
-cArray processor::fft(std::vector<short> & samples)
+cArray processor::fft(std::vector<short>& samples)
 {
-	cArray data(samples[0], samples.size());
-	processor::fft(data);
+	// inspired by
+	// https://rosettacode.org/wiki/Fast_Fourier_transform#C.2B.2B
+	
+	// variables
+	std::vector<double>					zeros(samples.size(), 0.);
+	cArray								cvec(samples.size());
+	
+	// create complex array from samples & zeros vectors
+	std::transform(samples.begin(), samples.end(), zeros.begin(), std::begin(cvec), [](double da, double db) {
+		return std::complex<double>(da, db);
+	});
+	
+	// perform fft on cvec
+	processor::fft(cvec);
 
-	return data;
+	// return result
+	return cvec;
 };
 
 // ...
@@ -178,10 +191,23 @@ void processor::fft2(cArray& x)
 // ...
 cArray processor::fft2(std::vector<short>& samples)
 {
-	cArray data(samples[0], samples.size());
-	processor::fft2(data);
+	// inspired by
+	// https://rosettacode.org/wiki/Fast_Fourier_transform#C.2B.2B
+	
+	// variables
+	std::vector<double>					zeros(samples.size(), 0.);
+	cArray								cvec(samples.size());
 
-	return data;
+	// create complex array from samples & zeros vectors
+	std::transform(samples.begin(), samples.end(), zeros.begin(), std::begin(cvec), [](double da, double db) {
+		return std::complex<double>(da, db);
+	});
+
+	// perform fft2 on cvec
+	processor::fft2(cvec);
+
+	// return result
+	return cvec;
 };
 
 // Run goertzel algorithm on chunk of samples for all DTMF frequncies; return array[8] of magnitudes (float)
