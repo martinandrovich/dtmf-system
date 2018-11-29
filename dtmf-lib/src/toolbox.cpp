@@ -852,7 +852,7 @@ double toolbox::testLatency2()
 	// variables
 	high_resolution_clock				clock;
 	time_point<high_resolution_clock>	timeStart;
-	double								timeElapsed = 0;		// ms
+	double								timeElapsed = 0;		// mys
 
 	sampler2							sampler([](std::vector<short> samples) {});
 	
@@ -877,7 +877,7 @@ double toolbox::testLatency2()
 		if (counter > delayChunks && !hasPlayed)
 		{
 			hasPlayed = true;
-			beginTime = static_cast<duration<double, std::milli>>(clock.now() - timeStart).count();
+			beginTime = static_cast<duration<double, std::micro>>(clock.now() - timeStart).count();
 			generator::playback(0, DURATION, true, false);
 			log[beginTime] = { (int)AMPLITUDE_MAX };
 		}
@@ -886,7 +886,7 @@ double toolbox::testLatency2()
 		auto chunk = sampler.sample();
 
 		// log chunk
-		log[static_cast<duration<double, std::milli>>(clock.now() - timeStart).count()] = chunk;
+		log[static_cast<duration<double, std::micro>>(clock.now() - timeStart).count()] = chunk;
 	}
 
 	// process data
