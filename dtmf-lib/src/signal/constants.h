@@ -1,9 +1,12 @@
 #pragma once
+#include <valarray>
+#include <complex>
 
 // _ //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 using			uint				= unsigned int;
 using			uchar				= unsigned char;
+using			cArray				= std::valarray<std::complex<double>>;
 
 constexpr auto 	DATA_PATH			= "dat/";										// Path of data directory (default "dat/")
 constexpr auto	PI					= 3.141592653589732;
