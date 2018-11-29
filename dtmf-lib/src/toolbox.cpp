@@ -191,6 +191,26 @@ void toolbox::exportSamples(std::vector<short> &samples, std::string filename)
 	std::cout << "Samples array[" << samples.size() << "] exported as \"" << filename << "\" ...\n";
 }
 
+// Export a vector of shorts as a data file
+template <class T>
+void toolbox::exportArray(T& data, std::string filename)
+{
+	// create data directory & update filename
+	toolbox::makeDataDirectory();
+	filename = DATA_PATH + filename;
+
+	std::ofstream outputStream(filename);
+
+	for (const auto &element : data)
+	{
+		outputStream << element << "\n";
+	}
+
+	outputStream.close();
+
+	std::cout << "Data array[" << data.size() << "] exported as \"" << filename << "\" ...\n";
+}
+
 // Export a templated map as a data file
 template <class key, class value>
 void toolbox::exportMap(std::map<key, value> map, std::string filename)
@@ -236,6 +256,25 @@ void toolbox::plotSamples(std::vector<short> &samples, std::string filename, std
 {
 	// export samples
 	toolbox::exportSamples(samples, filename);
+
+	// export plot function
+	// or somehow include/copy the MATLAB scripts to the destination path
+	// currently simply manual copy scripts folder to current working path of console-app
+
+	std::cout << "Launching MatLab script ...\n";
+
+	// run MATLAB script/function
+	// needs to be changed to cd "/script"
+	std::string cmd = "matlab -nodesktop -r \"plot_samples('" + std::string(DATA_PATH) + filename + "', '" + labels[0] + "', '" + labels[1] + "', '" + labels[2] + "')\"";
+	system(cmd.c_str());
+}
+
+// Plot vector of shorts using MATLAB
+template <class T>
+void toolbox::plotArray(T &data, std::string filename, std::array<std::string, 3> labels)
+{
+	// export samples
+	toolbox::exportArray(data, filename);
 
 	// export plot function
 	// or somehow include/copy the MATLAB scripts to the destination path
@@ -1096,9 +1135,20 @@ void toolbox::testGoertzelVsFFT(){
 	// use samples (so release mode doesn't discard it)
 	std::cout << "\n";
 	processor::printGoertzelArray(ouput_gor);
-	output_fft;
-	output_fft2;
-	std::cout << "\n";
+
+	// fft results
+	auto fft_abs = std::abs(output_fft);
+	std::vector<double> fft_real = {};
+	for (const auto& element : fft_abs) { fft_real.push_back(std::real(element)); }
+
+	// fft2 results
+	auto fft2_abs = std::abs(output_fft2);
+	std::vector<double> fft2_real = {};
+	for (const auto& element : fft2_abs) { fft2_real.push_back(std::real(element)); }
+
+	// plot fft's
+	//plotArray(fft_real, "fft.dat");
+	//plotArray(fft2_real, "fft2.dat");
 };
 
 // Test Goertzel on generated samples of a specified toneId and duration
