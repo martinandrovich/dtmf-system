@@ -1072,17 +1072,17 @@ void toolbox::testGoertzelVsFFT(){
 
 	timeStart = clock.now();
 	processor::fft(samples);
-	std::cout <<"fft-duration: " << static_cast<duration<double, std::milli>>(clock.now() - timeStart).count() <<" ms\n";
+	std::cout <<"fft-duration: " << static_cast<duration<double, std::micro>>(clock.now() - timeStart).count() <<" ms\n";
 
 
 	timeStart = clock.now();
 	samples2.resize(512, 0);
 	processor::fft2(samples2);
-	std::cout << "fft2-duration: " << static_cast<duration<double, std::milli>>(clock.now() - timeStart).count() << " ms\n";
+	std::cout << "fft2-duration: " << static_cast<duration<double, std::micro>>(clock.now() - timeStart).count() << " ms\n";
 
 	timeStart = clock.now();
 	processor::goertzelArray(samples);
-	std::cout << "Gor-duration: " << static_cast<duration<double, std::milli>>(clock.now() - timeStart).count() << " ms\n";
+	std::cout << "Gor-duration: " << static_cast<duration<double, std::micro>>(clock.now() - timeStart).count() << " ms\n";
 };
 
 // Test Goertzel on generated samples of a specified toneId and duration
