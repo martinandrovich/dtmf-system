@@ -29,13 +29,15 @@ namespace decoder
 	std::mutex							queueMutex;
 	std::condition_variable				queueCondition;
 	std::thread							worker;
-	sampler2*							rec;
+	sampler*							rec1;
+	sampler2*							rec2;
 
 	bool								allowPlayback = false;
 	std::atomic<bool>					running;
 	
 	std::array<float, 8>				previousGoertzelArray;
 	bool								previousThresholdBroken;
+	int									previousToneId = -1;
 
 	high_resolution_clock				clock;
 	time_point<high_resolution_clock>	debounce;
@@ -65,11 +67,13 @@ void decoder::run(std::function<void(uint toneId)> callback, bool allowPlayback)
 {
 	// initialize variables
 	decoder::callback		= callback;
-	decoder::rec			= new sampler2(&decoder::appendQueue, allowPlayback);
+	//decoder::rec1			= new sampler(&decoder::appendQueue, allowPlayback);
+	decoder::rec2			= new sampler2(&decoder::appendQueue, allowPlayback);
 	decoder::allowPlayback	= allowPlayback;
 
 	// start sampler
-	decoder::rec->start();
+	//decoder::rec1->start(SAMPLE_RATE);
+	decoder::rec2->start(); // sampler 2
 	decoder::status			= state::running;
 	
 	// start worker thread
@@ -82,8 +86,8 @@ void decoder::run(std::function<void(uint toneId)> callback, bool allowPlayback)
 void decoder::end()
 {
 	// stop and delete sampler
-	decoder::rec->stop();
-	delete decoder::rec;
+	decoder::rec2->stop();
+	delete decoder::rec2;
 
 	// stop worker thread
 	decoder::status		= state::unitialized;
@@ -242,7 +246,7 @@ std::array<int, 2> decoder::extractIndexes(std::array<float, 8> &goertzelArray)
 	for (uint i = 0; i < goertzelArray.size(); i++)
 	{
 		// define magnitude & threshold for current frequency index (i)
-		auto magnitude = goertzelArray[i];
+		auto magnitude = goertzelArray[i] * freqMultiplier[i];
 		auto threshold = freqThresholds[i] * TH_MULTIPLIER;
 
 		// low frequencies
@@ -430,10 +434,16 @@ void decoder::decode3(std::vector<short> &samples)
 	auto toneId = decoder::extractToneId(indexes);
 
 	// callback
-	if (toneId >= 0)
+	if (toneId >= 0 && previousToneId == toneId)
 	{
+		processor::printGoertzelArray(goertzelArray);
 		decoder::debounce = decoder::clock.now();
 		decoder::callback(toneId);
+		previousToneId = -1;
+	}
+	else
+	{
+		previousToneId = toneId;
 	}
 
 	// update status
