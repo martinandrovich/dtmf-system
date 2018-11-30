@@ -27,7 +27,7 @@ constexpr int 	NUMPTS				= SAMPLE_RATE * (SAMPLE_INTERVAL / 1000.f);		// Number 
 
 //const int		freqLow[4]			= {  697,  770,  852,  941 };
 //const int		freqHigh[4]			= { 1209, 1336, 1477, 1633 };
-const int		freq[8]				= { 697,  770,  852,  941, 1209, 1336, 1477, 1633 };
-const int		freqThresholds[8]	= { 75,  75,  75,  75,  100,  90,  100,  100 };
-const float		freqMultiplier[8]	= { 1.04,  1.0,  1.0,  1.0,  1.0,  1.0,  1.0,  1.0 };
+const int		freq[8]				= {  697,	  770,	  852,	  941,	 1209,	 1336,	 1477,	 1633 };
+const int		freqThresholds[8]	= {   75,	   75,	   75,	   75,	  100,	   90,	  100,	  100 };
+const float		freqMultiplier[8]	= { 1.04,	 1.00,	  1.00,  1.00,	 1.00,	 1.00,	 1.00,	 1.00 };
 
