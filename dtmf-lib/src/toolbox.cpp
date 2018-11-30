@@ -3,6 +3,8 @@
 #include <fstream>
 #include <sstream>
 #include <string>
+#include <array>
+#include <valarray>
 #include <vector>
 #include <deque>
 #include <map>
@@ -1197,6 +1199,119 @@ void toolbox::testGeneratorGoertzel(std::string args)
 		<< "S1 -HW:\t\t" << magnitude1 << "\n"
 		<< "S2 +HW:\t\t" << magnitude2 << "\n"
 		<< "\n";
+}
+
+// ...
+void toolbox::calibrateThresholds()
+{
+	// constants
+	const int tones[4]									= { 0, 5, 10, 15 };
+	const int desiredChunks								= 50;
+	const int playbackDuration							= desiredChunks * SAMPLE_INTERVAL;
+	const int desiredTests								= 5;
+
+	// variables
+	sampler2											sampler([](std::vector<short> samples) {});
+
+	std::map<int, std::array<float, 2>>					resultSingle;
+	std::vector<std::map<int, std::array<float, 2>>>	resultAll;
+	std::valarray<float>								resultAverages = { 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f };
+
+	// print information
+	std::cout << "Goertzel Thresholds Calibration:\n\n";
+
+	// prepare sampler
+	sampler.prepare();
+
+	// test for required toneId's
+	test:
+	for (const auto& testToneId : tones)
+	{
+		// containers
+		std::vector<short>					samples;
+		std::vector<std::vector<short>>		sampleChunks(desiredChunks);
+		std::vector<std::array<float, 2>>	goertzelChunks;
+		
+		// set test frequencies
+		int	testFreqL						= freq[testToneId / 4];
+		int	testFreqH						= freq[(testToneId % 4) + 4];
+		
+		// play tone
+		generator::playback(testToneId, playbackDuration, true);
+
+		// sample desired chunks
+		for (int i = 0; i < desiredChunks; i++)
+		{
+			// get sample chunk
+			auto chunk = sampler.sample();
+			samples.insert(samples.end(), chunk.begin(), chunk.end());
+			sampleChunks[i] = chunk;
+		}
+
+		// calculate goertzel responses for all chunks
+		for (auto& chunk : sampleChunks)
+		{
+			float magnitudeLow		= processor::goertzel(chunk, testFreqL);
+			float magnitudeHigh		= processor::goertzel(chunk, testFreqH);
+
+			goertzelChunks.push_back({ magnitudeLow	, magnitudeHigh});
+		}
+
+		// find highest array pair
+		float magnitudeLowMax	= 0.f;
+		float magnitudeHighMax	= 0.f;
+
+		for (const auto& chunk : goertzelChunks)
+		{
+			if (chunk[0] > magnitudeLowMax) { magnitudeLowMax = chunk[0]; }
+			if (chunk[1] > magnitudeHighMax) { magnitudeHighMax = chunk[0]; }
+		}
+
+		// insert into result map
+		resultSingle[testToneId] = { magnitudeLowMax, magnitudeHighMax };
+
+		// safety sleep
+		std::this_thread::sleep_for(std::chrono::milliseconds(LATENCY*2));
+	}
+
+	// insert into results array
+	resultAll.push_back(resultSingle);
+	resultSingle.clear();
+	
+	// repeat until done
+	if (resultAll.size() < desiredTests)
+	{
+		goto test;
+	}
+
+	// calculate sum
+	for (const auto& map : resultAll)
+	{
+		int counter = 0;
+
+		for (auto pair : map)
+		{
+			auto toneId		= pair.first;
+			auto indexL		= toneId / 4;
+			auto indexH		= (toneId % 4) + 4;
+			auto magnitudeL = pair.second[0];
+			auto magnitudeH = pair.second[1];
+
+			resultAverages[indexL] += magnitudeL;
+			resultAverages[indexH] += magnitudeH;
+		}
+	}
+
+	// calculate average
+	resultAverages /= (float)desiredTests;
+
+	// print result
+	;
+
+	// data here
+	resultAll; 
+	resultAverages;
+	std::cout << "Done!\n";
 }
 
 }
