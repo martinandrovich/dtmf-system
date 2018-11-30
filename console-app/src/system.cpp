@@ -14,8 +14,9 @@
 
 //// Constants ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-constexpr int 	KEY_WAIT			= 30;											// Duration between key presses
-constexpr int 	KEY_DURATION		= 250;											// Duration of a simulated key press (different for move or plant)
+constexpr int 	KEY_WAIT				= 30;											// Duration between key presses
+constexpr int 	KEY_DURATION_MOVE		= 250;											// Duration of a simulated key press (moving)
+constexpr int 	KEY_DURATION_PRIMARY	= 25;											// Duration of a simulated key press (primary)
 
 //// Definitions //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -26,7 +27,7 @@ void initCLI()
 	std::cout << "Ear Rape Simulator 1.1.0\n\n";
 }
 
-// initialize the System
+// initialize the system
 void initSystem(std::string args)
 {
 	if (args == "server")
@@ -34,13 +35,13 @@ void initSystem(std::string args)
 		std::cout << "Initializing server ...\n";
 		runGame();
 		//std::this_thread::sleep_for(std::chrono::milliseconds(10000));
-		dtmf::node::initializeServer(&someFunction);
+		dtmf::node::initializeServer(&executePayload);
 		
 	}
 	else if (args == "client")
 	{
 		std::cout << "Initializing client ...\n";
-		dtmf::node::initializeClient(&someFunction);
+		dtmf::node::initializeClient(&executePayload);
 		clientWork();
 	}
 	else
@@ -94,23 +95,132 @@ int listenForKey()
 	return key;
 }
 
+// Simulate concurrent global key press for a given duration
+void pressKey(int key, int duration, bool parallel)
+{
+	// define lambda thread
+	std::thread t([=]()
+	{
+		INPUT ip;
+
+		// set up a generic keyboard event
+		ip.type = INPUT_KEYBOARD;
+		ip.ki.wScan = 0; // hardware scan code for key
+		ip.ki.time = 0;
+		ip.ki.dwExtraInfo = 0;
+
+		// press the key
+		ip.ki.wVk = key; // virtual-key code for the key
+		ip.ki.dwFlags = 0; // 0 for key press
+		SendInput(1, &ip, sizeof(INPUT));
+
+		// wait
+		std::this_thread::sleep_for(std::chrono::milliseconds(duration));
+
+		// release the key
+		ip.ki.dwFlags = KEYEVENTF_KEYUP; // KEYEVENTF_KEYUP for key release
+		SendInput(1, &ip, sizeof(INPUT));
+	});
+
+	// define thread execution method (sequential or concurrent)
+	if (parallel)
+	{
+		t.detach();
+	}
+	else
+	{
+		t.join();
+	}
+}
+
 // ...
 void clientWork()
 {
 	while (true)
 	{
-		//Implementering af prioritetsliste: esc>actions>movement
-		int payload = listenForKey();
-		int priority;
+		// variables
+		int payload		= listenForKey();
+		int priority	= 0;
+
+		// escape client work if ESC
+		;
+
+		// idenfity message priority (esc>actions>movement)
 		if (payload < 5)
+		{
 			priority = 0;
+		}
 		else if (payload < 7)
+		{
 			priority = 1;
-		else priority = 2;
+		}
+		else
+		{
+			priority = 2;
+		}
+		
+		// send message
 		dtmf::node::sendPayload(payload, priority);
-		//if (keydown != 0)
-			//LOG(keydown);
+
+		// sleep
 		std::this_thread::sleep_for(std::chrono::milliseconds(KEY_WAIT));
+	}
+}
+
+// ...
+void executePayload(int toneId, int clientId)
+{
+	// WINDOWS INPUT API VALUES
+
+	// LEFT		= 0x25
+	// UP		= 0x26
+	// RIGHT	= 0x27
+	// DOWN		= 0x28
+	// ;		= 0xBA
+
+	// keys
+	int keyLeft, keyRight, keyUp, keyDown, keyPrimary;
+
+	// log
+	std::cout << "##### ID: " << clientId << " | PAYLOAD: " << toneId;
+
+	// determine key values from clientId
+	switch (clientId)
+	{
+	case 1:
+		keyLeft		= 0x25;
+		keyRight	= 0x27;
+		keyUp		= 0x26;
+		keyDown		= 0x28;
+		keyPrimary	= 0x26;
+		break;
+	case 2:
+		keyLeft		= 0x25;
+		keyRight	= 0x27;
+		keyUp		= 0x26;
+		keyDown		= 0x28;
+		keyPrimary	= 0x26;
+		break;
+	}
+
+	// execute key press in accordance with toneId
+	switch (toneId)
+	{
+	case 1:
+		pressKey(keyLeft, KEY_DURATION_MOVE);
+		break;
+	case 4:
+		pressKey(keyRight, KEY_DURATION_MOVE);
+		break;
+	case 2:
+		pressKey(keyUp, KEY_DURATION_MOVE);
+		break;
+	case 3:
+		pressKey(keyDown, KEY_DURATION_MOVE);
+		break;
+	case 5:
+		pressKey(keyPrimary, KEY_DURATION_PRIMARY);
+		break;
 	}
 }
 
@@ -187,13 +297,4 @@ void help(std::string args)
 
 		);
 	}
-}
-
-// ...
-void someFunction(int payload, int id)
-{
-	std::cout << "##### ID: " << id << " | PAYLOAD: " << payload;
-	std::thread executer(dtmf::toolbox::executePayload, payload);
-	executer.detach();
-	//std::thread* executer = new std::thread(dtmf::toolbox::executePayload, payload);
 }
