@@ -164,7 +164,28 @@ void help(std::string args)
 	
 	else
 	{
-		LOG("That's an invalid fucking argument, you bitch.");
+		LOG("\n"
+
+			"init		: initializes type(client/server) \n "
+			"exit		: closes console \n "
+			"cls		: clears console \n "
+			"game		: opens game \n "
+			"seq		: plays sequence (toneId1..toneIdn)\n "
+			"log		: echoes resived payload \n "
+			"qlog		: quiet log \n "
+			"slog		: logs the sequence(0-15)\n "
+			"glog		: logs the Goertzel response \n "
+			"glog_t		: logs the Goertzel response on tread  \n "
+			"aglog		: logs the average Goertzel response \n "
+			"aglog_t	: logs the average Goertzel response on tread \n "
+			"lat		: Returns the latency \n "
+			"step		: tests stepwindow \n "
+			"sam		: tests sampler \n "
+			"gor \n "
+			"ggor \n "
+			"gvsf		: Returns duration of FFT and Goertzel \n "
+
+		);
 	}
 }
 
@@ -172,5 +193,7 @@ void help(std::string args)
 void someFunction(int payload, int id)
 {
 	std::cout << "##### ID: " << id << " | PAYLOAD: " << payload;
-	std::thread* executer = new std::thread(dtmf::toolbox::executePayload, payload);
+	std::thread executer(dtmf::toolbox::executePayload, payload);
+	executer.detach();
+	//std::thread* executer = new std::thread(dtmf::toolbox::executePayload, payload);
 }
