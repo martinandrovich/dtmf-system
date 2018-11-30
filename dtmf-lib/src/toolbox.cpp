@@ -879,7 +879,7 @@ void toolbox::testLatency()
 	toolbox::plotMap(logFinal, "latency_map.dat", { "Map Plot", "Time [ms]", "Amplitude [dB]" });
 }
 
-// ..
+// ...
 double toolbox::testLatency2()
 {
 	using namespace std::chrono;
@@ -993,8 +993,6 @@ double toolbox::testLatency2()
 }
 
 // ...
-
-
 void toolbox::averageLatency()
 {
 
@@ -1010,7 +1008,7 @@ void toolbox::averageLatency()
 	std::cout << "Average latency: " << sum / 10 << std::endl;
 }
 
-
+// ...
 void toolbox::testGoertzel(std::string args)
 {
 	using namespace std::chrono;
@@ -1099,6 +1097,7 @@ void toolbox::testGoertzel(std::string args)
 	//toolbox::plotSamples(samples);
 }
 
+// ...
 void toolbox::testGoertzelVsFFT(){
 
 	using namespace std::chrono;
