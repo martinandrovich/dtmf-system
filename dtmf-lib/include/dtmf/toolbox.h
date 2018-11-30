@@ -46,6 +46,8 @@ namespace dtmf
 		
 		void									testGeneratorGoertzel(std::string args);
 		void									testGoertzel(std::string args);
+
+		void									calibrateThresholds();
 		
 		void									testGoertzelVsFFT();
 		void									exportSamples(std::vector<short> &samples, std::string filename = "output_samples.dat");

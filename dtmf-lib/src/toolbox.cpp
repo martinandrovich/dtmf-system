@@ -1199,4 +1199,67 @@ void toolbox::testGeneratorGoertzel(std::string args)
 		<< "\n";
 }
 
+// ...
+void toolbox::calibrateThresholds()
+{
+	
+	// constants
+	const int tones[4]									= { 0, 5, 10, 15 };
+	const int desiredChunks								= 50;
+	const int playbackDuration							= desiredChunks * SAMPLE_INTERVAL;
+
+	// variables
+	sampler2											sampler([](std::vector<short> samples) {});
+	std::map<int, std::vector<std::array<float, 2>>>	goertzel;
+
+	// print information
+	std::cout << "Goertzel Thresholds Calibration:\n\n";
+
+	// prepare sampler
+	sampler.prepare();
+
+	// test for required toneId's
+	for (const auto& testToneId : tones)
+	{
+		// containers
+		std::vector<short>					samples;
+		std::vector<std::vector<short>>		chunks(desiredChunks);
+		std::vector<std::array<float, 2>>	goertzel_chunk;
+		
+		// set test frequencies
+		int	testFreqL						= freq[testToneId / 4];
+		int	testFreqH						= freq[(testToneId % 4) + 4];
+		
+		// play tone
+		generator::playback(testToneId, playbackDuration, true);
+
+		// sample desired chunks
+		for (int i = 0; i < desiredChunks; i++)
+		{
+			// get sample chunk
+			auto chunk = sampler.sample();
+			samples.insert(samples.end(), chunk.begin(), chunk.end());
+			chunks[i] = chunk;
+		}
+
+		// calculate goertzel responses for all chunks
+		for (auto& chunk : chunks)
+		{
+			float magnitudeLow		= processor::goertzel(chunk, testFreqL);
+			float magnitudeHigh		= processor::goertzel(chunk, testFreqH);
+
+			goertzel_chunk.push_back({ magnitudeLow	, magnitudeHigh});
+		}
+
+		// insert into goertzel map
+		goertzel[testToneId] = goertzel_chunk;
+
+		// safety sleep
+		std::this_thread::sleep_for(std::chrono::milliseconds(LATENCY*2));
+	}
+
+	goertzel;
+	std::cout << "Done!\n";
+}
+
 }
