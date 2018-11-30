@@ -37,7 +37,7 @@ namespace decoder
 	
 	std::array<float, 8>				previousGoertzelArray;
 	bool								previousThresholdBroken;
-	int									previousToneId = -1;
+	int									previousToneId;
 
 	high_resolution_clock				clock;
 	time_point<high_resolution_clock>	debounce;
@@ -67,16 +67,17 @@ void decoder::run(std::function<void(uint toneId)> callback, bool allowPlayback)
 {
 	// initialize variables
 	decoder::callback		= callback;
-	//decoder::rec1			= new sampler(&decoder::appendQueue, allowPlayback);
-	decoder::rec2			= new sampler2(&decoder::appendQueue, allowPlayback);
+	decoder::rec1			= new sampler(&decoder::appendQueue, allowPlayback);
+	//decoder::rec2			= new sampler2(&decoder::appendQueue, allowPlayback);
 	decoder::allowPlayback	= allowPlayback;
 
 	// start sampler
-	//decoder::rec1->start(SAMPLE_RATE);
-	decoder::rec2->start(); // sampler 2
+	decoder::rec1->start(SAMPLE_RATE);
+	//decoder::rec2->start();
 	decoder::status			= state::running;
 	
 	// start worker thread
+	decoder::previousToneId = -1;
 	decoder::debounce		= decoder::clock.now();
 	decoder::running		= true;
 	decoder::worker			= std::thread(&decoder::threadContinuous);
@@ -86,8 +87,8 @@ void decoder::run(std::function<void(uint toneId)> callback, bool allowPlayback)
 void decoder::end()
 {
 	// stop and delete sampler
-	decoder::rec2->stop();
-	delete decoder::rec2;
+	decoder::rec1->stop();
+	delete decoder::rec1;
 
 	// stop worker thread
 	decoder::status		= state::unitialized;
@@ -433,17 +434,16 @@ void decoder::decode3(std::vector<short> &samples)
 	// convert indexes to DTMF toneId
 	auto toneId = decoder::extractToneId(indexes);
 
-	// callback
-	if (toneId >= 0 && previousToneId == toneId)
+	// redundancy check & callback
+	if (toneId >= 0 && decoder::previousToneId == toneId)
 	{
-		processor::printGoertzelArray(goertzelArray);
 		decoder::debounce = decoder::clock.now();
+		decoder::previousToneId = -1;
 		decoder::callback(toneId);
-		previousToneId = -1;
 	}
 	else
 	{
-		previousToneId = toneId;
+		decoder::previousToneId = toneId;
 	}
 
 	// update status
