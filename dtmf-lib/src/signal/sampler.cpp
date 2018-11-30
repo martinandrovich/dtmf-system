@@ -65,10 +65,10 @@ bool sampler::onProcessSamples(const sf::Int16* samples, std::size_t sampleCount
 
 	// return silent (zero) array if generator is playing
 	// NOT THREAD SAFE !#!#!#!#!#!#!#!#!#!#!						!#!#!#!#!#!#!#!#!#!#!!#!
-	if (!this->allowPlayback && generator::getState() == generator::state::playing)
+	/*if (!this->allowPlayback && generator::getState() == generator::state::playing)
 	{
 		std::fill(samplesCopy.begin(), samplesCopy.end(), 0);
-	}
+	}*/
 
 	// callback with copy of samples chunk
 	this->callback(samplesCopy);
