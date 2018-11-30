@@ -248,7 +248,7 @@ std::array<int, 2> decoder::extractIndexes(std::array<float, 8> &goertzelArray)
 	{
 		// define magnitude & threshold for current frequency index (i)
 		auto magnitude = goertzelArray[i] * freqMultiplier[i];
-		auto threshold = freqThresholds[i] * TH_MULTIPLIER;
+		auto threshold = freqThresholds[i] * ((previousToneId == -1) ? TH_MULTIPLIER_H : TH_MULTIPLIER_L);
 
 		// low frequencies
 		if (i < 4 && magnitude > threshold && magnitude > magnitudeLowMax)
@@ -420,7 +420,7 @@ void decoder::decode3(std::vector<short> &samples)
 	decoder::status = state::working;
 
 	// apply hanning window
-	//processor::hanningWindow(samples);
+	processor::hanningWindow(samples);
 
 	// compile goertzelArray for all DTMF frequencies
 	auto goertzelArray = processor::goertzelArray(samples);
