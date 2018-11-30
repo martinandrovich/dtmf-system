@@ -429,7 +429,7 @@ void dtmf::node::initializeServer(void(*callback)(int payload, int id))
 				StateCondition([] { return currentMessage.id != 0; })
 			}),
 			StateTransition("base",{
-				StateCondition([] { return numClients>=1; })
+				StateCondition([] { return numClients>=2; })
 				})
 
 		}),
