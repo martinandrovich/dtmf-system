@@ -32,28 +32,29 @@ namespace dtmf
 		high_resolution_clock				clock;
 		time_point<high_resolution_clock>	timestamp;
 
-		bool				newMessageFlag, newActionFlag;
+		bool				newMessageFlag, newPayloadFlag;
 		int					clientID = -1;
 		int					numClients = 0;
 		int					idCounter = 1;
 
 		int					currentState = 0;
 		int					currentErrorState; //state to return to upon error signal
-		int					currentAction;
-		int					currentActionPriority;
+		int					currentPayload;
+		int					currentPayloadPriority;
 		Message				currentMessage;
 
 		int					timeoutTimer;
+
 		int					oldToneId;
 		bool				hasRecievedDirID;
 				
-		int					var1 = 32, var2 = 45, var3 = 112, var4 = 56; //random access variables for state machine
+		int					var1 = 0, var2 = 0, var3 = 0, var4 = 0; //random access variables for state machine
 
 		// Private Methods
 		void send(Message msg); // msg struct
 		void sync();
 		void process(uint toneID);
-		void recieved(Message msg);
+		//void recieved(Message msg);
 		
 		void testCurrentState();
 		int  getStateId(StateTransition& transition);
@@ -61,7 +62,7 @@ namespace dtmf
 
 		void runStateActions();
 
-		void checkAction();
+		void checkPayload();
 		void checkMessage();
 		void checkIsTimeout();
 		void checkTriggers();
@@ -79,13 +80,13 @@ void dtmf::node::send(Message msg)
 	std::vector<int> sequence = { msg.address, msg.command };
 	generator::playbackSequence(sequence);
 
-	newActionFlag = false;
-	currentAction = null;
-	currentActionPriority = 0;
+	newPayloadFlag = false;
+	currentPayload = null;
+	currentPayloadPriority = 0;
 }
 void dtmf::node::sync()
 {
-	std::vector<int> sequence = {15 };
+	std::vector<int> sequence = { syncronize };
 	generator::playbackSequence(sequence);
 
 }
@@ -95,7 +96,7 @@ void dtmf::node::process(uint toneID)
 	messageMutex.lock();
 	node::timestamp = node::clock.now();
 	std::cout << "Got tone [" << toneID << "]\n";
-		if (toneID == 15) {
+		if (toneID == syncronize) {
 			hasRecievedDirID = false;
 		}
 		else if (hasRecievedDirID == false)
@@ -122,16 +123,16 @@ void dtmf::node::process(uint toneID)
 }
 
 // ...
-void dtmf::node::sendPayload(int action, int priority)
+void dtmf::node::sendPayload(int payload, int priority)
 {
 	messageMutex.lock();
 
-		if (currentActionPriority <= priority) {
-			currentAction = action;
-			currentActionPriority = priority;
+		if (currentPayloadPriority <= priority) {
+			currentPayload = payload;
+			currentPayloadPriority = priority;
 		}
 
-		newActionFlag = true;
+		newPayloadFlag = true;
 
 	messageMutex.unlock();
 }
@@ -139,7 +140,7 @@ void dtmf::node::sendPayload(int action, int priority)
 // ...
 bool dtmf::node::payloadReady()
 {
-	return newActionFlag;
+	return newPayloadFlag;
 }
 
 // ...
@@ -207,7 +208,7 @@ bool dtmf::node::testTransition(StateTransition& transition)
 // ...
 void dtmf::node::runStateActions()
 {
-	for (auto action : states[currentState].actions)
+	for (auto& action : states[currentState].actions)
 	{
 		action.function();
 	}
@@ -217,11 +218,11 @@ void dtmf::node::runStateActions()
 }
 
 // ...
-void dtmf::node::checkAction()
+void dtmf::node::checkPayload()
 {
 	messageMutex.lock();
 
-		if (newActionFlag)
+		if (newPayloadFlag)
 		{
 			testCurrentState();
 		}
@@ -258,7 +259,7 @@ void dtmf::node::checkIsTimeout()
 // ...
 void dtmf::node::checkTriggers()
 {
-	checkAction();
+	checkPayload();
 	checkMessage();
 	checkIsTimeout();
 }
@@ -276,8 +277,8 @@ void dtmf::node::stateMachineThread()
 	{
 		checkTriggers();
 
-		std::this_thread::sleep_for(std::chrono::milliseconds(1));
-		timeoutTimer += 1;
+		std::this_thread::sleep_for(milliseconds(1));
+		
 	}
 }
 
@@ -300,7 +301,7 @@ void dtmf::node::initializeClient(void(*callback)(int payload, int id))
 
 	errorTransition = StateTransition("error",
 		{
-			StateCondition([] { return currentMessage.command == 14; }),
+			StateCondition([] { return currentMessage.command == error; }),
 		});
 
 	states = {
@@ -309,8 +310,8 @@ void dtmf::node::initializeClient(void(*callback)(int payload, int id))
 			},{
 				StateTransition("connect",
 					{
-						StateCondition([] { return currentAction != 0; }),
-						StateCondition([] { return newActionFlag; })
+						StateCondition([] { return currentPayload != 0; }),
+						StateCondition([] { return newPayloadFlag; })
 					}),
 
 			}),
@@ -324,7 +325,7 @@ void dtmf::node::initializeClient(void(*callback)(int payload, int id))
 		State("connect",
 			{
 				StateAction([] { sync(); }),
-				StateAction([] { var1 = currentAction; }),
+				StateAction([] { var1 = currentPayload; }),
 				StateAction([] { send(Message((int)isServer, 0, var1)); })
 			},{
 				StateTransition("setId",
@@ -373,8 +374,8 @@ void dtmf::node::initializeClient(void(*callback)(int payload, int id))
 					}),
 				StateTransition("sendReady",
 					{
-						StateCondition([] { return currentAction != 0; }),
-						StateCondition([] { return newActionFlag; })
+						StateCondition([] { return currentPayload != 0; }),
+						StateCondition([] { return newPayloadFlag; })
 					}),
 			}),
 		State("sendReady",
@@ -402,10 +403,10 @@ void dtmf::node::initializeClient(void(*callback)(int payload, int id))
 			}),
 		State("sendAction",
 			{
-				StateAction([] { send(Message((int)isServer, clientID, currentAction)); }),
-				StateAction([] { currentAction=0; }),
-				StateAction([] { newActionFlag = false; }),
-				StateAction([] { currentActionPriority = 0; })
+				StateAction([] { send(Message((int)isServer, clientID, currentPayload)); }),
+				StateAction([] { currentPayload=0; }),
+				StateAction([] { newPayloadFlag = false; }),
+				StateAction([] { currentPayloadPriority = 0; })
 			},{
 				StateTransition("base",
 					{
