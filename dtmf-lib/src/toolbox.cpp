@@ -1307,7 +1307,7 @@ void toolbox::calibrateThresholds()
 	resultAverages /= (float)desiredTests;
 
 	// apply threshold multiplier
-	resultAverages *= 0.8;
+	resultAverages *= 0.67;
 
 	// print & set result
 	std::cout << "\nCalibration Results:\n| ";
