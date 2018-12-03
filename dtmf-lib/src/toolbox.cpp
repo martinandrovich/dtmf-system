@@ -1204,19 +1204,25 @@ void toolbox::testGeneratorGoertzel(std::string args)
 // ...
 void toolbox::calibrateThresholds()
 {
+	using namespace std::chrono;
+	
 	// constants
-	const int tones[4]									= { 0, 5, 10, 15 };
+	const int testTones[4]									= { 0, 5, 10, 15 };
 	const int desiredChunks								= DURATION / SAMPLE_INTERVAL;
 	const int latencyChunks								= LATENCY / SAMPLE_INTERVAL;
+	const int totalChunks								= desiredChunks + latencyChunks;
 	const int playbackDuration							= desiredChunks * SAMPLE_INTERVAL;
-	const int desiredTests								= 5;
+	const int desiredTests								= 2;
 
 	// variables
-	sampler2											sampler([](std::vector<short> samples) {});
+	sampler2											sampler([](std::vector<short> samples) { return; });
 
 	std::map<int, std::array<float, 2>>					resultSingle;
 	std::vector<std::map<int, std::array<float, 2>>>	resultAll;
 	std::valarray<float>								resultAverages = { 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f };
+
+	steady_clock										clock;
+	time_point<steady_clock>							timeStart;
 
 	// print information
 	std::cout << "Goertzel Thresholds Calibration:\n\n";
@@ -1226,11 +1232,13 @@ void toolbox::calibrateThresholds()
 
 	// test for required toneId's
 	test:
-	for (const auto& testToneId : tones)
+	for (const auto& testToneId : testTones)
 	{
+		std::cout << "TEST: " << resultAll.size() << " | TONE: " << testToneId << "\n\n";
+
 		// containers
 		std::vector<short>					samples;
-		std::vector<std::vector<short>>		sampleChunks(desiredChunks + latencyChunks);
+		std::vector<std::vector<short>>		sampleChunks(totalChunks);
 		std::vector<std::array<float, 2>>	goertzelChunks;
 
 		// set test frequencies
@@ -1241,21 +1249,29 @@ void toolbox::calibrateThresholds()
 		generator::playback(testToneId, playbackDuration, true);
 
 		// sample desired chunks
-		for (int i = 0; i < (desiredChunks + latencyChunks); i++)
+		timeStart = clock.now();
+		for (int i = 0; i < totalChunks; i++)
 		{
 			// get sample chunk
 			auto chunk = sampler.sample();
-			samples.insert(samples.end(), chunk.begin(), chunk.end());
+			//samples.insert(samples.end(), chunk.begin(), chunk.end());
 			sampleChunks[i] = chunk;
 		}
 
+		auto timeElapsed = duration_cast<milliseconds>(clock.now() - timeStart).count();
+		std::cout << "Sampling " << totalChunks << " chunks took: " << timeElapsed << " ms\n";
+		std::cout << "Delayed: " << timeElapsed - (totalChunks*SAMPLE_INTERVAL) << " ms [" << (timeElapsed - (totalChunks*SAMPLE_INTERVAL))/totalChunks << " ms/chunk]\n";
+
 		// calculate goertzel responses for all chunks
+		timeStart = clock.now();
 		for (auto& chunk : sampleChunks)
 		{
+			processor::hanningWindow(chunk);
+
 			float magnitudeLow		= processor::goertzel(chunk, testFreqL);
 			float magnitudeHigh		= processor::goertzel(chunk, testFreqH);
 
-			goertzelChunks.push_back({ magnitudeLow	, magnitudeHigh});
+			goertzelChunks.push_back({ magnitudeLow, magnitudeHigh });
 		}
 
 		// find highest array pair
@@ -1271,8 +1287,10 @@ void toolbox::calibrateThresholds()
 		// insert into result map
 		resultSingle[testToneId] = { magnitudeLowMax, magnitudeHighMax };
 
+		std::cout << "Processing took: " << duration_cast<milliseconds>(clock.now() - timeStart).count() << " ms\n\n";
+
 		// safety sleep
-		std::this_thread::sleep_for(std::chrono::milliseconds(LATENCY*2));
+		std::this_thread::sleep_for(std::chrono::milliseconds(LATENCY));
 	}
 
 	// insert into results array
