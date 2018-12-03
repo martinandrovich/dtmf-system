@@ -177,7 +177,7 @@ void decoder::threadContinuous()
 	{
 		/*
 		The method is protected by a mutex, which is locked using scope guard std::unique_lock. If the queue is empty,
-		we wait on the condition variable cond_. This releases the lock to other threads and blocks until we are
+		we wait on the condition variable queueCondition. This releases the lock to other threads and blocks until we are
 		notified that the condition has been met.
 
 		https://juanchopanzacpp.wordpress.com/2013/02/26/concurrent-queue-c11/
@@ -186,17 +186,17 @@ void decoder::threadContinuous()
 		// aqcuire queue mutex
 		std::unique_lock<std::mutex> queueLock(decoder::queueMutex);
 
-		// check if queue empty; wait for conditional variable if false
-		while (queue.empty())
-		{
-			decoder::queueCondition.wait(queueLock);
-		}
+			// check if queue empty; wait for conditional variable if false
+			while (queue.empty())
+			{
+				decoder::queueCondition.wait(queueLock);
+			}
 
-		// make copy of first element in queue
-		auto samplesCopy = decoder::queue.front();
+			// make copy of first element in queue
+			auto samplesCopy = decoder::queue.front();
 
-		// pop the element
-		decoder::queue.pop_front();
+			// pop the element
+			decoder::queue.pop_front();
 
 		// unclock queue
 		queueLock.unlock();
@@ -275,7 +275,7 @@ int decoder::extractToneId(std::array<int, 2> &indexes)
 	int indexLow	= indexes[0];
 	int indexHigh	= indexes[1];
 
-	if ((indexLow * indexHigh) < 0)
+	if (indexHigh < 0 || indexLow < 0)
 	{
 		return -1;
 	}
