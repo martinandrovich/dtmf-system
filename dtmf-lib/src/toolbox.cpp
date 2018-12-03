@@ -1206,7 +1206,8 @@ void toolbox::calibrateThresholds()
 {
 	// constants
 	const int tones[4]									= { 0, 5, 10, 15 };
-	const int desiredChunks								= 50;
+	const int desiredChunks								= DURATION / SAMPLE_INTERVAL;
+	const int latencyChunks								= LATENCY / SAMPLE_INTERVAL;
 	const int playbackDuration							= desiredChunks * SAMPLE_INTERVAL;
 	const int desiredTests								= 5;
 
@@ -1229,7 +1230,7 @@ void toolbox::calibrateThresholds()
 	{
 		// containers
 		std::vector<short>					samples;
-		std::vector<std::vector<short>>		sampleChunks(desiredChunks);
+		std::vector<std::vector<short>>		sampleChunks(desiredChunks + latencyChunks);
 		std::vector<std::array<float, 2>>	goertzelChunks;
 		
 		// set test frequencies
@@ -1240,7 +1241,7 @@ void toolbox::calibrateThresholds()
 		generator::playback(testToneId, playbackDuration, true);
 
 		// sample desired chunks
-		for (int i = 0; i < desiredChunks; i++)
+		for (int i = 0; i < (desiredChunks + latencyChunks); i++)
 		{
 			// get sample chunk
 			auto chunk = sampler.sample();
@@ -1264,7 +1265,7 @@ void toolbox::calibrateThresholds()
 		for (const auto& chunk : goertzelChunks)
 		{
 			if (chunk[0] > magnitudeLowMax) { magnitudeLowMax = chunk[0]; }
-			if (chunk[1] > magnitudeHighMax) { magnitudeHighMax = chunk[0]; }
+			if (chunk[1] > magnitudeHighMax) { magnitudeHighMax = chunk[1]; }
 		}
 
 		// insert into result map
@@ -1305,13 +1306,16 @@ void toolbox::calibrateThresholds()
 	// calculate average
 	resultAverages /= (float)desiredTests;
 
-	// print result
-	;
+	// apply threshold multiplier
+	resultAverages *= 0.8;
 
-	// data here
-	resultAll; 
-	resultAverages;
-	std::cout << "Done!\n";
+	// print & set result
+	std::cout << "\nCalibration Results:\n| ";
+	for (int i = 0; i < resultAverages.size(); i++)
+	{
+		std::cout << freq[i] << " Hz = " << resultAverages[i] << " | ";
+		freqThresholds[i] = resultAverages[i];
+	}
+	std::cout << "\n";
 }
-
 }
