@@ -14,7 +14,7 @@ constexpr auto	AMPLITUDE_MAX		= 32767;										// Maximum possible signal ampli
 constexpr auto	DURATION			= 30;											// Default signal duration [ms]
 constexpr auto	PAUSE				= 20;											// Default signal pause [ms]
 constexpr int	DEBOUNCE			= (DURATION + 40) * 1;							// Default debounce value [ms] (default = 90% of DURATION + PAUSE)
-constexpr int	DEBOUNCE2			= DURATION;									// Default debounce value [ms] (default = DURATION)
+constexpr int	DEBOUNCE2			= DURATION;										// Default debounce value [ms] (default = DURATION)
 constexpr auto	TH_MULTIPLIER_H		= 10.0;											// Threshold multiplier second time
 constexpr auto	TH_MULTIPLIER_L		= TH_MULTIPLIER_H * 0.4;						// Threshold multiplier second time
 constexpr int	TIMEOUT				= 500;											// State Machine Protocol
@@ -29,6 +29,6 @@ constexpr int 	NUMPTS				= SAMPLE_RATE * (SAMPLE_INTERVAL / 1000.f);		// Number 
 //const int		freqLow[4]			= {  697,  770,  852,  941 };
 //const int		freqHigh[4]			= { 1209, 1336, 1477, 1633 };
 const int		freq[8]				= {  697,	  770,	  852,	  941,	 1209,	 1336,	 1477,	 1633 };
-const int		freqThresholds[8]	= {   75,	   75,	   75,	   75,	  100,	  100,	  100,	  100 };
-const float		freqMultiplier[8]	= { 1.04,	 1.00,	  1.00,  1.00,	 1.00,	 1.00,	 1.00,	 1.00 };
+static int		freqThresholds[8]	= {   75,	   75,	   75,	   75,	  100,	  100,	  100,	  100 };
+const float		freqMultiplier[8]	= { 1.00,	 1.00,	  1.00,  1.00,	 1.00,	 1.00,	 1.00,	 1.00 };
 
