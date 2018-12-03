@@ -1232,11 +1232,11 @@ void toolbox::calibrateThresholds()
 		std::vector<short>					samples;
 		std::vector<std::vector<short>>		sampleChunks(desiredChunks + latencyChunks);
 		std::vector<std::array<float, 2>>	goertzelChunks;
-		
+
 		// set test frequencies
 		int	testFreqL						= freq[testToneId / 4];
 		int	testFreqH						= freq[(testToneId % 4) + 4];
-		
+
 		// play tone
 		generator::playback(testToneId, playbackDuration, true);
 
@@ -1278,7 +1278,7 @@ void toolbox::calibrateThresholds()
 	// insert into results array
 	resultAll.push_back(resultSingle);
 	resultSingle.clear();
-	
+
 	// repeat until done
 	if (resultAll.size() < desiredTests)
 	{

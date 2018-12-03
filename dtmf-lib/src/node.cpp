@@ -310,7 +310,7 @@ void dtmf::node::initializeClient(void(*callback)(int payload, int id))
 			},{
 				StateTransition("connect",
 					{
-						StateCondition([] { return currentPayload != 0; }),
+						StateCondition([] { return currentPayload != null; }),
 						StateCondition([] { return newPayloadFlag; })
 					}),
 
@@ -360,6 +360,10 @@ void dtmf::node::initializeClient(void(*callback)(int payload, int id))
 					{
 						StateCondition([] { return newMessageFlag; }),
 						StateCondition([] {return currentMessage.command != var1 || currentMessage.id != clientID; }),
+					}),
+				StateTransition("start",
+					{
+						StateCondition([] { return checkTimeout(); })
 					}),
 			}),
 		State("awaiting",
