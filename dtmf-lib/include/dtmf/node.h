@@ -13,7 +13,7 @@ namespace dtmf
 	{
 
 		// Public Constructs
-		enum actions { null, up, down, left, right, primary, secondary, menu };
+		enum actions { null, up, down, left, right, primary, secondary, menu , empty, input, go,v11,v12,v13,error,syncronize};
 
 		struct State;
 		struct StateAction;

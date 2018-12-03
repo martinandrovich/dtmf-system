@@ -349,7 +349,7 @@ void dtmf::node::initializeClient(void(*callback)(int payload, int id))
 				StateAction([] { clientID = currentMessage.id; }),
 				StateAction([] {send(Message((int)isServer,clientID,var1)); }),
 			},{
-				StateTransition("base",
+				StateTransition("awaiting",
 					{
 						StateCondition([] { return newMessageFlag; }),
 						StateCondition([] {return currentMessage.command == var1; }),
@@ -361,6 +361,32 @@ void dtmf::node::initializeClient(void(*callback)(int payload, int id))
 						StateCondition([] {return currentMessage.command != var1 || currentMessage.id != clientID; }),
 					}),
 			}),
+		State("awaiting",
+			{
+				
+			},{
+				StateTransition("base",
+					{
+						StateCondition([] { return newMessageFlag; }),
+						StateCondition([] {return currentMessage.command == var1; }),
+						StateCondition([] {return currentMessage.id == clientID; }),
+					}),
+				StateTransition("sendReady",
+					{
+						StateCondition([] { return currentAction != 0; }),
+						StateCondition([] { return newActionFlag; })
+					}),
+			}),
+		State("sendReady",
+			{
+				StateAction([] {send(Message((int)isServer,0,go)); }),
+			},{
+				
+				StateTransition("awaiting",
+					{
+					}),
+			}),
+
 		State("base",
 			{
 				StateAction([] { currentErrorState = currentState; })
@@ -423,14 +449,12 @@ void dtmf::node::initializeServer(void(*callback)(int payload, int id))
 				StateCondition([] { return newMessageFlag; }),
 				StateCondition([] { return currentMessage.id == 0; })
 			}),
-			StateTransition("base",{
+			StateTransition("informReady",{
 				StateCondition([] { return newMessageFlag; }),
-				StateCondition([] { return currentMessage.command == menu; }),
+				StateCondition([] { return currentMessage.command == go; }),
 				StateCondition([] { return currentMessage.id != 0; })
 			}),
-			StateTransition("base",{
-				StateCondition([] { return numClients>=1; })
-				})
+			
 
 		}),
 		State("error",
@@ -452,7 +476,7 @@ void dtmf::node::initializeServer(void(*callback)(int payload, int id))
 				StateCondition([] {return currentMessage.id == numClients+1; }),
 				}),
 			StateTransition("start",{
-				StateCondition([] { return newMessageFlag; }),
+				//StateCondition([] { return newMessageFlag; }),
 				StateCondition([] {return currentMessage.command != var1 || currentMessage.id != numClients+1; }),
 				})
 		}),
@@ -462,6 +486,17 @@ void dtmf::node::initializeServer(void(*callback)(int payload, int id))
 			StateAction([] { sync(); }),
 		},{
 			StateTransition("start",{
+
+			}),
+
+		}),
+		State("informReady",{
+			
+			StateAction([] {sync(); send(Message((int)isServer, 0, go)); }),
+			StateAction([] {sync(); send(Message((int)isServer, 0, go)); }),
+			
+		},{
+			StateTransition("base",{
 
 			}),
 
