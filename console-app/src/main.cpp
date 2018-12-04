@@ -27,6 +27,7 @@ std::unordered_map<std::string, void(*)(std::string args)> commandMap =
 	{ "cal",		[](std::string args) { dtmf::toolbox::calibrateThresholds();										} },
 	{ "step",		[](std::string args) { dtmf::toolbox::testStepWindow(args);											} },
 	{ "sam",		[](std::string args) { dtmf::toolbox::testSampler();												} },
+	{ "sam2",		[](std::string args) { dtmf::toolbox::testSampler2();												} },
 	{ "gor",		[](std::string args) { dtmf::toolbox::testGoertzel(args);											} },
 	{ "ggor",		[](std::string args) { dtmf::toolbox::testGeneratorGoertzel(args);									} },
 	{ "gvsf",		[](std::string args) { dtmf::toolbox::testGoertzelVsFFT();											} },
@@ -35,9 +36,6 @@ std::unordered_map<std::string, void(*)(std::string args)> commandMap =
 // main function
 int main()
 {
-
-	std::cout << "Size of short: " << sizeof(signed short) << std::endl;
-
 	// initialize CLI
 	initCLI();
 

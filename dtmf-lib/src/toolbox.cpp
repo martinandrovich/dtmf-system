@@ -613,18 +613,57 @@ void toolbox::testGenerator()
 	}
 }
 
-// Test sampler2 class; record a single chunk + 100ms chunks using callback
+// Test SFML sampler class; 100ms chunks using callback
 void toolbox::testSampler()
 {
-	sampler2* test = new sampler2([](std::vector<short> samples) {std::cout << "Got chunk [" << samples.size() << "]\n"; });
-	test->prepare();
+	// variables
+	int			counter = 0;
+	int const	period = 100;
 
-	auto chunk = test->sample();
+	// setup sampler w/ callback
+	sampler*	test = new sampler([&](std::vector<short> samples) {
+		std::cout << "Got chunk [" << ++counter << "][" << samples.size() << "]\n";
+	});
 
-	test->start();
-	std::this_thread::sleep_for(std::chrono::milliseconds(100));
+	// start sampler for 100ms
+	test->start(SAMPLE_RATE);
+	std::this_thread::sleep_for(std::chrono::milliseconds(period));
 	test->stop();
 
+	// log
+	std::cout << "\nFinished test. Got " << counter << " chunks of expected " << period / SAMPLE_INTERVAL << ".\n";
+
+	// clean up
+	delete test;
+}
+
+// Test sampler2 class; record a single chunk + 100ms chunks using callback
+void toolbox::testSampler2()
+{
+	// variables
+	int			counter		= 0;
+	int const	period		= 100;
+
+	// setup sampler2 w/ callback
+	sampler2*	test		= new sampler2([&](std::vector<short> samples) {
+								std::cout << "Got chunk [" << ++counter << "][" << samples.size() << "]\n";
+							});
+
+	// prepare sampler
+	test->prepare();
+
+	// test single sample
+	//auto chunk = test->sample();
+
+	// start sampler for 100ms
+	test->start();
+	std::this_thread::sleep_for(std::chrono::milliseconds(period));
+	test->stop();
+
+	// log
+	std::cout << "\nFinished test. Got " << counter << " chunks of expected " << period / SAMPLE_INTERVAL << ".\n";
+
+	// clean up
 	delete test;
 }
 

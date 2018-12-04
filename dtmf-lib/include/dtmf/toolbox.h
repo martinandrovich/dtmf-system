@@ -28,6 +28,7 @@ namespace dtmf
 
 		void									testGenerator();
 		void									testSampler();
+		void									testSampler2();
 
 		void									logDecoder();
 		void									logDecoderQuiet();
