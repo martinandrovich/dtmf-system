@@ -1273,7 +1273,7 @@ void toolbox::calibrateThresholds()
 	test:
 	for (const auto& testToneId : testTones)
 	{
-		std::cout << "TEST: " << resultAll.size() << " | TONE: " << testToneId << "\n\n";
+		std::cout << "TEST: #" << resultAll.size() << " | TONE: " << testToneId << "\n\n";
 
 		// containers
 		std::vector<short>					samples;
@@ -1352,6 +1352,164 @@ void toolbox::calibrateThresholds()
 			auto toneId		= pair.first;
 			auto indexL		= toneId / 4;
 			auto indexH		= (toneId % 4) + 4;
+			auto magnitudeL = pair.second[0];
+			auto magnitudeH = pair.second[1];
+
+			resultAverages[indexL] += magnitudeL;
+			resultAverages[indexH] += magnitudeH;
+		}
+	}
+
+	// calculate average
+	resultAverages /= (float)desiredTests;
+
+	// apply threshold multiplier
+	resultAverages *= TH_LEVELER;
+
+	// print & set result
+	std::cout << "\nCalibration Results:\n| ";
+	for (int i = 0; i < resultAverages.size(); i++)
+	{
+		std::cout << freq[i] << " Hz = " << resultAverages[i] << " | ";
+		freqThresholds[i] = resultAverages[i];
+	}
+	std::cout << "\n";
+}
+
+// ...
+void toolbox::calibrateThresholds2()
+{
+	using namespace std::chrono;
+
+	// constants
+	const int testTones[4]								= { 0, 5, 10, 15 };
+	const int desiredChunks								= DURATION / SAMPLE_INTERVAL;
+	const int latencyChunks								= LATENCY / SAMPLE_INTERVAL;
+	const int totalChunks								= desiredChunks + latencyChunks;
+	const int playbackDuration							= desiredChunks * SAMPLE_INTERVAL;
+	const int desiredTests								= 2;
+
+	// variables
+	std::map<int, std::array<float, 2>>					resultSingle;
+	std::vector<std::map<int, std::array<float, 2>>>	resultAll;
+	std::valarray<float>								resultAverages = { 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f };
+
+	steady_clock										clock;
+	time_point<steady_clock>							timeStart;
+
+	std::atomic<int>									chunkCounter = 0;
+	std::atomic<bool>									sampling = false;
+	std::vector<std::vector<short>>						sampleChunks;
+
+	// print information
+	std::cout << "Goertzel Thresholds Calibration (v2):\n\n";
+
+	// sampler callback lamda (populate vector)
+	auto samplerCallback = [&](std::vector<short> samples)
+	{
+		if (sampling && chunkCounter < totalChunks)
+		{
+			sampleChunks.push_back(samples);
+			chunkCounter++;
+		}		
+	};
+
+	// sampler reset lambda
+	auto resetSampler = [&]()
+	{
+		sampling = false;
+		chunkCounter = 0;
+		sampleChunks.clear();
+		sampling = true;
+	};
+
+	// initialize sampler
+	sampler		sampler(samplerCallback);
+
+	// start sampler
+	sampler.start(SAMPLE_RATE);
+
+	// sleep to remove lag
+	std::this_thread::sleep_for(milliseconds(100));
+
+	// test for required toneId's
+	test:
+	for (const auto& testToneId : testTones)
+	{
+		std::cout << "TEST: #" << resultAll.size() << " | TONE: " << testToneId << "\n\n";
+
+		// containers
+		std::vector<short>					samples;
+		
+		std::vector<std::array<float, 2>>	goertzelChunks;
+
+		// set test frequencies
+		int	testFreqL = freq[testToneId / 4];
+		int	testFreqH = freq[(testToneId % 4) + 4];
+
+		// play tone
+		generator::playback(testToneId, playbackDuration, true);
+
+		// sample desired chunks
+		timeStart = clock.now();
+		resetSampler();
+		while (chunkCounter < totalChunks) {}
+
+		auto timeElapsed = duration_cast<milliseconds>(clock.now() - timeStart).count();
+		std::cout << "Sampling " << totalChunks << " chunks took: " << timeElapsed << " ms\n";
+		std::cout << "Delayed: " << timeElapsed - (totalChunks*SAMPLE_INTERVAL) << " ms [" << (timeElapsed - (totalChunks*SAMPLE_INTERVAL)) / totalChunks << " ms/chunk]\n";
+
+		// calculate goertzel responses for all chunks
+		timeStart = clock.now();
+		for (auto& chunk : sampleChunks)
+		{
+			processor::hanningWindow(chunk);
+
+			float magnitudeLow = processor::goertzel(chunk, testFreqL);
+			float magnitudeHigh = processor::goertzel(chunk, testFreqH);
+
+			goertzelChunks.push_back({ magnitudeLow, magnitudeHigh });
+		}
+
+		// find highest array pair
+		float magnitudeLowMax = 0.f;
+		float magnitudeHighMax = 0.f;
+
+		for (const auto& chunk : goertzelChunks)
+		{
+			if (chunk[0] > magnitudeLowMax) { magnitudeLowMax = chunk[0]; }
+			if (chunk[1] > magnitudeHighMax) { magnitudeHighMax = chunk[1]; }
+		}
+
+		// insert into result map
+		resultSingle[testToneId] = { magnitudeLowMax, magnitudeHighMax };
+
+		std::cout << "Processing took: " << duration_cast<milliseconds>(clock.now() - timeStart).count() << " ms\n\n";
+
+		// safety sleep
+		std::this_thread::sleep_for(std::chrono::milliseconds(LATENCY));
+	}
+
+	// insert into results array
+	resultAll.push_back(resultSingle);
+	resultSingle.clear();
+
+	// repeat until done
+	if (resultAll.size() < desiredTests)
+	{
+		goto test;
+	}
+
+	// calculate sum
+	for (const auto& map : resultAll)
+	{
+		int counter = 0;
+
+		for (auto pair : map)
+		{
+			auto toneId = pair.first;
+			auto indexL = toneId / 4;
+			auto indexH = (toneId % 4) + 4;
 			auto magnitudeL = pair.second[0];
 			auto magnitudeH = pair.second[1];
 

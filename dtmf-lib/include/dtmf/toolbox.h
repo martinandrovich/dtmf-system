@@ -49,6 +49,7 @@ namespace dtmf
 		void									testGoertzel(std::string args);
 
 		void									calibrateThresholds();
+		void									calibrateThresholds2();
 		
 		void									testGoertzelVsFFT();
 		void									exportSamples(std::vector<short> &samples, std::string filename = "output_samples.dat");

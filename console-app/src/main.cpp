@@ -25,6 +25,7 @@ std::unordered_map<std::string, void(*)(std::string args)> commandMap =
 	{ "aglog_t",	[](std::string args) { auto t = new std::thread(dtmf::toolbox::logGoertzelAverage, args);			} },
 	{ "lat",		[](std::string args) { dtmf::toolbox::averageLatency();												} },
 	{ "cal",		[](std::string args) { dtmf::toolbox::calibrateThresholds();										} },
+	{ "cal2",		[](std::string args) { dtmf::toolbox::calibrateThresholds2();										} },
 	{ "step",		[](std::string args) { dtmf::toolbox::testStepWindow(args);											} },
 	{ "sam",		[](std::string args) { dtmf::toolbox::testSampler();												} },
 	{ "sam2",		[](std::string args) { dtmf::toolbox::testSampler2();												} },
