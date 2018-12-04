@@ -52,6 +52,7 @@ private:
 	state					status;
 	bool					allowPlayback;
 	std::atomic<bool>		running;
+	std::atomic<bool>		prepared;
 
 	short int				waveIn[NUMPTS];   
 };

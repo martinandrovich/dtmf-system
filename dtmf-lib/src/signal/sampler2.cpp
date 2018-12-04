@@ -72,6 +72,7 @@ void sampler2::stop()
 	// update variables
 	this->status	= state::idle;
 	this->running	= false;
+	this->prepared	= false;
 	
 	// thread cleanup
 	if (this->worker != nullptr)
@@ -131,6 +132,9 @@ void sampler2::thread()
 // Prepare the sampler; block thread until a sample chunk has actual audio data
 void sampler2::prepare()
 {
+	// return if already prepared
+	if (this->prepared) { return; }
+	
 	using namespace std::chrono;
 	
 	// variables
@@ -148,8 +152,9 @@ void sampler2::prepare()
 		samplesChunk = sample();
 
 		// check whether any absolute value of chunk is greatear than 2; break if true.
-		if (std::any_of(samplesChunk.begin(), samplesChunk.end(), [&](short sample) {return abs(sample) > 2; }))
+		if (std::any_of(samplesChunk.begin(), samplesChunk.end(), [&](short sample) { return abs(sample) > 2; }))
 		{
+			this->prepared = true;
 			std::cout << "Sampler2 ready after: " << counter << " chunk(s) [" << static_cast<duration<double, std::milli>>(clock.now() - timeStart).count() << " ms]\n\n";
 			break;
 		}
