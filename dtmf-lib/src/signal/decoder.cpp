@@ -217,6 +217,14 @@ void decoder::appendQueue(std::vector<short> samples)
 		// segregate chunk if it contains multiple (i.e. size > ~441)
 		if (samples.size() > CHUNK_SIZE_MAX)
 		{
+			
+			// resize if not enough samples (safety)
+			if (samples.size() < CHUNK_SIZE)
+			{
+				samples.resize(CHUNK_SIZE, 0);
+			}
+			
+			// variables
 			std::vector<std::vector<short>>		chunks{};
 
 			auto itr = samples.cbegin();
@@ -233,7 +241,7 @@ void decoder::appendQueue(std::vector<short> samples)
 			// append remainder to end
 			if (remainder > 0)
 			{
-				chunks[numberOfChunks-1].insert(chunks[numberOfChunks-1].end(), samples.end() - remainder, samples.end());
+				chunks[numberOfChunks - 1].insert(chunks[numberOfChunks - 1].end(), samples.end() - remainder, samples.end());
 			}
 
 			// append chunks onto queue
