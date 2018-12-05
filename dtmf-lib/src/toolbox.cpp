@@ -619,10 +619,12 @@ void toolbox::testSampler()
 	// variables
 	int			counter = 0;
 	int const	period = 100;
+	std::map<int, int> testData;
 
 	// setup sampler w/ callback
 	sampler*	test = new sampler([&](std::vector<short> samples) {
-		std::cout << "Got chunk [" << ++counter << "][" << samples.size() << "]\n";
+		testData[++counter] = samples.size();
+		//std::cout << "Got chunk [" << ++counter << "][" << samples.size() << "]\n";
 	});
 
 	// start sampler for 100ms
@@ -632,6 +634,12 @@ void toolbox::testSampler()
 
 	// log
 	std::cout << "\nFinished test. Got " << counter << " chunks of expected " << period / SAMPLE_INTERVAL << ".\n";
+	std::cout << "Data:\n";
+	
+	for (const auto& pair : testData)
+	{
+		std::cout << "[" << pair.first << "][" << pair.second << "]\n";
+	}
 
 	// clean up
 	delete test;
