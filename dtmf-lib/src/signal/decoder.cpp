@@ -214,27 +214,39 @@ void decoder::appendQueue(std::vector<short> samples)
 
 		//std::cout << "[QUEUE] Adding to queue with [" << decoder::queue.size() << "] elements.\n";
 
-		// chunks container
-		std::vector<std::vector<short>>		chunks{};
-		int const							max_size	= 1.2 * CHUNK_SIZE;
+		// segregate chunk if it contains multiple (i.e. size > ~441)
+		if (samples.size() > CHUNK_SIZE_MAX)
+		{
+			std::vector<std::vector<short>>		chunks{};
 
-		//// segregate chunk if it contains multiple (i.e. size > ~441)
-		//if (samples.size() > max_size)
-		//{
-		//	auto itr = samples.cbegin();
+			auto itr = samples.cbegin();
+			int const numberOfChunks = samples.size() / CHUNK_SIZE;
+			int const remainder = samples.size() % CHUNK_SIZE;
 
-		//	while (itr != samples.cend() - 1)
-		//	{
-		//		chunks.emplace_back(std::vector<short>{itr, itr + 2});
-		//		++itr;
-		//	}
+			// create vector of chunks
+			for (int i = 0; i < numberOfChunks; i++)
+			{	
+				itr = itr + i * CHUNK_SIZE;
+				chunks.emplace_back(std::vector<short>{itr, itr + CHUNK_SIZE});
+			}
 
-		//	chunks;
-		//	std::cout << "cake\n";
-		//}		
+			// append remainder to end
+			if (remainder > 0)
+			{
+				chunks[numberOfChunks-1].insert(chunks[numberOfChunks-1].end(), samples.end() - remainder, samples.end());
+			}
 
-		// push chunks onto queue
-		decoder::queue.push_back(samples);
+			// append chunks onto queue
+			for (const auto& chunk : chunks)
+			{
+				decoder::queue.push_back(chunk);
+			}
+		}
+		else
+		{
+			// push chunks onto queue
+			decoder::queue.push_back(samples);
+		}
 
 	decoder::queueMutex.unlock();
 
@@ -441,14 +453,14 @@ void decoder::decode3(std::vector<short> &samples)
 	// update status
 	decoder::status = state::working;
 
-	// resize
-	samples.resize((int)CHUNK_SIZE);
-
 	// apply hanning window
 	processor::hanningWindow(samples);
 
-	// apply zero padding
-	processor::zeroPadding(samples, 448);
+	// apply zero padding if chunk too small
+	if (samples.size() < CHUNK_SIZE_MIN)
+	{
+		processor::zeroPadding(samples, CHUNK_SIZE_MIN);
+	}	
 
 	// compile goertzelArray for all DTMF frequencies
 	auto goertzelArray = processor::goertzelArray(samples);
