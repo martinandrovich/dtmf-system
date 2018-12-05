@@ -46,7 +46,7 @@ namespace dtmf
 		int					currentPayloadPriority;
 		Message				currentMessage;
 
-		mode serverMode = ping;
+		mode				serverMode = pingMode;
 
 		int					timeoutTimer;
 
@@ -73,7 +73,7 @@ namespace dtmf
 		void checkMessage();
 		void checkIsTimeout();
 		void checkTriggers();
-		bool checkTimeout(int timeout);
+		bool checkTimeout(int timeout = TIMEOUT);
 
 		void stateMachineThread();
 	}
@@ -84,8 +84,15 @@ namespace dtmf
 // ...
 void dtmf::node::send(Message msg)
 {
-	std::vector<int> sequence = { msg.address, msg.command };
-	generator::playbackSequence(sequence);
+	if (msg.address != -1) {
+
+		std::vector<int> sequence = { msg.address, msg.command };
+		generator::playbackSequence(sequence);
+	}
+	else {
+		std::vector<int> sequence = { msg.command };
+		generator::playbackSequence(sequence);
+	}
 
 	newPayloadFlag = false;
 	currentPayload = null;
@@ -180,14 +187,17 @@ bool dtmf::node::payloadReady()
 // ...
 void dtmf::node::testCurrentState()
 {
-	if (testTransition(errorTransition))
-	{
-		currentState = getStateId(errorTransition);
-		isQuickState = states[currentState].isQuickState;
-		//timeoutTimer = 0;
-		node::timestamp = node::clock.now();
-		runStateActions();
-		return;
+	if (standardErrorHandling) {
+
+		if (testTransition(errorTransition))
+		{
+			currentState = getStateId(errorTransition);
+			isQuickState = states[currentState].isQuickState;
+			//timeoutTimer = 0;
+			node::timestamp = node::clock.now();
+			runStateActions();
+			return;
+		}
 	}
 	for (auto& transition : states[currentState].transitions)
 	{
@@ -299,7 +309,7 @@ void dtmf::node::checkTriggers()
 }
 
 // ...int timeout
-bool dtmf::node::checkTimeout(int timeout= TIMEOUT)
+bool dtmf::node::checkTimeout(int timeout)
 {
 	return ((int)static_cast<duration<double, std::milli>>(node::clock.now() - node::timestamp).count() > timeout);
 }
@@ -543,6 +553,7 @@ void dtmf::node::initializeServer(void(*callback)(int payload, int id))
 		State("base",{
 		
 			StateAction([] { sync(); }),
+			StateAction([] { standardErrorHandling = true; }),
 			StateAction([] { 
 				errorTransition = StateTransition("error",
 					{
@@ -558,7 +569,7 @@ void dtmf::node::initializeServer(void(*callback)(int payload, int id))
 		}),
 		State("standardSend",{
 		//StateAction([] { sync(); }),
-		StateAction([] { send(Message((int)isServer, idCounter, 9)); })
+			StateAction([] { send(Message((int)isServer, idCounter, 9)); })
 
 		},{
 			StateTransition("standardRecieve",{
@@ -582,6 +593,72 @@ void dtmf::node::initializeServer(void(*callback)(int payload, int id))
 				StateTransition("standardSend",{
 
 					}),
+
+			}),
+		
+			
+		//==================================================================
+		//Time Chain
+		State("timeChainStart",{
+			StateAction([] {sync(); send(Message((int)isServer, 0, chain)); }),
+			StateAction([] {sync(); send(Message((int)isServer, 0, chain)); }),
+				StateAction([] {idCounter=1;  })
+			},{
+				StateTransition("timeChainBase",{
+
+				}),
+
+			}),
+		State("timeChainBase",{
+				StateAction([] { send(Message(input)); }),
+				StateAction([] { idCounter = 1;  }),
+				StateAction([] { standardErrorHandling=false; })
+			},{
+				StateTransition("timeChainAwaiting",{
+					
+				}),
+
+			}),
+			
+		State("timeChainAwaiting",{
+			},{
+				StateTransition("timeChainRecieve",
+				{
+				
+					StateCondition([] { return newMessageFlag; }),
+				
+				}),
+				StateTransition("timeChainTimeout",
+				{
+					StateCondition([] { return checkTimeout(); })
+				}),
+
+			},true),
+		State("timeChainRecieve",{
+				StateAction([] {callbackFunction(currentMessage.command,idCounter);  })
+			},{
+				StateTransition("timeChainNext",{
+
+				}),
+
+			}),
+		State("timeChainNext",{
+			StateAction([] {idCounter++;  })
+			},{
+				StateTransition("timeChainBase",{
+					StateCondition([] { return idCounter>numClients; })
+				}),
+				StateTransition("timeChainAwaiting",{
+
+				}),
+
+			}),
+		State("timeChainTimeout",{
+				StateAction([] { send(Message(null)); })
+			},{
+				StateTransition("timeChainNext",{
+
+				}),
 
 			}),
 
