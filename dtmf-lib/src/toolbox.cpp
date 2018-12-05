@@ -1254,12 +1254,12 @@ void toolbox::calibrateThresholds()
 	using namespace std::chrono;
 	
 	// constants
-	const int testTones[4]									= { 0, 5, 10, 15 };
+	const int testTones[4]								= { 0, 5, 10, 15 };
 	const int desiredChunks								= DURATION / SAMPLE_INTERVAL;
 	const int latencyChunks								= LATENCY / SAMPLE_INTERVAL;
 	const int totalChunks								= desiredChunks + latencyChunks;
 	const int playbackDuration							= desiredChunks * SAMPLE_INTERVAL;
-	const int desiredTests								= 2;
+	const int desiredTests								= 3;
 
 	// variables
 	sampler2											sampler([](std::vector<short> samples) { return; });
