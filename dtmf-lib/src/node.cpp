@@ -41,6 +41,7 @@ namespace dtmf
 
 		int					currentState = 0;
 		int					currentErrorState; //state to return to upon error signal
+		bool				standardErrorHandling = true; //state to return to upon error signal
 		int					currentPayload;
 		int					currentPayloadPriority;
 		Message				currentMessage;
@@ -72,7 +73,7 @@ namespace dtmf
 		void checkMessage();
 		void checkIsTimeout();
 		void checkTriggers();
-		bool checkTimeout();
+		bool checkTimeout(int timeout);
 
 		void stateMachineThread();
 	}
@@ -297,10 +298,10 @@ void dtmf::node::checkTriggers()
 	checkIsTimeout();
 }
 
-// ...
-bool dtmf::node::checkTimeout()
+// ...int timeout
+bool dtmf::node::checkTimeout(int timeout= TIMEOUT)
 {
-	return ((int)static_cast<duration<double, std::milli>>(node::clock.now() - node::timestamp).count() > TIMEOUT);
+	return ((int)static_cast<duration<double, std::milli>>(node::clock.now() - node::timestamp).count() > timeout);
 }
 
 // ...
@@ -531,7 +532,7 @@ void dtmf::node::initializeServer(void(*callback)(int payload, int id))
 		State("informReady",{
 			
 			StateAction([] {sync(); send(Message((int)isServer, 0, proceed)); }),
-			StateAction([] {sync(); send(Message((int)isServer, 0, proceed); }),
+			StateAction([] {sync(); send(Message((int)isServer, 0, proceed)); }),
 			
 		},{
 			StateTransition("base",{
