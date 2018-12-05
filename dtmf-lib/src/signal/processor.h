@@ -23,6 +23,8 @@ namespace processor
 	cArray					fft2(std::vector<short>& samples);
 
 	void					hanningWindow(std::vector<short> &samples);
+	void					zeroPadding(std::vector<short> &samples, float multiplier);
+	void					zeroPadding(std::vector<short> &samples, int size);
 
 	float					goertzel(std::vector<short> &samples, int frequency);
 	std::array<float, 8>	goertzelArray(std::vector<short> &samples);

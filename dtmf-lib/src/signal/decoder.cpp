@@ -209,10 +209,53 @@ void decoder::threadContinuous()
 // Add a (copy of) vector of samples to decoding queue
 void decoder::appendQueue(std::vector<short> samples)
 {	
+	// critical section
 	decoder::queueMutex.lock();
 
-	//std::cout << "[QUEUE] Adding to queue with [" << decoder::queue.size() << "] elements.\n";
-	decoder::queue.push_back(samples);
+		//std::cout << "[QUEUE] Adding to queue with [" << decoder::queue.size() << "] elements.\n";
+
+		// segregate chunk if it contains multiple (i.e. size > ~441)
+		if (samples.size() > CHUNK_SIZE_MAX)
+		{
+			
+			// resize if not enough samples (safety)
+			if (samples.size() < CHUNK_SIZE)
+			{
+				samples.resize(CHUNK_SIZE, 0);
+			}
+			
+			// variables
+			std::vector<std::vector<short>>		chunks{};
+
+			auto itr = samples.cbegin();
+			int const numberOfChunks = samples.size() / CHUNK_SIZE;
+			int const remainder = samples.size() % CHUNK_SIZE;
+
+			// create vector of chunks
+			for (int i = 0; i < numberOfChunks; i++)
+			{	
+				//itr = samples.cbegin() + i * CHUNK_SIZE;
+				chunks.emplace_back(std::vector<short>{itr, itr + CHUNK_SIZE});
+				itr += CHUNK_SIZE;
+			}
+
+			// append remainder to end
+			if (remainder > 0)
+			{
+				chunks[numberOfChunks - 1].insert(chunks[numberOfChunks - 1].end(), samples.end() - remainder, samples.end());
+			}
+
+			// append chunks onto queue
+			for (const auto& chunk : chunks)
+			{
+				decoder::queue.push_back(chunk);
+			}
+		}
+		else
+		{
+			// push chunks onto queue
+			decoder::queue.push_back(samples);
+		}
 
 	decoder::queueMutex.unlock();
 
@@ -422,6 +465,12 @@ void decoder::decode3(std::vector<short> &samples)
 	// apply hanning window
 	processor::hanningWindow(samples);
 
+	// apply zero padding if chunk too small
+	if (samples.size() < CHUNK_SIZE_MIN)
+	{
+		processor::zeroPadding(samples, CHUNK_SIZE_MIN);
+	}	
+
 	// compile goertzelArray for all DTMF frequencies
 	auto goertzelArray = processor::goertzelArray(samples);
 
@@ -439,6 +488,7 @@ void decoder::decode3(std::vector<short> &samples)
 	{
 		decoder::debounce = decoder::clock.now();
 		decoder::previousToneId = -1;
+		//processor::printGoertzelArray(goertzelArray);
 		decoder::callback(toneId);
 	}
 	else
