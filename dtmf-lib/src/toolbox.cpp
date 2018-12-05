@@ -1395,7 +1395,7 @@ void toolbox::calibrateThresholds2()
 	const int latencyChunks								= LATENCY / SAMPLE_INTERVAL;
 	const int totalChunks								= desiredChunks + latencyChunks;
 	const int playbackDuration							= desiredChunks * SAMPLE_INTERVAL;
-	const int desiredTests								= 3;
+	const int desiredTests								= 5;
 
 	// variables
 	std::map<int, std::array<float, 2>>					resultSingle;

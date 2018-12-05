@@ -215,47 +215,49 @@ void decoder::appendQueue(std::vector<short> samples)
 		//std::cout << "[QUEUE] Adding to queue with [" << decoder::queue.size() << "] elements.\n";
 
 		// segregate chunk if it contains multiple (i.e. size > ~441)
-		if (samples.size() > CHUNK_SIZE_MAX)
-		{
-			
-			// resize if not enough samples (safety)
-			if (samples.size() < CHUNK_SIZE)
-			{
-				samples.resize(CHUNK_SIZE, 0);
-			}
-			
-			// variables
-			std::vector<std::vector<short>>		chunks{};
+		//if (samples.size() > CHUNK_SIZE_MAX)
+		//{
+		//	
+		//	// resize if not enough samples (safety)
+		//	if (samples.size() < CHUNK_SIZE)
+		//	{
+		//		samples.resize(CHUNK_SIZE, 0);
+		//	}
+		//	
+		//	// variables
+		//	std::vector<std::vector<short>>		chunks{};
 
-			auto itr = samples.cbegin();
-			int const numberOfChunks = samples.size() / CHUNK_SIZE;
-			int const remainder = samples.size() % CHUNK_SIZE;
+		//	auto itr = samples.cbegin();
+		//	int const numberOfChunks = samples.size() / CHUNK_SIZE;
+		//	int const remainder = samples.size() % CHUNK_SIZE;
 
-			// create vector of chunks
-			for (int i = 0; i < numberOfChunks; i++)
-			{	
-				//itr = samples.cbegin() + i * CHUNK_SIZE;
-				chunks.emplace_back(std::vector<short>{itr, itr + CHUNK_SIZE});
-				itr += CHUNK_SIZE;
-			}
+		//	// create vector of chunks
+		//	for (int i = 0; i < numberOfChunks; i++)
+		//	{	
+		//		//itr = samples.cbegin() + i * CHUNK_SIZE;
+		//		chunks.emplace_back(std::vector<short>{itr, itr + CHUNK_SIZE});
+		//		itr += CHUNK_SIZE;
+		//	}
 
-			// append remainder to end
-			if (remainder > 0)
-			{
-				chunks[numberOfChunks - 1].insert(chunks[numberOfChunks - 1].end(), samples.end() - remainder, samples.end());
-			}
+		//	// append remainder to end
+		//	if (remainder > 0)
+		//	{
+		//		chunks[numberOfChunks - 1].insert(chunks[numberOfChunks - 1].end(), samples.end() - remainder, samples.end());
+		//	}
 
-			// append chunks onto queue
-			for (const auto& chunk : chunks)
-			{
-				decoder::queue.push_back(chunk);
-			}
-		}
-		else
-		{
-			// push chunks onto queue
-			decoder::queue.push_back(samples);
-		}
+		//	// append chunks onto queue
+		//	for (const auto& chunk : chunks)
+		//	{
+		//		decoder::queue.push_back(chunk);
+		//	}
+		//}
+		//else
+		//{
+		//	// push chunks onto queue
+		//	decoder::queue.push_back(samples);
+		//}
+
+		decoder::queue.push_back(samples);
 
 	decoder::queueMutex.unlock();
 
