@@ -13,6 +13,7 @@ constexpr auto	PI					= 3.141592653589732;
 constexpr auto	AMPLITUDE_MAX		= 32767;										// Maximum possible signal amplitude (100%) (SIGNED INT16 -> � 2^15 - 1)
 constexpr auto	DURATION			= 50;											// Default signal duration [ms]
 constexpr auto	PAUSE				= 20;											// Default signal pause [ms]
+constexpr auto	LATENCYVARIANCE		= 30;											// Expected maximum variance in latency [ms]
 constexpr int	DEBOUNCE			= (DURATION + 40) * 1;							// Default debounce value [ms] (default = 90% of DURATION + PAUSE)
 constexpr int	DEBOUNCE2			= DURATION;										// Default debounce value [ms] (default = DURATION)
 constexpr auto	TH_MULTIPLIER_H		= 1.0;											// Threshold multiplier

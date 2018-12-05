@@ -14,6 +14,7 @@ namespace dtmf
 
 		// Public Constructs
 		enum actions { null, up, down, left, right, primary, secondary, menu , empty, input, go,v11,v12,v13,error,syncronize};
+		enum mode { ping, chain, timed };
 
 		struct State;
 		struct StateAction;

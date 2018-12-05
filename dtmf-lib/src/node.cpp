@@ -17,6 +17,8 @@ namespace dtmf
 		using namespace std::chrono;
 
 		// Private Members
+
+
 		std::vector<State>	states;
 		StateTransition		errorTransition;
 		
@@ -43,6 +45,8 @@ namespace dtmf
 		int					currentPayloadPriority;
 		Message				currentMessage;
 
+		mode serverMode = ping;
+
 		int					timeoutTimer;
 
 		int					oldToneId;
@@ -54,6 +58,8 @@ namespace dtmf
 		void send(Message msg); // msg struct
 		void sync();
 		void process(uint toneID);
+		void sleepForMessages(int n);
+		void absorbMessage(int n);
 		//void recieved(Message msg);
 		
 		void testCurrentState();
@@ -122,6 +128,30 @@ void dtmf::node::process(uint toneID)
 	messageMutex.unlock();
 }
 
+//sleep For DURATION+PAUSE+LATENCYVARIANCE
+void dtmf::node::sleepForMessages(int n) {
+	
+	std::this_thread::sleep_for(milliseconds((DURATION + PAUSE + LATENCYVARIANCE)*n));
+		
+
+}
+// block and absorbs [n] full messages without proccessing
+void dtmf::node::absorbMessage(int n) { 
+	int c = 0;
+	while (c < n){
+		messageMutex.unlock();
+		std::this_thread::sleep_for(milliseconds(1));
+		messageMutex.lock();
+		if (newMessageFlag) {
+			currentMessage = Message();
+			newMessageFlag = false;
+			c++;
+		}
+
+	}
+
+}
+
 // ...
 void dtmf::node::sendPayload(int payload, int priority)
 {
@@ -142,6 +172,9 @@ bool dtmf::node::payloadReady()
 {
 	return newPayloadFlag;
 }
+
+
+
 
 // ...
 void dtmf::node::testCurrentState()
@@ -384,7 +417,7 @@ void dtmf::node::initializeClient(void(*callback)(int payload, int id))
 			}),
 		State("sendReady",
 			{
-				StateAction([] {send(Message((int)isServer,0,go)); }),
+				StateAction([] {send(Message((int)isServer,0,proceed)); }),
 			},{
 				
 				StateTransition("awaiting",
@@ -456,7 +489,7 @@ void dtmf::node::initializeServer(void(*callback)(int payload, int id))
 			}),
 			StateTransition("informReady",{
 				StateCondition([] { return newMessageFlag; }),
-				StateCondition([] { return currentMessage.command == go; }),
+				StateCondition([] { return currentMessage.command == proceed; }),
 				StateCondition([] { return currentMessage.id != 0; })
 			}),
 			
@@ -497,8 +530,8 @@ void dtmf::node::initializeServer(void(*callback)(int payload, int id))
 		}),
 		State("informReady",{
 			
-			StateAction([] {sync(); send(Message((int)isServer, 0, go)); }),
-			StateAction([] {sync(); send(Message((int)isServer, 0, go)); }),
+			StateAction([] {sync(); send(Message((int)isServer, 0, proceed)); }),
+			StateAction([] {sync(); send(Message((int)isServer, 0, proceed); }),
 			
 		},{
 			StateTransition("base",{
