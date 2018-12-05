@@ -9,7 +9,7 @@
 
 // Default Constructor
 sampler::sampler(std::function<void(std::vector<short> samples)> callback, bool allowPlayback)
-	: callback(callback), rate(SAMPLE_RATE), interval(SAMPLE_INTERVAL*1000), status(state::idle), allowPlayback(allowPlayback)
+	: callback(callback), rate(SAMPLE_RATE), interval(SAMPLE_INTERVAL*1000-1), status(state::idle), allowPlayback(allowPlayback)
 {
 	// set processing interval
 	this->setProcessingInterval(sf::microseconds(this->interval));
