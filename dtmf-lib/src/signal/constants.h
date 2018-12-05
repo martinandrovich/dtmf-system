@@ -17,11 +17,11 @@ constexpr auto	LATENCYVARIANCE		= 30;											// Expected maximum variance in 
 constexpr int	DEBOUNCE			= (DURATION + 40) * 1;							// Default debounce value [ms] (default = 90% of DURATION + PAUSE)
 constexpr int	DEBOUNCE2			= DURATION;										// Default debounce value [ms] (default = DURATION)
 constexpr auto	TH_MULTIPLIER_H		= 1.0;											// Threshold multiplier
-constexpr auto	TH_MULTIPLIER_L		= TH_MULTIPLIER_H * 0.9;						// Threshold multiplier (for redundancy)
-constexpr auto	TH_LEVELER			= 0.67;											// Threshold leveler (for calibration)
+constexpr auto	TH_MULTIPLIER_L		= TH_MULTIPLIER_H * 0.95;						// Threshold multiplier (for redundancy)
+constexpr auto	TH_LEVELER			= 0.75;											// Threshold leveler (for calibration)
 constexpr int	TIMEOUT				= 500;											// State Machine Protocol
 constexpr int	LATENCY				= 100;											// It's the fucking latency, bitch
-constexpr int	LATENCY_BUFFER		= 0;											// It's the fucking latency buffer, bitch
+constexpr int	LATENCY_BUFFER		= 30;											// It's the fucking latency buffer, bitch
 constexpr auto	FADE				= 0.10f;										// Default signal fade percentage [decimal] (0.1 = 10%)
 constexpr auto	SAMPLE_RATE			= 44100;										// Default signal sample rate in [Hz] (default = 44100)
 constexpr auto	SAMPLE_INTERVAL		= 10;											// Default interval of sample processing [ms]

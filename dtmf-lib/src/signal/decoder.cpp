@@ -234,8 +234,9 @@ void decoder::appendQueue(std::vector<short> samples)
 			// create vector of chunks
 			for (int i = 0; i < numberOfChunks; i++)
 			{	
-				itr = itr + i * CHUNK_SIZE;
+				//itr = samples.cbegin() + i * CHUNK_SIZE;
 				chunks.emplace_back(std::vector<short>{itr, itr + CHUNK_SIZE});
+				itr += CHUNK_SIZE;
 			}
 
 			// append remainder to end
