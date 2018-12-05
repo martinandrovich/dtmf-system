@@ -73,7 +73,7 @@ namespace dtmf
 		void checkMessage();
 		void checkIsTimeout();
 		void checkTriggers();
-		bool checkTimeout(int timeout);
+		bool checkTimeout(int timeout = TIMEOUT);
 
 		void stateMachineThread();
 	}
@@ -299,7 +299,7 @@ void dtmf::node::checkTriggers()
 }
 
 // ...int timeout
-bool dtmf::node::checkTimeout(int timeout= TIMEOUT)
+bool dtmf::node::checkTimeout(int timeout)
 {
 	return ((int)static_cast<duration<double, std::milli>>(node::clock.now() - node::timestamp).count() > timeout);
 }
