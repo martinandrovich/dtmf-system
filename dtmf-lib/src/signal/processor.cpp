@@ -44,6 +44,19 @@ void processor::hanningWindow(std::vector<short> &samples)
 	}
 }
 
+// Zero padding; perform on vector by reference
+void processor::zeroPadding(std::vector<short> &samples, float multiplier)
+{
+	const int size = samples.size() * multiplier;
+	samples.resize(450, 0);
+}
+
+// ...
+void processor::zeroPadding(std::vector<short> &samples, int size)
+{
+	samples.resize(size, 0);
+}
+
 // Run goertzel algorithm on chunk of samples for a specific frequency; return float
 float processor::goertzel(std::vector<short> &samples, int targetFrequency)
 {
@@ -55,10 +68,10 @@ float processor::goertzel(std::vector<short> &samples, int targetFrequency)
 	//w(n)=2cos(2*pi*k/N)*w(n-1)-w(n-2)+x(n)
 
 	// variable definitions
-	int		numSamples			= samples.size() * 2; //N[std::find(std::begin(freq), std::end(freq), frequency) - std::begin(freq)];
+	int		numSamples			= samples.size();
 	float   numSamplesFloat		= (float)numSamples;
 	float   scalingFactor		= numSamples / 2.f;
-	int		k					= (int)(0.5 + ((numSamplesFloat * targetFrequency) / SAMPLE_RATE));
+	int		k					= (int)(0.5f + ((numSamplesFloat * targetFrequency) / SAMPLE_RATE));
 
 	float	omega				= (2.f * PI * k) / numSamplesFloat;
 	float	sine				= sin(omega);

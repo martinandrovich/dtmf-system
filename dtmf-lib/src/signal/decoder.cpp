@@ -209,10 +209,32 @@ void decoder::threadContinuous()
 // Add a (copy of) vector of samples to decoding queue
 void decoder::appendQueue(std::vector<short> samples)
 {	
+	// critical section
 	decoder::queueMutex.lock();
 
-	//std::cout << "[QUEUE] Adding to queue with [" << decoder::queue.size() << "] elements.\n";
-	decoder::queue.push_back(samples);
+		//std::cout << "[QUEUE] Adding to queue with [" << decoder::queue.size() << "] elements.\n";
+
+		// chunks container
+		std::vector<std::vector<short>>		chunks{};
+		int const							max_size	= 1.2 * CHUNK_SIZE;
+
+		//// segregate chunk if it contains multiple (i.e. size > ~441)
+		//if (samples.size() > max_size)
+		//{
+		//	auto itr = samples.cbegin();
+
+		//	while (itr != samples.cend() - 1)
+		//	{
+		//		chunks.emplace_back(std::vector<short>{itr, itr + 2});
+		//		++itr;
+		//	}
+
+		//	chunks;
+		//	std::cout << "cake\n";
+		//}		
+
+		// push chunks onto queue
+		decoder::queue.push_back(samples);
 
 	decoder::queueMutex.unlock();
 
@@ -419,8 +441,14 @@ void decoder::decode3(std::vector<short> &samples)
 	// update status
 	decoder::status = state::working;
 
+	// resize
+	samples.resize((int)CHUNK_SIZE);
+
 	// apply hanning window
 	processor::hanningWindow(samples);
+
+	// apply zero padding
+	processor::zeroPadding(samples, 448);
 
 	// compile goertzelArray for all DTMF frequencies
 	auto goertzelArray = processor::goertzelArray(samples);
@@ -439,6 +467,7 @@ void decoder::decode3(std::vector<short> &samples)
 	{
 		decoder::debounce = decoder::clock.now();
 		decoder::previousToneId = -1;
+		//processor::printGoertzelArray(goertzelArray);
 		decoder::callback(toneId);
 	}
 	else
