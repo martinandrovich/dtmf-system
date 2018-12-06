@@ -12,13 +12,13 @@ constexpr auto 	DATA_PATH			= "dat/";										// Path of data directory (defaul
 constexpr auto	PI					= 3.141592653589732;
 constexpr auto	AMPLITUDE_MAX		= 32767;										// Maximum possible signal amplitude (100%) (SIGNED INT16 -> � 2^15 - 1)
 constexpr auto	DURATION			= 50;											// Default signal duration [ms]
-constexpr auto	PAUSE				= 50;											// Default signal pause [ms]
+constexpr auto	PAUSE				= 20;											// Default signal pause [ms]
 constexpr auto	LATENCYVARIANCE		= 30;											// Expected maximum variance in latency [ms]
 constexpr int	DEBOUNCE			= (DURATION + 40) * 1;							// Default debounce value [ms] (default = 90% of DURATION + PAUSE)
-constexpr int	DEBOUNCE2			= DURATION;										// Default debounce value [ms] (default = DURATION)
+constexpr int	DEBOUNCE2			= DURATION + 20;										// Default debounce value [ms] (default = DURATION)
 constexpr auto	TH_MULTIPLIER_H		= 1.0;											// Threshold multiplier
-constexpr auto	TH_MULTIPLIER_L		= TH_MULTIPLIER_H * 0.8;						// Threshold multiplier (for redundancy)
-constexpr auto	TH_LEVELER			= 0.70;											// Threshold leveler (for calibration)
+constexpr auto	TH_MULTIPLIER_L		= TH_MULTIPLIER_H * 0.95;						// Threshold multiplier (for redundancy)
+constexpr auto	TH_LEVELER			= 0.8;											// Threshold leveler (for calibration)
 constexpr int	TIMEOUT				= 500;											// State Machine Protocol
 constexpr int	LATENCY				= 100;											// It's the fucking latency, bitch
 constexpr int	LATENCY_BUFFER		= 30;											// It's the fucking latency buffer, bitch
