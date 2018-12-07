@@ -45,13 +45,11 @@ namespace decoder
 	std::function<void(uint)>			callback;
 
 	// Private Methods
-	void								threadBuffered();
 	void								threadInstant();
-	void								threadContinuous();
+	void								threadWindowed();
 
 	void								decode(std::vector<short> &samples);
 	void								decode2(std::vector<short> &samples);
-	void								decode3(std::vector<short> &samples);
 
 	void								appendQueue(std::vector<short> samples);
 	
@@ -80,7 +78,7 @@ void decoder::run(std::function<void(uint toneId)> callback, bool allowPlayback)
 	decoder::previousToneId = -1;
 	decoder::debounce		= decoder::clock.now();
 	decoder::running		= true;
-	decoder::worker			= std::thread(&decoder::threadContinuous);
+	decoder::worker			= std::thread(&decoder::threadInstant);
 }	
 
 // End the decoder
@@ -96,8 +94,8 @@ void decoder::end()
 	decoder::worker.join();
 }
 
-// Thread function (step buffered decode)
-void decoder::threadBuffered()
+// Thread function (step window decoding / chunk combination)
+void decoder::threadWindowed()
 {
 	while (decoder::running)
 	{		
@@ -136,42 +134,8 @@ void decoder::threadBuffered()
 	}
 }
 
-// Thread function (instant decode)
+// Thread function (instant decoding)
 void decoder::threadInstant()
-{
-	while (decoder::running)
-	{
-		// check status
-		if (decoder::status != state::running)
-		{
-			continue;
-		}
-
-		// queue critical section
-		decoder::queueMutex.lock();
-
-			// check queue size
-			if (decoder::queue.empty())
-			{
-				decoder::queueMutex.unlock();
-				continue;
-			}
-
-			// make copy of first element in queue
-			auto samplesCopy = decoder::queue.front();
-
-			// pop the element
-			decoder::queue.pop_front();
-
-		decoder::queueMutex.unlock();
-
-		// decode the copied samples
-		decoder::decode(samplesCopy);
-	}
-}
-
-// ...
-void decoder::threadContinuous()
 {
 	while (decoder::running)
 	{
@@ -202,7 +166,7 @@ void decoder::threadContinuous()
 		queueLock.unlock();
 
 		// decode the copied samples
-		decoder::decode3(samplesCopy);
+		decoder::decode(samplesCopy);
 	}
 }
 
@@ -215,49 +179,47 @@ void decoder::appendQueue(std::vector<short> samples)
 		//std::cout << "[QUEUE] Adding to queue with [" << decoder::queue.size() << "] elements.\n";
 
 		// segregate chunk if it contains multiple (i.e. size > ~441)
-		//if (samples.size() > CHUNK_SIZE_MAX)
-		//{
-		//	
-		//	// resize if not enough samples (safety)
-		//	if (samples.size() < CHUNK_SIZE)
-		//	{
-		//		samples.resize(CHUNK_SIZE, 0);
-		//	}
-		//	
-		//	// variables
-		//	std::vector<std::vector<short>>		chunks{};
+		if (samples.size() > CHUNK_SIZE_MAX)
+		{
+			
+			// resize if not enough samples (safety)
+			if (samples.size() < CHUNK_SIZE)
+			{
+				samples.resize(CHUNK_SIZE, 0);
+			}
+			
+			// variables
+			std::vector<std::vector<short>>		chunks{};
 
-		//	auto itr = samples.cbegin();
-		//	int const numberOfChunks = samples.size() / CHUNK_SIZE;
-		//	int const remainder = samples.size() % CHUNK_SIZE;
+			auto itr = samples.cbegin();
+			int const numberOfChunks = samples.size() / CHUNK_SIZE;
+			int const remainder = samples.size() % CHUNK_SIZE;
 
-		//	// create vector of chunks
-		//	for (int i = 0; i < numberOfChunks; i++)
-		//	{	
-		//		//itr = samples.cbegin() + i * CHUNK_SIZE;
-		//		chunks.emplace_back(std::vector<short>{itr, itr + CHUNK_SIZE});
-		//		itr += CHUNK_SIZE;
-		//	}
+			// create vector of chunks
+			for (int i = 0; i < numberOfChunks; i++)
+			{	
+				//itr = samples.cbegin() + i * CHUNK_SIZE;
+				chunks.emplace_back(std::vector<short>{itr, itr + CHUNK_SIZE});
+				itr += CHUNK_SIZE;
+			}
 
-		//	// append remainder to end
-		//	if (remainder > 0)
-		//	{
-		//		chunks[numberOfChunks - 1].insert(chunks[numberOfChunks - 1].end(), samples.end() - remainder, samples.end());
-		//	}
+			// append remainder to end
+			if (remainder > 0)
+			{
+				chunks[numberOfChunks - 1].insert(chunks[numberOfChunks - 1].end(), samples.end() - remainder, samples.end());
+			}
 
-		//	// append chunks onto queue
-		//	for (const auto& chunk : chunks)
-		//	{
-		//		decoder::queue.push_back(chunk);
-		//	}
-		//}
-		//else
-		//{
-		//	// push chunks onto queue
-		//	decoder::queue.push_back(samples);
-		//}
-
-		decoder::queue.push_back(samples);
+			// append chunks onto queue
+			for (const auto& chunk : chunks)
+			{
+				decoder::queue.push_back(chunk);
+			}
+		}
+		else
+		{
+			// push chunk onto queue
+			decoder::queue.push_back(samples);
+		}
 
 	decoder::queueMutex.unlock();
 
@@ -328,39 +290,42 @@ int decoder::extractToneId(std::array<int, 2> &indexes)
 	return (indexLow * 4 + indexHigh);
 }
 
-// Decode an chunk of samples from the queue
+// Decode a chunk of samples from the queue
 void decoder::decode(std::vector<short> &samples)
-{	
-	decoder::status = state::working;
-	
-	// decode
-	//std::cout << "[DECODER] Decoding [" << samples.size() << "] samples...\n\n";
-
-	// check generator overlapping
-	if (!decoder::allowPlayback)
-	{
-		// define time since last generator playback
-		auto timeSincePlayback = (int)static_cast<duration<double, std::milli>>(decoder::clock.now() - generator::getTimestamp()).count();
-		
-		// return if overlapping
-		// VALUES NEED TO BE CHANGED WHEN NOT LOOKING AT AVERAGE GOERTZEL
-		if (timeSincePlayback > (LATENCY - DURATION * 2) && timeSincePlayback < (LATENCY + LATENCY_BUFFER + DURATION * 2))
-		{
-			//std::cout << "OVERLAP! [" << timeSincePlayback << "ms]" << std::endl;
-			decoder::status = state::running;
-			return;
-		}
-	}
-	
+{
 	// check debounce
-	if ((int)static_cast<duration<double, std::milli>>(decoder::clock.now() - decoder::debounce).count() < DEBOUNCE)
+	if (static_cast<duration<double, std::milli>>(decoder::clock.now() - decoder::debounce).count() < DEBOUNCE)
 	{
-		decoder::status = state::running;
 		return;
 	}
 
-	// apply hanning window to samples
+	// check generator overlap
+	if (!decoder::allowPlayback)
+	{
+		// calculate time since last generator playback
+		auto timeSincePlayback = static_cast<duration<double, std::milli>>(decoder::clock.now() - generator::getTimestamp()).count();
+
+		// return if overlapping
+		if (timeSincePlayback < (LATENCY + DURATION + LATENCY_BUFFER))
+		{
+			return;
+		}
+	}
+
+	// log
+	//std::cout << "[DECODER] Decoding [" << samples.size() << "] samples...\n\n";
+
+	// update status
+	decoder::status = state::working;
+
+	// apply hanning window
 	processor::hanningWindow(samples);
+
+	// apply zero padding if chunk too small
+	if (samples.size() < CHUNK_SIZE_MIN)
+	{
+		processor::zeroPadding(samples, CHUNK_SIZE_MIN);
+	}
 
 	// compile goertzelArray for all DTMF frequencies
 	auto goertzelArray = processor::goertzelArray(samples);
@@ -368,20 +333,31 @@ void decoder::decode(std::vector<short> &samples)
 	// extract indexes (row & column) of most prominent frequencies
 	auto indexes = decoder::extractIndexes(goertzelArray);
 
-	// convert indexes to DTMF toneID
+	// check harmonies
+	;
+
+	// convert indexes to DTMF toneId
 	auto toneId = decoder::extractToneId(indexes);
 
-	// callback
-	if (toneId >= 0)
+	// redundancy check & callback
+	if (toneId >= 0 && decoder::previousToneId == toneId)
 	{
 		decoder::debounce = decoder::clock.now();
+		decoder::previousToneId = -1;
+		//processor::printGoertzelArray(goertzelArray);
 		decoder::callback(toneId);
 	}
-	
+	else
+	{
+		decoder::previousToneId = toneId;
+	}
+
+	// update status
 	decoder::status = state::running;
+
 }
 
-// Decode an chunk of samples from the queue (version 2)
+// Decode a chunk of samples from the queue (version 2)
 void decoder::decode2(std::vector<short> &samples)
 {
 	decoder::status = state::working;
@@ -390,7 +366,7 @@ void decoder::decode2(std::vector<short> &samples)
 	//std::cout << "[DECODER] Decoding [" << samples.size() << "] samples...\n\n";
 
 	// check debounce
-	if ((int)static_cast<duration<double, std::milli>>(decoder::clock.now() - decoder::debounce).count() < DEBOUNCE)
+	if ((int)static_cast<duration<double, std::milli>>(decoder::clock.now() - decoder::debounce).count() < OLD_DEBOUNCE)
 	{
 		decoder::status = state::running;
 		return;
@@ -434,71 +410,4 @@ void decoder::decode2(std::vector<short> &samples)
 	previousThresholdBroken		= thresholdBroken;
 
 	decoder::status = state::running;
-}
-
-// ...
-void decoder::decode3(std::vector<short> &samples)
-{
-	// check debounce
-	if (static_cast<duration<double, std::milli>>(decoder::clock.now() - decoder::debounce).count() < DEBOUNCE2)
-	{
-		return;
-	}
-
-	// check generator overlap
-	if (!decoder::allowPlayback)
-	{
-		// calculate time since last generator playback
-		auto timeSincePlayback = static_cast<duration<double, std::milli>>(decoder::clock.now() - generator::getTimestamp()).count();
-
-		// return if overlapping
-		if (timeSincePlayback < (LATENCY + DURATION + LATENCY_BUFFER))
-		{
-			return;
-		}
-	}
-
-	// log
-	//std::cout << "[DECODER] Decoding [" << samples.size() << "] samples...\n\n";
-
-	// update status
-	decoder::status = state::working;
-
-	// apply hanning window
-	processor::hanningWindow(samples);
-
-	// apply zero padding if chunk too small
-	if (samples.size() < CHUNK_SIZE_MIN)
-	{
-		processor::zeroPadding(samples, CHUNK_SIZE_MIN);
-	}	
-
-	// compile goertzelArray for all DTMF frequencies
-	auto goertzelArray = processor::goertzelArray(samples);
-
-	// extract indexes (row & column) of most prominent frequencies
-	auto indexes = decoder::extractIndexes(goertzelArray);
-
-	// check harmonies
-	;
-
-	// convert indexes to DTMF toneId
-	auto toneId = decoder::extractToneId(indexes);
-
-	// redundancy check & callback
-	if (toneId >= 0 && decoder::previousToneId == toneId)
-	{
-		decoder::debounce = decoder::clock.now();
-		decoder::previousToneId = -1;
-		//processor::printGoertzelArray(goertzelArray);
-		decoder::callback(toneId);
-	}
-	else
-	{
-		decoder::previousToneId = toneId;
-	}
-
-	// update status
-	decoder::status = state::running;
-
 }
