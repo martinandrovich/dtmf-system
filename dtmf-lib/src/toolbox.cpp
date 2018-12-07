@@ -756,7 +756,7 @@ void toolbox::testStepWindow(std::string args)
 
 	// prepare sampler
 	sampler.prepare();
-	std::vector<short>	samplesChunk(NUMPTS);
+	std::vector<short>	samplesChunk(CHUNK_SIZE);
 
 	// start clock
 	std::cout << "Starting sampling ...\n";
