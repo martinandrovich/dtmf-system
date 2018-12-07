@@ -357,7 +357,7 @@ void decoder::decode(std::vector<short> &samples)
 
 }
 
-// Decode a chunk of samples from the queue (version 2)
+// Decode a chunk of samples from the queue (with threshold breaking)
 void decoder::decode2(std::vector<short> &samples)
 {
 	decoder::status = state::working;
