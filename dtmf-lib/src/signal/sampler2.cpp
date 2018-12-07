@@ -30,7 +30,7 @@ sampler2::sampler2(std::function<void(std::vector<short>)> callback, bool allowP
 
 	// wave header properties
 	WaveInHdr.lpData = (LPSTR)waveIn;
-	WaveInHdr.dwBufferLength = NUMPTS * 2;
+	WaveInHdr.dwBufferLength = CHUNK_SIZE * 2;
 	WaveInHdr.dwBytesRecorded = 0;
 	WaveInHdr.dwUser = 0L;
 	WaveInHdr.dwFlags = 0L;
@@ -139,7 +139,7 @@ void sampler2::prepare()
 	
 	// variables
 	int counter = 0;
-	std::vector<short> samplesChunk(NUMPTS);
+	std::vector<short> samplesChunk(CHUNK_SIZE);
 	high_resolution_clock				clock;
 	time_point<high_resolution_clock>	timeStart = clock.now();
 
@@ -203,7 +203,7 @@ std::vector<short> sampler2::sample()
 	//dur = static_cast<duration<double, std::milli>>(clock.now() - timeStart).count();
 
 	// create vector
-	std::vector<short> samplesChunk(&waveIn[0], &waveIn[0] + NUMPTS);
+	std::vector<short> samplesChunk(&waveIn[0], &waveIn[0] + CHUNK_SIZE);
 	//dur = static_cast<duration<double, std::milli>>(clock.now() - timeStart).count();
 
 	// return vector

@@ -54,6 +54,6 @@ private:
 	std::atomic<bool>		running;
 	std::atomic<bool>		prepared;
 
-	short int				waveIn[NUMPTS];   
+	short int				waveIn[CHUNK_SIZE];   
 };
 
