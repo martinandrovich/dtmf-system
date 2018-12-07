@@ -44,17 +44,17 @@ void processor::hanningWindow(std::vector<short> &samples)
 	}
 }
 
-// Zero padding; perform on vector by reference
+// Zero padding with a multiplier; perform on vector by reference
 void processor::zeroPadding(std::vector<short> &samples, float multiplier)
 {
 	const int size = samples.size() * multiplier;
 	samples.resize(450, 0);
 }
 
-// ...
-void processor::zeroPadding(std::vector<short> &samples, int size)
+// Zero padding with fixed resize; perform on vector by reference
+void processor::zeroPadding(std::vector<short> &samples, int resize)
 {
-	samples.resize(size, 0);
+	samples.resize(resize, 0);
 }
 
 // Run goertzel algorithm on chunk of samples for a specific frequency; return float

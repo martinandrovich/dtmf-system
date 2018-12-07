@@ -24,7 +24,7 @@ namespace processor
 
 	void					hanningWindow(std::vector<short> &samples);
 	void					zeroPadding(std::vector<short> &samples, float multiplier);
-	void					zeroPadding(std::vector<short> &samples, int size);
+	void					zeroPadding(std::vector<short> &samples, int resize);
 
 	float					goertzel(std::vector<short> &samples, int frequency);
 	std::array<float, 8>	goertzelArray(std::vector<short> &samples);
