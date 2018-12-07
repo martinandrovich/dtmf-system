@@ -417,8 +417,8 @@ void dtmf::node::initializeClient(void(*callback)(int payload, int id))
 				StateTransition("base",
 					{
 						StateCondition([] { return newMessageFlag; }),
-						StateCondition([] {return currentMessage.command == var1; }),
-						StateCondition([] {return currentMessage.id == clientID; }),
+						StateCondition([] {return currentMessage.command == proceed; }),
+						StateCondition([] {return currentMessage.id == 0; }),
 					}),
 				StateTransition("sendReady",
 					{
