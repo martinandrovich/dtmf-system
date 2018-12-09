@@ -192,14 +192,14 @@ void executePayload(int toneId, int clientId)
 		keyRight	= 0x27;
 		keyUp		= 0x26;
 		keyDown		= 0x28;
-		keyPrimary	= 0x26;
+		keyPrimary	= 0xBA;
 		break;
 	case 2:
 		keyLeft		= 0x25;
 		keyRight	= 0x27;
 		keyUp		= 0x26;
 		keyDown		= 0x28;
-		keyPrimary	= 0x26;
+		keyPrimary	= 0xBA;
 		break;
 	}
 
