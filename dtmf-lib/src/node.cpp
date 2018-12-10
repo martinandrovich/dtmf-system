@@ -46,7 +46,7 @@ namespace dtmf
 		int					currentPayloadPriority;
 		Message				currentMessage;
 
-		mode				serverMode = pingMode;
+		mode				serverMode = chainMode;
 
 		int					timeoutTimer;
 
@@ -440,6 +440,13 @@ void dtmf::node::initializeClient(void(*callback)(int payload, int id))
 			{
 				StateAction([] { currentErrorState = currentState; })
 			},{
+				StateTransition("chainBase",
+					{
+						StateCondition([] { return newMessageFlag; }),
+						StateCondition([] { return currentMessage.id == 0; }),
+						StateCondition([] { return currentMessage.command == chain; }),
+					}),
+
 				StateTransition("sendAction",
 					{
 						StateCondition([] { return newMessageFlag; }),
@@ -462,6 +469,28 @@ void dtmf::node::initializeClient(void(*callback)(int payload, int id))
 					}),
 
 			}),
+		State("chainBase",
+			{
+
+			}, {
+				StateTransition("chainSend",
+					{
+						StateCondition([] { return newMessageFlag; }),
+						StateCondition([] { return currentMessage.command == proceed; }),
+					}),
+
+			},true),
+		State("chainSend",
+			{
+				StateAction([] { absorbMessage(clientID-1); }),
+				StateAction([] { send(Message(currentPayload)); }),
+			},{
+				StateTransition("sendAction",
+					{
+						
+					}),
+
+			},true),
 	};
 	
 	// start decoder
@@ -525,7 +554,7 @@ void dtmf::node::initializeServer(void(*callback)(int payload, int id))
 				StateCondition([] {return currentMessage.id == numClients+1; }),
 				}),
 			StateTransition("start",{
-				//StateCondition([] { return newMessageFlag; }),
+				StateCondition([] { return newMessageFlag; }),
 				StateCondition([] {return currentMessage.command != var1 || currentMessage.id != numClients+1; }),
 				})
 		}),
@@ -562,6 +591,10 @@ void dtmf::node::initializeServer(void(*callback)(int payload, int id))
 				}),
 			StateAction([] { currentErrorState=currentState; })
 		},{
+			StateTransition("timeChainStart",{
+					StateCondition([] { return serverMode==chainMode||serverMode==timedMode; }),
+
+				}),
 
 			StateTransition("standardSend",{
 
@@ -600,8 +633,8 @@ void dtmf::node::initializeServer(void(*callback)(int payload, int id))
 		//==================================================================
 		//Time Chain
 		State("timeChainStart",{
-			StateAction([] {sync(); send(Message((int)isServer, 0, chain)); }),
-			StateAction([] {sync(); send(Message((int)isServer, 0, chain)); }),
+			StateAction([] {sync(); send(Message((int)isServer, 0, serverMode)); }),
+			StateAction([] {sync(); send(Message((int)isServer, 0, serverMode)); }),
 				StateAction([] {idCounter=1;  })
 			},{
 				StateTransition("timeChainBase",{
@@ -614,6 +647,12 @@ void dtmf::node::initializeServer(void(*callback)(int payload, int id))
 				StateAction([] { idCounter = 1;  }),
 				StateAction([] { standardErrorHandling=false; })
 			},{
+				StateTransition("base",{
+				
+					StateCondition([] { return serverMode==pingMode; }),
+						
+					
+				}),
 				StateTransition("timeChainAwaiting",{
 					
 				}),
