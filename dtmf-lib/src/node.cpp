@@ -50,6 +50,9 @@ namespace dtmf
 
 		int					timeoutTimer;
 
+		int					transmitions;
+		int					failures;
+
 		int					oldToneId;
 		bool				hasRecievedDirID;
 				
@@ -84,6 +87,12 @@ namespace dtmf
 // ...
 void dtmf::node::send(Message msg)
 {
+	transmitions++;
+	if (transmitions % 10 == 0) {
+		std::cout << "Transmitions: " << transmitions << " Errors: " << failures << " Error rate: " << (float)failures / (float)transmitions << std::endl;
+	}
+
+
 	if (msg.address != -1) {
 
 		std::vector<int> sequence = { msg.address, msg.command };
@@ -361,6 +370,7 @@ void dtmf::node::initializeClient(void(*callback)(int payload, int id))
 			}),
 		State("error",
 			{
+				StateAction([] { failures++; }),
 				StateAction([] { currentState = currentErrorState; })
 			},{
 				
@@ -537,6 +547,7 @@ void dtmf::node::initializeServer(void(*callback)(int payload, int id))
 		}),
 		State("error",
 			{
+				StateAction([] { failures++; }),
 				StateAction([] { sync(); }),
 				StateAction([] { send(Message((int)isServer, 0, 14)); }),
 				StateAction([] { currentState=currentErrorState; })
