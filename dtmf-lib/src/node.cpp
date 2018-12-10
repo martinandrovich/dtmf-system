@@ -89,7 +89,7 @@ void dtmf::node::send(Message msg)
 {
 	transmitions++;
 	if (transmitions % 10 == 0) {
-		std::cout << "Transmitions: " << transmitions << " Errors: " << failures << " Error rate: " << (float)failures / (float)transmitions << std::endl;
+		std::cout <<"\n["<<transmitions<<"] Transmitions: " << transmitions << " Errors: " << failures << " Error rate: " << (float)failures / (float)transmitions << std::endl<<std::endl;
 	}
 
 
