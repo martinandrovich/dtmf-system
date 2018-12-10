@@ -17,6 +17,7 @@ constexpr auto	SAMPLE_INTERVAL		= 10;											// Interval of sample processing
 
 constexpr int	CHUNK_SIZE			= (SAMPLE_RATE * SAMPLE_INTERVAL * 0.001f);		// Number of samples in a chunk
 constexpr auto	CHUNK_SIZE_MIN		= 458;										// Minimum number of samples in a chunk for Goertzel bin separation
+
 constexpr auto	CHUNK_SIZE_MAX		= 1.2 * CHUNK_SIZE;								// Maximum number of samples in a chunk before segregation
 
 constexpr auto	AMPLITUDE_MAX		= 32767;										// Maximum possible signal amplitude (100%) (SIGNED INT16 -> +- 2^15 - 1)

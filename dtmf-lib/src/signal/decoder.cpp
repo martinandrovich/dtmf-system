@@ -347,9 +347,13 @@ void decoder::decode(std::vector<short> &samples)
 		//processor::printGoertzelArray(goertzelArray);
 		decoder::callback(toneId);
 	}
-	else
+	else if (previousToneId == -1)
 	{
 		decoder::previousToneId = toneId;
+	}
+	else
+	{
+		decoder::previousToneId = -1;
 	}
 
 	// update status
