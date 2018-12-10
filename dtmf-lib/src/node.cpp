@@ -428,7 +428,7 @@ void dtmf::node::initializeClient(void(*callback)(int payload, int id))
 			}),
 		State("sendReady",
 			{
-				StateAction([] {send(Message((int)isServer,0,proceed)); }),
+				StateAction([] {send(Message((int)isServer,clientID,proceed)); }),
 			},{
 				
 				StateTransition("awaiting",
