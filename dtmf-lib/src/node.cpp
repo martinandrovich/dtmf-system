@@ -525,7 +525,7 @@ void dtmf::node::initializeServer(void(*callback)(int payload, int id))
 				StateCondition([] {return currentMessage.id == numClients+1; }),
 				}),
 			StateTransition("start",{
-				//StateCondition([] { return newMessageFlag; }),
+				StateCondition([] { return newMessageFlag; }),
 				StateCondition([] {return currentMessage.command != var1 || currentMessage.id != numClients+1; }),
 				})
 		}),
