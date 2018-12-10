@@ -110,6 +110,7 @@ void dtmf::node::send(Message msg)
 void dtmf::node::sync()
 {
 	std::vector<int> sequence = { syncronize };
+	hasRecievedDirID = false;
 	generator::playbackSequence(sequence);
 
 }
