@@ -634,8 +634,7 @@ void dtmf::node::initializeServer(void(*callback)(int payload, int id))
 		//Time Chain
 		State("timeChainStart",{
 			StateAction([] {sync(); send(Message((int)isServer, 0, chain)); }),
-			StateAction([] {sync(); send(Message((int)isServer, 0, chain)); }),
-				StateAction([] {idCounter=1;  })
+			StateAction([] {idCounter=1;  })
 			},{
 				StateTransition("timeChainBase",{
 
