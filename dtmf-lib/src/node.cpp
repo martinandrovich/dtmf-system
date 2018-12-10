@@ -46,7 +46,7 @@ namespace dtmf
 		int					currentPayloadPriority;
 		Message				currentMessage;
 
-		mode				serverMode = chainMode;
+		mode				serverMode = pingMode;
 
 		int					timeoutTimer;
 
