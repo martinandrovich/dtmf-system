@@ -44,7 +44,7 @@ namespace dtmf
 		bool				standardErrorHandling = true; //state to return to upon error signal
 		int					currentPayload;
 		int					currentPayloadPriority;
-		Message				currentMessage;
+		Frame				currentMessage;
 
 		mode				serverMode = pingMode;
 
@@ -59,7 +59,7 @@ namespace dtmf
 		int					var1 = 0, var2 = 0, var3 = 0, var4 = 0; //random access variables for state machine
 
 		// Private Methods
-		void send(Message msg); // msg struct
+		void send(Frame msg); // msg struct
 		void sync();
 		void process(uint toneID);
 		void sleepForMessages(int n);
@@ -85,7 +85,7 @@ namespace dtmf
 //// Method Definitions ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 // ...
-void dtmf::node::send(Message msg)
+void dtmf::node::send(Frame msg)
 {
 	transmitions++;
 	if (transmitions % 10 == 0) {
@@ -127,7 +127,7 @@ void dtmf::node::process(uint toneID)
 		{
 			if (isQuickState)
 			{
-				currentMessage = Message(toneID);
+				currentMessage = Frame(toneID);
 				newMessageFlag = true;
 			}
 			else
@@ -138,7 +138,7 @@ void dtmf::node::process(uint toneID)
 		}
 		else
 		{
-			currentMessage = Message(oldToneId, toneID);
+			currentMessage = Frame(oldToneId, toneID);
 			hasRecievedDirID = false;
 			newMessageFlag = true;
 		}
@@ -161,7 +161,7 @@ void dtmf::node::absorbMessage(int n) {
 		std::this_thread::sleep_for(milliseconds(1));
 		messageMutex.lock();
 		if (newMessageFlag) {
-			currentMessage = Message();
+			currentMessage = Frame();
 			newMessageFlag = false;
 			c++;
 		}
@@ -266,7 +266,7 @@ void dtmf::node::runStateActions()
 	{
 		action.function();
 	}
-	currentMessage = Message();
+	currentMessage = Frame();
 	newMessageFlag = false;
 	testCurrentState();
 }
@@ -294,7 +294,7 @@ void dtmf::node::checkMessage()
 			testCurrentState();
 
 			newMessageFlag = false;
-			currentMessage = Message();
+			currentMessage = Frame();
 		}
 
 	messageMutex.unlock();
@@ -381,7 +381,7 @@ void dtmf::node::initializeClient(void(*callback)(int payload, int id))
 			{
 				StateAction([] { sync(); }),
 				StateAction([] { var1 = currentPayload; }),
-				StateAction([] { send(Message((int)isServer, 0, var1)); })
+				StateAction([] { send(Frame((int)isServer, 0, var1)); })
 			},{
 				StateTransition("setId",
 					{
@@ -403,7 +403,7 @@ void dtmf::node::initializeClient(void(*callback)(int payload, int id))
 		State("setId",
 			{
 				StateAction([] { clientID = currentMessage.id; }),
-				StateAction([] {send(Message((int)isServer,clientID,var1)); }),
+				StateAction([] {send(Frame((int)isServer,clientID,var1)); }),
 			},{
 				StateTransition("awaiting",
 					{
@@ -439,7 +439,7 @@ void dtmf::node::initializeClient(void(*callback)(int payload, int id))
 			}),
 		State("sendReady",
 			{
-				StateAction([] {send(Message((int)isServer,clientID,proceed)); }),
+				StateAction([] {send(Frame((int)isServer,clientID,proceed)); }),
 			},{
 				
 				StateTransition("awaiting",
@@ -469,7 +469,7 @@ void dtmf::node::initializeClient(void(*callback)(int payload, int id))
 			}),
 		State("sendAction",
 			{
-				StateAction([] { send(Message((int)isServer, clientID, currentPayload)); }),
+				StateAction([] { send(Frame((int)isServer, clientID, currentPayload)); }),
 				StateAction([] { currentPayload=0; }),
 				StateAction([] { newPayloadFlag = false; }),
 				StateAction([] { currentPayloadPriority = 0; })
@@ -494,7 +494,7 @@ void dtmf::node::initializeClient(void(*callback)(int payload, int id))
 		State("chainSend",
 			{
 				StateAction([] { absorbMessage(clientID-1); }),
-				StateAction([] { send(Message(currentPayload)); }),
+				StateAction([] { send(Frame(currentPayload)); }),
 			},{
 				StateTransition("sendAction",
 					{
@@ -550,7 +550,7 @@ void dtmf::node::initializeServer(void(*callback)(int payload, int id))
 			{
 				StateAction([] { failures++; }),
 				StateAction([] { sync(); }),
-				StateAction([] { send(Message((int)isServer, 0, 14)); }),
+				StateAction([] { send(Frame((int)isServer, 0, 14)); }),
 				StateAction([] { currentState=currentErrorState; })
 			},{
 
@@ -558,7 +558,7 @@ void dtmf::node::initializeServer(void(*callback)(int payload, int id))
 			}),
 		State("newClient",{
 			StateAction([] { var1 = currentMessage.command; }),
-			StateAction([] { send(Message((int)isServer, numClients+1, currentMessage.command)); })
+			StateAction([] { send(Frame((int)isServer, numClients+1, currentMessage.command)); })
 		},{
 			StateTransition("newClientReceived",{
 				StateCondition([] { return newMessageFlag; }),
@@ -571,7 +571,7 @@ void dtmf::node::initializeServer(void(*callback)(int payload, int id))
 				})
 		}),
 		State("newClientReceived",{
-			StateAction([] { send(Message((int)isServer, numClients + 1, var1)); }),
+			StateAction([] { send(Frame((int)isServer, numClients + 1, var1)); }),
 			StateAction([] { numClients++; }),
 			StateAction([] { sync(); }),
 		},{
@@ -582,8 +582,8 @@ void dtmf::node::initializeServer(void(*callback)(int payload, int id))
 		}),
 		State("informReady",{
 			
-			StateAction([] {sync(); send(Message((int)isServer, 0, proceed)); }),
-			StateAction([] {sync(); send(Message((int)isServer, 0, proceed)); }),
+			StateAction([] {sync(); send(Frame((int)isServer, 0, proceed)); }),
+			StateAction([] {sync(); send(Frame((int)isServer, 0, proceed)); }),
 			
 		},{
 			StateTransition("base",{
@@ -614,7 +614,7 @@ void dtmf::node::initializeServer(void(*callback)(int payload, int id))
 		}),
 		State("standardSend",{
 		//StateAction([] { sync(); }),
-			StateAction([] { send(Message((int)isServer, idCounter, 9)); })
+			StateAction([] { send(Frame((int)isServer, idCounter, 9)); })
 
 		},{
 			StateTransition("standardRecieve",{
@@ -645,7 +645,7 @@ void dtmf::node::initializeServer(void(*callback)(int payload, int id))
 		//==================================================================
 		//Time Chain
 		State("timeChainStart",{
-			StateAction([] {sync(); send(Message((int)isServer, 0, chain)); }),
+			StateAction([] {sync(); send(Frame((int)isServer, 0, chain)); }),
 			StateAction([] {idCounter=1;  })
 			},{
 				StateTransition("timeChainBase",{
@@ -654,7 +654,7 @@ void dtmf::node::initializeServer(void(*callback)(int payload, int id))
 
 			}),
 		State("timeChainBase",{
-				StateAction([] { send(Message(input)); }),
+				StateAction([] { send(Frame(input)); }),
 				StateAction([] { idCounter = 1;  }),
 				StateAction([] { standardErrorHandling=false; })
 			},{
@@ -704,7 +704,7 @@ void dtmf::node::initializeServer(void(*callback)(int payload, int id))
 
 			}),
 		State("timeChainTimeout",{
-				StateAction([] { send(Message(null)); })
+				StateAction([] { send(Frame(null)); })
 			},{
 				StateTransition("timeChainNext",{
 
