@@ -22,7 +22,7 @@ namespace processor
 	void					fft2(cArray& x);
 	cArray					fft2(std::vector<short>& samples);
 
-	void					hanningWindow(std::vector<short> &samples);
+	void					hannWindow(std::vector<short> &samples);
 	void					zeroPadding(std::vector<short> &samples, float multiplier);
 	void					zeroPadding(std::vector<short> &samples, int resize);
 

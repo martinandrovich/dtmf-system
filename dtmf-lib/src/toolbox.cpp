@@ -495,7 +495,7 @@ void toolbox::logGoertzel(std::string args)
 		// apply hanning
 		if (useHanning)
 		{
-			processor::hanningWindow(buffer);
+			processor::hannWindow(buffer);
 		}
 
 		// perform goertzel
@@ -582,7 +582,7 @@ void toolbox::logGoertzelAverage(std::string args)
 		// apply hanning
 		if (useHanning)
 		{
-			processor::hanningWindow(buffer);
+			processor::hannWindow(buffer);
 		}
 
 		// perform goertzel
@@ -784,7 +784,7 @@ void toolbox::testStepWindow(std::string args)
 
 		if (useHanning)
 		{
-			processor::hanningWindow(samplesChunk);
+			processor::hannWindow(samplesChunk);
 		}
 
 		goertzelSingle[pair.first] = processor::goertzel(samplesChunk, testFreqL);
@@ -809,7 +809,7 @@ void toolbox::testStepWindow(std::string args)
 		// apply hanning
 		if (useHanning)
 		{
-			processor::hanningWindow(samplesChunk);
+			processor::hannWindow(samplesChunk);
 		}
 
 		// add to queue
@@ -1121,7 +1121,7 @@ void toolbox::testGoertzel(std::string args)
 			timeElapsed = static_cast<duration<double, std::milli>>(clock.now() - timeStart).count();
 
 			// apply hanning window
-			processor::hanningWindow(chunk);
+			processor::hannWindow(chunk);
 
 			// perform goertzel
 			auto magnitudeL = processor::goertzel(chunk, testFreqL);
@@ -1230,7 +1230,7 @@ void toolbox::testGeneratorGoertzel(std::string args)
 	auto samples2 = samples1;
 
 	// apply hanning window
-	processor::hanningWindow(samples2);
+	processor::hannWindow(samples2);
 
 	// perform tests
 	auto magnitude1 = processor::goertzel(samples1, testFreqL);
@@ -1313,7 +1313,7 @@ void toolbox::calibrateThresholds()
 		timeStart = clock.now();
 		for (auto& chunk : sampleChunks)
 		{
-			processor::hanningWindow(chunk);
+			processor::hannWindow(chunk);
 
 			float magnitudeLow		= processor::goertzel(chunk, testFreqL);
 			float magnitudeHigh		= processor::goertzel(chunk, testFreqH);
@@ -1471,7 +1471,7 @@ void toolbox::calibrateThresholds2()
 		timeStart = clock.now();
 		for (auto& chunk : sampleChunks)
 		{
-			processor::hanningWindow(chunk);
+			processor::hannWindow(chunk);
 
 			float magnitudeLow = processor::goertzel(chunk, testFreqL);
 			float magnitudeHigh = processor::goertzel(chunk, testFreqH);

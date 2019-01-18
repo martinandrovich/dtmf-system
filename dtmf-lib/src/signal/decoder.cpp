@@ -312,7 +312,7 @@ void decoder::decode(std::vector<short> &samples)
 	decoder::status = state::working;
 
 	// apply hanning window
-	processor::hanningWindow(samples);
+	processor::hannWindow(samples);
 
 	// apply zero padding if chunk too small
 	if (samples.size() < CHUNK_SIZE_MIN)
@@ -370,7 +370,7 @@ void decoder::decode2(std::vector<short> &samples)
 	}
 
 	// apply hanning window to samples
-	processor::hanningWindow(samples);
+	processor::hannWindow(samples);
 
 	// compile goertzelArray for all DTMF frequencies
 	auto goertzelArray = processor::goertzelArray(samples);

@@ -32,14 +32,14 @@ float processor::getAverageAmplitude(std::array<float, 8> &sampleArray)
 }
 
 // Hanning window; perform on vector by reference
-void processor::hanningWindow(std::vector<short> &samples)
+void processor::hannWindow(std::vector<short> &samples)
 {
 	int		size = samples.size();
 	double	multiplier;
 
 	for (int i = 0; i < samples.size(); i++)
 	{
-		multiplier = 0.5 * (1 - cos((2 * PI * i) / (size - 1)));
+		multiplier = 0.5 * (1.0 - cos((2.0 * PI * i) / (size - 1.0)));
 		samples[i] = samples[i] * multiplier;
 	}
 }
