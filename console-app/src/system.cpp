@@ -2,9 +2,10 @@
 #include <string>
 #include <vector>
 #include <thread>
+#include <atomic>
 #include <chrono>
 #include <unordered_map>
-#include <windows.h> //Tjek for fejl senere
+#include <windows.h>
 #include <memory>
 
 #include <dtmf/node.h>
@@ -19,6 +20,9 @@ constexpr int 	KEY_DURATION_MOVE		= 250;											// Duration of a simulated ke
 constexpr int 	KEY_DURATION_PRIMARY	= 25;											// Duration of a simulated key press (primary)
 
 //// Definitions //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+std::atomic<bool> currentlyExecutingKeypress	= false;
+std::atomic<bool> terminateCurrentKeypress		= false;
 
 // Initialize the CLI
 void initCLI()
@@ -98,10 +102,28 @@ int listenForKey()
 // Simulate concurrent global key press for a given duration
 void pressKey(int key, int duration, bool parallel)
 {
+	
+	using namespace std::chrono;
+
+	// wait for execution to be terminated, if active
+	while (currentlyExecutingKeypress)
+	{
+		if (!terminateCurrentKeypress && currentlyExecutingKeypress) { terminateCurrentKeypress = true; }
+	}
+
+	// update execution booleans
+	terminateCurrentKeypress	= false;
+	currentlyExecutingKeypress	= true;
+
 	// define lambda thread
 	std::thread t([=]()
 	{
+		// Windows input handler
 		INPUT ip;
+
+		// set up time
+		steady_clock					clock;
+		time_point<steady_clock>		timeStart;
 
 		// set up a generic keyboard event
 		ip.type = INPUT_KEYBOARD;
@@ -114,12 +136,22 @@ void pressKey(int key, int duration, bool parallel)
 		ip.ki.dwFlags = 0; // 0 for key press
 		SendInput(1, &ip, sizeof(INPUT));
 
+		// set timer
+		timeStart = clock.now();
+
 		// wait
-		std::this_thread::sleep_for(std::chrono::milliseconds(duration));
+		//std::this_thread::sleep_for(std::chrono::milliseconds(duration));
+
+		// wait until termination requested OR duration elapsed
+		while (!terminateCurrentKeypress || duration_cast<milliseconds>(clock.now() - timeStart).count() < duration)
+		{
+			;
+		}
 
 		// release the key
 		ip.ki.dwFlags = KEYEVENTF_KEYUP; // KEYEVENTF_KEYUP for key release
 		SendInput(1, &ip, sizeof(INPUT));
+		currentlyExecutingKeypress = false;
 	});
 
 	// define thread execution method (sequential or concurrent)
