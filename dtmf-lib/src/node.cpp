@@ -46,7 +46,7 @@ namespace dtmf
 		int					currentPayloadPriority;
 		Frame				currentMessage;
 
-		mode				serverMode = pingMode;
+		mode				serverMode = chainMode;
 
 		int					timeoutTimer;
 
@@ -496,7 +496,7 @@ void dtmf::node::initializeClient(void(*callback)(int payload, int id))
 				StateAction([] { absorbMessage(clientID-1); }),
 				StateAction([] { send(Frame(currentPayload)); }),
 			},{
-				StateTransition("sendAction",
+				StateTransition("chainBase",
 					{
 						
 					}),
@@ -654,7 +654,7 @@ void dtmf::node::initializeServer(void(*callback)(int payload, int id))
 
 			}),
 		State("timeChainBase",{
-				StateAction([] { send(Frame(input)); }),
+				StateAction([] { send(Frame(proceed)); }),
 				StateAction([] { idCounter = 1;  }),
 				StateAction([] { standardErrorHandling=false; })
 			},{
