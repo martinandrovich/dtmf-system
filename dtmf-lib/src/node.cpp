@@ -119,7 +119,7 @@ void dtmf::node::process(uint toneID)
 {
 	messageMutex.lock();
 	node::timestamp = node::clock.now();
-	std::cout << "Got tone [" << toneID << "]\n";
+	//std::cout << "Got tone [" << toneID << "]\n";
 		if (toneID == syncronize) {
 			hasRecievedDirID = false;
 		}
@@ -226,7 +226,7 @@ void dtmf::node::testCurrentState()
 // ...
 int dtmf::node::getStateId(StateTransition& transition)
 {
-	std::cout << "changing state to " << transition.targetName << "\n";
+	//std::cout << "changing state to " << transition.targetName << "\n";
 
 	if (transition.targetId != -1)
 	{
