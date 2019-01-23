@@ -155,6 +155,8 @@ void dtmf::node::sleepForMessages(int n) {
 }
 // block and absorbs [n] full messages without proccessing
 void dtmf::node::absorbMessage(int n) { 
+	currentMessage = Frame();
+	newMessageFlag = false;
 	int c = 0;
 	while (c < n){
 		messageMutex.unlock();
