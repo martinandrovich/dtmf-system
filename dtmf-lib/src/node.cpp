@@ -704,7 +704,8 @@ void dtmf::node::initializeServer(void(*callback)(int payload, int id))
 
 			}),
 		State("timeChainTimeout",{
-				StateAction([] { send(Frame(null)); })
+				StateAction([] { send(Frame(null)); }),
+				StateAction([] { failures++; })
 			},{
 				StateTransition("timeChainNext",{
 
